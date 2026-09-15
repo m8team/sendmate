@@ -91,5 +91,5 @@ form.addEventListener("submit", async (event) => {
   });
   const result = await res.json();
   if (result.ok) form.replaceWith("Thanks! It's on its way.");
-  else alert(result.error);
+  else alert(result.error.message);
 });`;

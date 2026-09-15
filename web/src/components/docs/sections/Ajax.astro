@@ -48,7 +48,10 @@ Content-Type: application/json
 
 {
   "ok": false,
-  "error": "This form is full for this month."
+  "error": {
+    "code": "quota_exceeded",
+    "message": "This form has reached its monthly submission limit."
+  }
 }`;
 
 const statusRows = [
@@ -95,8 +98,7 @@ const statusRows = [
   </div>
   <div class="prose">
     <p>
-      <code>ok</code> is always there, so checking it is enough. The <code>id</code> is the submission’s id in your dashboard. <code>error</code> is a
-      plain-English sentence you can show to your visitor as it is.
+      <code>ok</code> is always there, so checking it is enough. The <code>id</code> is the submission’s id in your dashboard. On failure, <code>error.message</code> is a plain-English sentence you can show to your visitor as it is, and <code>error.code</code> (like <code>quota_exceeded</code> or <code>rate_limited</code>) stays the same for your code to check.
     </p>
   </div>
 

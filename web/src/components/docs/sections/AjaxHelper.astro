@@ -57,12 +57,10 @@ const helperKb = 6;
         plain-English error, like “This form isn’t accepting submissions right now.”
       </li>
       <li>
-        Listen for <code>sendm8:success</code> (<code>event.detail.id</code>) and <code>sendm8:error</code> (<code>event.detail.message</code>,
-        <code>code</code>, <code>status</code>) on the form. Call <code>event.preventDefault()</code> to skip the built-in message and do your own thing.
+        Listen for <code>sendm8:success</code> (<code>event.detail.id</code>) and <code>sendm8:error</code> (<code>event.detail.message</code>, <code>code</code>, <code>status</code>) on the form. Call <code>event.preventDefault()</code> to skip the built-in message and do your own thing.
       </li>
       <li>
-        Opt a form out with <code>data-sendm8="off"</code>. For a manual send, <code>window.sendm8.submit(form)</code> returns a promise of
-        <code>{'{ ok, id, error }'}</code>.
+        Opt a form out with <code>data-sendm8="off"</code>. For a manual send, <code>window.sendm8.submit(form)</code> returns a promise of <code>{'{ ok, id, error }'}</code>.
       </li>
     </ul>
   </div>
@@ -71,8 +69,7 @@ const helperKb = 6;
 
   <Callout title="Small and dependency-free" kind="info">
     <p>
-      About {helperKb} KB, no libraries, works in every browser with <code>fetch</code>. It only touches forms with <code>data-sendm8</code> whose
-      <code>action</code> is a sendm8 <code>/f/</code> endpoint, and adds nothing to the page apart from an optional <code>window.sendm8</code>.
+      About {helperKb} KB, no libraries, works in every browser with <code>fetch</code>. It only touches forms with <code>data-sendm8</code> whose <code>action</code> is a sendm8 <code>/f/</code> endpoint, and adds nothing to the page apart from an optional <code>window.sendm8</code>.
     </p>
   </Callout>
 </DocsSection>
