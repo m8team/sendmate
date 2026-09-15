@@ -1,0 +1,162 @@
+---
+/**
+ * Spam protection: honeypot, rate limits, Turnstile, AI score and the phishing guard.
+ */
+import CodeBlock from '../../ui/CodeBlock.astro';
+import Callout from '../Callout.astro';
+import DocsSection from './DocsSection.astro';
+import { limits, fmt } from '../../../config/site';
+import { FORM, sec } from './docsSections';
+
+// Subheadings follow the section number, so adding a section never leaves them stale.
+const n = sec('spam').no;
+
+const honeypotCode = `
+<!-- Real people never see it. Bots fill in every field they find. -->
+<input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">`;
+
+const turnstileCode = `
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<form action="${FORM}" method="POST">
+  <label>Your email <input name="email" type="email" required></label>
+  <label>Message <textarea name="message" required></textarea></label>
+
+  <!-- Adds a hidden cf-turnstile-response field once the check passes -->
+  <div class="cf-turnstile" data-sitekey="0x4AAAAAAAyour-site-key"></div>
+
+  <button>Send</button>
+</form>`;
+---
+
+<DocsSection id="spam" kicker="Five layers, cheapest first">
+  <div class="prose">
+    <p>
+      Spam protection is on for every form. Spam is still stored, in its own folder, so you can check nothing real was caught. It’s never delivered, and
+      it’s deleted after {limits.spamRetentionDays} days.
+    </p>
+  </div>
+
+  <h3 class="ds-h3" id="spam-honeypot"><span class="mono ds-h3-no">{n}.1</span> Honeypot</h3>
+  <div class="prose">
+    <p>
+      A field that’s hidden from people but visible to bots, which tend to fill in everything. Anything in it marks the submission as spam. Call it{' '}
+      <code>_gotcha</code>, or pick your own name in <strong>Form settings → Spam</strong>.
+    </p>
+  </div>
+  <CodeBlock code={honeypotCode} lang="html" filename="honeypot" compact class="wide" />
+
+  <h3 class="ds-h3" id="spam-rate"><span class="mono ds-h3-no">{n}.2</span> Rate limits and heuristics</h3>
+  <div class="prose">
+    <p>
+      Each visitor can send {limits.ratePerIpPerMinute} submissions a minute to a form, and a form takes {fmt.n(limits.ratePerFormPerMinute)} a minute
+      in total. Past that, they get a <code>429</code>. We count by a one-way hash of the IP address and never store the address itself.
+    </p>
+    <p>
+      Then come the quick checks: a message stuffed with links, well-known spam phrases, throwaway email domains, a message that’s only a URL, and
+      keyboard-mash gibberish.
+    </p>
+  </div>
+
+  <h3 class="ds-h3" id="spam-turnstile"><span class="mono ds-h3-no">{n}.3</span> Cloudflare Turnstile</h3>
+  <div class="prose">
+    <p>
+      Turnstile is Cloudflare’s free alternative to “click all the traffic lights”. There are two ways to use it, depending on how your form is sent.
+    </p>
+  </div>
+
+  <div class="modes wide">
+    <div class="mode">
+      <p class="label mode-for">For plain HTML forms</p>
+      <h4 class="h4">Challenge page</h4>
+      <p>
+        No setup. Turn it on in <strong>Form settings → Spam</strong>. When a submission looks borderline, the visitor is sent to a short check on{' '}
+        <code>sendm8.com/c/…</code>. Once they pass, the submission goes through and they carry on to your thank-you page.
+      </p>
+      <a class="link-signal" href="/c/demo">See the challenge page</a>
+    </div>
+    <div class="mode">
+      <p class="label mode-for">For AJAX forms</p>
+      <h4 class="h4">Bring your own Turnstile</h4>
+      <p>
+        AJAX can’t follow a redirect to a challenge, so put the widget on your own form instead. We check the token it adds with your secret key.
+      </p>
+    </div>
+  </div>
+
+  <p class="label steps-lead">Bring your own Turnstile, step by step</p>
+  <ol class="steps">
+    <li>
+      In the Cloudflare dashboard, open <strong>Turnstile</strong> and add a widget. Add your site’s hostname (for example <code>yourstudio.com</code>).
+    </li>
+    <li>Copy the <strong>site key</strong> into the widget on your form, as below.</li>
+    <li>
+      Paste the <strong>secret key</strong> into sendm8 under <strong>Form settings → Spam → Turnstile → Bring your own</strong>. It’s stored encrypted.
+    </li>
+    <li>
+      That’s it. The widget adds a <code>cf-turnstile-response</code> field, and <code>FormData</code> picks it up automatically. Submissions without a
+      valid token get a <code>403</code>.
+    </li>
+  </ol>
+  <CodeBlock code={turnstileCode} lang="html" filename="contact.html" highlight={[1, 8]} class="wide" />
+
+  <h3 class="ds-h3" id="spam-ai"><span class="mono ds-h3-no">{n}.4</span> AI spam score</h3>
+  <div class="prose">
+    <p>
+      Optional, and off until you switch it on in <strong>Form settings → Spam</strong>. A small model scores each message after it’s been stored, so it
+      never slows your visitor down. Anything it’s confident about moves to spam before it’s delivered. You’ll see the score and the reasons on every
+      submission.
+    </p>
+  </div>
+
+  <h3 class="ds-h3" id="spam-phishing"><span class="mono ds-h3-no">{n}.5</span> Phishing guard</h3>
+  <Callout title="Forms that ask for passwords are held" kind="signal" icon="shield">
+    <p>
+      Free form backends get used to collect stolen logins. If a form has fields named like <code>password</code>, <code>card_number</code>,{' '}
+      <code>cvv</code>, <code>ssn</code> or <code>seed phrase</code>, its submissions are held instead of delivered, and the form is flagged for review.
+      If that’s a false alarm (say, a “forgot password” support form), the dashboard explains what to do.
+    </p>
+  </Callout>
+</DocsSection>
+
+<style>
+  .wide {
+    max-width: 100%;
+  }
+
+  /* Turnstile modes */
+  .modes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border: 2px solid var(--line-strong);
+  }
+  .mode {
+    display: grid;
+    align-content: start;
+    gap: var(--s-2);
+    padding: var(--s-5);
+    font-size: var(--fs-sm);
+  }
+  .mode + .mode {
+    border-left: 2px dashed var(--line);
+  }
+  .mode p:not(.label) {
+    color: var(--fg-muted);
+  }
+  .mode-for {
+    color: var(--signal-text);
+  }
+  .mode a {
+    font-size: var(--fs-sm);
+  }
+
+  @media (max-width: 720px) {
+    .modes {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .mode + .mode {
+      border-left: 0;
+      border-top: 2px dashed var(--line);
+    }
+  }
+</style>

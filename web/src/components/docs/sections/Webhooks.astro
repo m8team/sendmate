@@ -1,0 +1,114 @@
+---
+/**
+ * Bay 11, webhooks: the request, signature checking and retries.
+ */
+import CodeBlock from '../../ui/CodeBlock.astro';
+import CodeTabs from '../../ui/CodeTabs.astro';
+import Callout from '../Callout.astro';
+import DocsSection from './DocsSection.astro';
+import { limits } from '../../../config/site';
+
+const retries = limits.retrySchedule;
+
+const payloadCode = `
+{
+  "event": "submission.created",
+  "id": "01K53N7XQ2R8M4DE7Q2K9F4X3M",
+  "tracking": "SM8 7Q2K 9F4X 3M",
+  "created_at": "2026-09-14T15:42:07Z",
+  "form": { "id": "k3x9q2m7ab", "name": "Studio contact" },
+  "data": {
+    "name": "Alex Moreno",
+    "email": "alex@moreno.dev",
+    "message": "Hiya! Are you free for a quick project in October?"
+  },
+  "files": [],
+  "spam": { "score": 0.04, "verdict": "ok" }
+}`;
+
+const headersCode = `
+POST /hooks/sendm8 HTTP/1.1
+Content-Type: application/json
+User-Agent: sendm8-webhooks
+X-Sendm8-Signature: t=1789400527,v1=5967b4fd69839aeb4fabdbcee4b69e8e2f3f690d2602b67034f1b30382e1b79e`;
+
+const verifyCode = `
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+const FIVE_MINUTES = 5 * 60;
+
+// rawBody must be the exact bytes we sent, before any JSON parsing.
+export function verifySendm8(rawBody, header, secret) {
+  const parts = Object.fromEntries(
+    header.split(",").map((pair) => pair.trim().split("=")),
+  );
+  const t = Number(parts.t);
+  if (!t || !parts.v1) return false;
+
+  // Ignore old deliveries, so a captured request can't be replayed later
+  if (Math.abs(Date.now() / 1000 - t) > FIVE_MINUTES) return false;
+
+  const expected = createHmac("sha256", secret)
+    .update(\`\${t}.\${rawBody}\`)
+    .digest("hex");
+
+  const a = Buffer.from(expected);
+  const b = Buffer.from(parts.v1);
+  return a.length === b.length && timingSafeEqual(a, b);
+}`;
+
+const verifyUsage = `
+// Example: a fetch-style handler (Cloudflare Workers with nodejs_compat, Bun, Deno)
+export default {
+  async fetch(request, env) {
+    const raw = await request.text();
+    const header = request.headers.get("X-Sendm8-Signature") ?? "";
+
+    if (!verifySendm8(raw, header, env.SENDM8_WEBHOOK_SECRET)) {
+      return new Response("Bad signature", { status: 401 });
+    }
+
+    const submission = JSON.parse(raw);
+    // ...do something with submission.data
+    return new Response(null, { status: 204 });
+  },
+};`;
+---
+
+<DocsSection id="webhooks" kicker="For your own code">
+  <div class="prose">
+    <p>
+      Add a webhook in <strong>Form settings → Channels → Webhook</strong> and we’ll <code>POST</code> every submission to your URL as JSON. It needs to
+      be <code>https</code> and publicly reachable: private IP ranges and bare IP addresses are blocked. You’ll get a signing secret when you add it.
+    </p>
+  </div>
+
+  <h3 class="ds-h3">The request</h3>
+  <CodeBlock code={headersCode} lang="http" filename="Headers" compact class="wide" />
+  <CodeBlock code={payloadCode} lang="json" filename="Body" class="wide" />
+
+  <h3 class="ds-h3">Checking the signature</h3>
+  <div class="prose">
+    <p>
+      Anyone can post to a public URL, so check that a request really came from us. <code>X-Sendm8-Signature</code> holds a Unix timestamp{' '}
+      <code>t</code> and a signature <code>v1</code>. The signature is an HMAC-SHA256, in hex, of the timestamp, a full stop and the raw request body,
+      using your signing secret.
+    </p>
+  </div>
+  <CodeTabs
+    class="wide"
+    name="Signature verification"
+    tabs={[
+      { label: 'verify.js', lang: 'js', filename: 'verify.js', code: verifyCode, highlight: [16, 17, 18] },
+      { label: 'Using it', lang: 'js', filename: 'worker.js', code: verifyUsage, highlight: [7] },
+    ]}
+  />
+
+  <Callout title="Delivery and retries" kind="info" icon="refresh">
+    <p>
+      Reply with any <code>2xx</code> within {limits.webhookTimeoutSeconds} seconds. Do slow work after you’ve answered. If we get an error or a timeout,
+      we try again after {retries.join(', ')}: {retries.length} more attempts in all. Each retry has a fresh timestamp and signature, so it’s worth
+      using the submission <code>id</code> to ignore duplicates.
+    </p>
+  </Callout>
+</DocsSection>

@@ -1,0 +1,235 @@
+---
+/**
+ * The held parcel: what's waiting for the owner's say-so, with the field names shown and the values sealed.
+ * The confirm page's script swaps the status line and stamps (data-status, data-stamp) and shakes it (.docket).
+ */
+import Barcode from '../brand/Barcode.astro';
+
+interface Props {
+  /** Tracking number of the first waiting submission. */
+  tracking: string;
+  waitingCount: number;
+  /** When the first one arrived, as HH:MM (UTC). */
+  since: string;
+  /** The page it was posted from. */
+  origin: string;
+  /** The form address without the scheme. */
+  endpoint: string;
+  /** Field names of the first submission. */
+  fields: string[];
+}
+const { tracking, waitingCount, since, origin, endpoint, fields } = Astro.props;
+const sealWidths = ['9rem', '13rem', '6rem', '11rem', '8rem'];
+---
+
+<aside class="docket" aria-labelledby="docket-title">
+  <header class="dk-top">
+    <div>
+      <p class="label muted">Held at the sorting office</p>
+      <h2 id="docket-title" class="h4">Waiting for your say-so</h2>
+    </div>
+    <Barcode value={tracking} height={30} class="dk-barcode" />
+  </header>
+
+  <dl class="dk-rows">
+    <div>
+      <dt class="label">Waiting</dt>
+      <dd><strong>{waitingCount} submission{waitingCount === 1 ? '' : 's'}</strong> since <span class="mono">{since} UTC</span></dd>
+    </div>
+    <div>
+      <dt class="label">Posted from</dt>
+      <dd class="mono">{origin}</dd>
+    </div>
+    <div>
+      <dt class="label">Form address</dt>
+      <dd class="mono dk-endpoint">{endpoint}</dd>
+    </div>
+  </dl>
+
+  <div class="dk-fields">
+    <p class="label">What’s inside</p>
+    <ul role="list">
+      {
+        fields.map((f, i) => (
+          <li>
+            <span class="mono dk-fname">{f}</span>
+            <span class="dk-seal" style={`--w:${sealWidths[i % sealWidths.length]}`}>
+              <span class="sr-only">value sealed</span>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="dk-hint">Field names only. The values stay sealed until you say yes.</p>
+  </div>
+
+  <div class="dk-status">
+    <p class="dk-status-text">
+      <span class="label muted">Status</span>
+      <span data-status="ask">Held, not delivered</span>
+      <span data-status="yes" hidden>Released for delivery</span>
+      <span data-status="no" hidden>Binned, nothing delivered</span>
+    </p>
+    <div class="dk-stamps" aria-hidden="true">
+      <span class="stamp stamp-ink dk-stamp" data-stamp="ask">Held</span>
+      <span class="stamp stamp-ok stamp-lg dk-stamp" data-stamp="yes" hidden>Confirmed</span>
+      <span class="stamp stamp-lg dk-stamp" data-stamp="no" hidden>Refused</span>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .docket {
+    grid-area: docket;
+    align-self: start;
+    position: sticky;
+    top: var(--s-6);
+    margin-top: var(--s-4);
+    padding: var(--s-5);
+    border: var(--bw-strong) solid var(--line-strong);
+    background: var(--bg-raised);
+    box-shadow: var(--shadow-label-lg);
+  }
+  .dk-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--s-4);
+    padding-bottom: var(--s-4);
+    border-bottom: 2px dashed var(--line);
+  }
+  .dk-top .h4 {
+    margin-top: var(--s-1);
+  }
+  .dk-top :global(.dk-barcode) {
+    width: 10.5rem;
+    flex: none;
+  }
+  .dk-rows > div {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: var(--s-3);
+    align-items: baseline;
+    padding-block: var(--s-3);
+    border-bottom: 1px solid var(--line);
+  }
+  .dk-rows dt {
+    color: var(--fg-muted);
+  }
+  .dk-rows dd {
+    font-size: var(--fs-sm);
+    min-width: 0;
+  }
+  .dk-endpoint {
+    overflow-wrap: anywhere;
+  }
+  .dk-fields {
+    padding-top: var(--s-4);
+  }
+  .dk-fields > .label {
+    color: var(--fg-muted);
+  }
+  .dk-fields ul {
+    display: grid;
+    gap: var(--s-2);
+    margin-top: var(--s-3);
+  }
+  .dk-fields li {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: var(--s-3);
+    align-items: center;
+  }
+  .dk-fname {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+  .dk-seal {
+    display: block;
+    width: min(var(--w), 100%);
+    height: 0.85rem;
+    background: repeating-linear-gradient(-45deg, var(--fg) 0 2px, transparent 2px 5px);
+    opacity: 0.55;
+  }
+  .dk-hint {
+    margin-top: var(--s-4);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  .dk-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    min-height: 4.5rem;
+    margin-top: var(--s-4);
+    padding-top: var(--s-3);
+    border-top: 2px dashed var(--line);
+  }
+  .dk-status-text {
+    display: grid;
+    gap: 0.15rem;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+  .dk-stamps {
+    flex: none;
+    padding-right: var(--s-2);
+    pointer-events: none;
+  }
+  .dk-stamp {
+    --stamp-rotate: -9deg;
+    background: color-mix(in srgb, var(--bg-raised) 70%, transparent);
+  }
+  .dk-stamp.is-thunk {
+    animation: cf-thunk var(--dur-3) var(--ease-thunk) both;
+  }
+  @keyframes cf-thunk {
+    0% {
+      transform: scale(2.3) rotate(calc(var(--stamp-rotate) - 12deg));
+      opacity: 0;
+    }
+    55% {
+      transform: scale(0.92) rotate(var(--stamp-rotate));
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1) rotate(var(--stamp-rotate));
+    }
+  }
+  .docket.is-shake {
+    animation: cf-shake var(--dur-3) var(--ease-out);
+  }
+  @keyframes cf-shake {
+    30% {
+      transform: translateY(3px);
+    }
+  }
+
+  @media (max-width: 960px) {
+    .docket {
+      position: relative;
+      top: 0;
+      margin-top: var(--s-6);
+      max-width: 36rem;
+    }
+  }
+  @media (max-width: 640px) {
+    .docket {
+      margin-top: var(--s-7);
+    }
+  }
+  @media (max-width: 520px) {
+    .docket {
+      padding: var(--s-4);
+      box-shadow: var(--shadow-label);
+    }
+    .dk-top :global(.dk-barcode) {
+      width: 8.5rem;
+    }
+    .dk-rows > div,
+    .dk-fields li {
+      grid-template-columns: 6rem minmax(0, 1fr);
+    }
+  }
+</style>

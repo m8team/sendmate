@@ -1,0 +1,238 @@
+---
+/**
+ * Legal page (terms, privacy) built from the Markdown in docs/legal/.
+ * Same bones as the docs page: poster heading, sticky section rack, long-form prose.
+ * {{PLACEHOLDER}} tokens stay visible as yellow TODO marks until the operator fills them in.
+ */
+import Marketing from '../../layouts/Marketing.astro';
+import DocsNav from './DocsNav.astro';
+import Icon from '../ui/Icon.astro';
+import { renderMarkdown } from '../../lib/markdown';
+import { site } from '../../config/site';
+
+interface Props {
+  source: string;
+  /** Path in the repo, for the "Edit this page" link. */
+  repoPath: string;
+  kicker: string;
+  description: string;
+  /** The other legal page, linked at the bottom. */
+  sibling: { href: string; label: string };
+}
+const { source, repoPath, kicker, description, sibling } = Astro.props;
+const doc = renderMarkdown(source);
+const sections = doc.sections.length ? doc.sections : [{ id: 'top', title: doc.title }];
+const updated = source.match(/_Last updated: ([^_]+)_/)?.[1] ?? '';
+---
+
+<Marketing title={doc.title} description={description}>
+  <div class="wrap legal">
+    <header class="legal-hero">
+      <p class="legal-kicker">
+        <span class="priority">Small print</span>
+        <span class="label label-lg muted">{kicker}</span>
+      </p>
+      <h1 class="legal-h1" id="top">{doc.title}</h1>
+      <div class="legal-intro">
+        <p class="legal-lede">
+          Plain English, as short as we could make it. If something here doesn’t match how sendm8 actually behaves, that’s a bug: tell us at{' '}
+          <a href={`mailto:${site.helloEmail}`}>{site.helloEmail}</a>.
+        </p>
+        {
+          doc.placeholders.length > 0 && (
+            <div class="notice notice-warn legal-todo" role="note">
+              <span class="notice-icon">
+                <Icon name="alert" size={18} />
+              </span>
+              <p class="notice-title">Draft: {doc.placeholders.length} details still to fill in</p>
+              <div class="notice-body">
+                {doc.notes.map((n) => {
+                  const text = n.replace(/^TEMPLATE:\s*/i, '');
+                  return <p>{text.charAt(0).toUpperCase() + text.slice(1)}</p>;
+                })}
+                <p>
+                  Highlighted like <mark class="todo">{'{{THIS}}'}</mark>: {doc.placeholders.join(', ').toLowerCase()}.
+                </p>
+              </div>
+            </div>
+          )
+        }
+      </div>
+    </header>
+
+    <div class="legal-grid">
+      <DocsNav sections={sections} editUrl={`${site.repo}/edit/main/${repoPath}`} heading="Small print" />
+      <article class="legal-body prose" set:html={doc.html} />
+    </div>
+
+    <footer class="legal-foot">
+      <p class="label muted">{updated.includes('{{') ? 'Not dated yet' : `Last updated ${updated}`}</p>
+      <a class="link-signal" href={sibling.href}>{sibling.label} <Icon name="arrow-right" size={16} /></a>
+    </footer>
+  </div>
+</Marketing>
+
+<style>
+  .legal {
+    padding-bottom: var(--section);
+  }
+  .legal-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    grid-template-areas: 'kicker kicker' 'title intro';
+    column-gap: clamp(2rem, 5vw, 5rem);
+    align-items: end;
+    padding-block: clamp(2.5rem, 6vw, 5rem) clamp(2rem, 4vw, 3.5rem);
+  }
+  .legal-kicker {
+    grid-area: kicker;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3);
+  }
+  .legal-h1 {
+    grid-area: title;
+    margin-top: var(--s-5);
+    font-family: var(--font-display);
+    font-stretch: 64%;
+    font-weight: 900;
+    font-size: clamp(3.6rem, 8.5vw, 8rem);
+    line-height: 0.84;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+  }
+  .legal-intro {
+    grid-area: intro;
+    min-width: 0;
+    display: grid;
+    gap: var(--s-4);
+  }
+  .legal-lede {
+    font-size: var(--fs-lg);
+    line-height: 1.45;
+    max-width: 44ch;
+  }
+  .legal-lede a {
+    color: var(--signal-text);
+    font-weight: 600;
+  }
+  .legal-grid {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 5.5rem);
+    align-items: start;
+  }
+  .legal-body {
+    min-width: 0;
+    max-width: 70ch;
+    padding-top: var(--s-7);
+  }
+
+  /* Long-form type, matching the docs page */
+  .prose {
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+  .prose > :global(* + *) {
+    margin-top: 1em;
+  }
+  .prose :global(h2) {
+    margin-top: clamp(2.5rem, 5vw, 3.5rem);
+    padding-top: var(--s-4);
+    border-top: var(--bw-heavy) solid var(--line-strong);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+    line-height: 1;
+    scroll-margin-top: 1rem;
+  }
+  .prose > :global(h2:first-child),
+  .prose > :global(p:first-child) {
+    margin-top: 0;
+  }
+  .prose :global(h3) {
+    margin-top: 1.8em;
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+  .prose :global(ul) {
+    padding-left: 1.3rem;
+  }
+  .prose :global(li + li) {
+    margin-top: 0.45em;
+  }
+  .prose :global(li::marker) {
+    color: var(--signal-text);
+  }
+  .prose :global(a) {
+    color: var(--signal-text);
+    font-weight: 600;
+  }
+  .prose :global(strong) {
+    font-weight: 650;
+  }
+  .prose :global(:not(pre) > code) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .prose :global(.table-wrap) {
+    margin-top: 1.5em;
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+  }
+
+  /* Operator TODOs: loud on purpose, so nobody ships them by accident */
+  .legal :global(mark.todo) {
+    padding: 0.05em 0.35em;
+    border: 1.5px dashed var(--ink-900);
+    background: var(--accent);
+    color: var(--ink-900);
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .legal-todo .notice-body p + p {
+    margin-top: var(--s-2);
+  }
+
+  .legal-foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-3);
+    margin-top: var(--s-8);
+    padding-top: var(--s-4);
+    border-top: var(--bw-strong) solid var(--line-strong);
+  }
+  .legal-foot a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  @media (max-width: 1000px) {
+    .legal-hero {
+      grid-template-columns: 1fr;
+      grid-template-areas: 'kicker' 'title' 'intro';
+      row-gap: var(--s-5);
+    }
+    .legal-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+    .legal-body {
+      padding-top: var(--s-6);
+    }
+    .prose :global(h2) {
+      scroll-margin-top: 4rem;
+    }
+  }
+</style>

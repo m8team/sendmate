@@ -1,0 +1,320 @@
+---
+/**
+ * Docs navigation: a sticky sorting rack of section links on desktop,
+ * and a sticky "Jump to" disclosure on small screens. A tiny scroll-spy marks the current section.
+ */
+import Icon from '../ui/Icon.astro';
+import { site } from '../../config/site';
+
+interface Props {
+  sections: { id: string; title: string }[];
+  editUrl: string;
+  /** Small label above the rack, e.g. "Quickstart". */
+  heading?: string;
+}
+const { sections, editUrl, heading = 'Quickstart' } = Astro.props;
+const num = (i: number) => String(i + 1).padStart(2, '0');
+---
+
+<aside class="dn" data-docs-nav>
+  <!-- Small screens -->
+  <details class="dn-jump" data-docs-jump>
+    <summary>
+      <span class="label dn-jump-label">Jump to</span>
+      <span class="dn-jump-current">
+        <span class="mono dn-jump-no" data-docs-current-no>{num(0)}</span>
+        <span data-docs-current>{sections[0].title}</span>
+      </span>
+      <span class="dn-chev" aria-hidden="true"><Icon name="arrow-down" size={16} strokeWidth={2} /></span>
+    </summary>
+    <nav aria-label="Docs sections">
+      <ol class="dn-jump-list" role="list">
+        {
+          sections.map((s, i) => (
+            <li>
+              <a href={`#${s.id}`} data-docs-link={s.id} data-title={s.title}>
+                <span class="mono">{num(i)}</span>
+                {s.title}
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+  </details>
+
+  <!-- Desktop -->
+  <nav class="dn-rack" aria-label="On this page">
+    <p class="label dn-head">{heading} · On this page</p>
+    <ol class="dn-list" role="list">
+      {
+        sections.map((s, i) => (
+          <li>
+            <a href={`#${s.id}`} data-docs-link={s.id} data-title={s.title}>
+              <span class="mono dn-no">{num(i)}</span>
+              <span>{s.title}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+    <div class="dn-foot">
+      <a href={editUrl} rel="noopener" target="_blank">
+        <Icon name="github" size={15} /> Edit this page
+      </a>
+      <a href={`mailto:${site.helloEmail}`}>
+        <Icon name="mail" size={15} /> Stuck? Ask a person
+      </a>
+    </div>
+  </nav>
+</aside>
+
+<style>
+  .dn {
+    position: sticky;
+    top: 4.25rem;
+    align-self: start;
+    z-index: 5;
+  }
+
+  /* ---------- Desktop rack ---------- */
+  .dn-rack {
+    padding-top: var(--s-6);
+    max-height: calc(100dvh - 4.25rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    padding-bottom: var(--s-6);
+  }
+  .dn-head {
+    color: var(--fg-muted);
+    padding-bottom: var(--s-3);
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .dn-list li {
+    border-bottom: 1px solid var(--line);
+  }
+  .dn-list a {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    align-items: baseline;
+    padding: 0.55rem 0.5rem 0.55rem 0;
+    font-size: var(--fs-sm);
+    line-height: 1.3;
+    color: var(--fg-muted);
+    text-decoration: none;
+    transition:
+      color var(--dur-1),
+      padding var(--dur-2) var(--ease-out);
+  }
+  .dn-no {
+    font-size: var(--fs-2xs);
+    color: var(--fg-subtle);
+  }
+  .dn-list a:hover {
+    color: var(--fg);
+  }
+  .dn-list a[aria-current='location'] {
+    color: var(--fg);
+    font-weight: 600;
+    padding-left: 0.7rem;
+  }
+  .dn-list a[aria-current='location']::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.45rem;
+    bottom: 0.45rem;
+    width: 4px;
+    background: var(--signal);
+  }
+  .dn-list a[aria-current='location'] .dn-no {
+    color: var(--signal-text);
+  }
+  .dn-foot {
+    display: grid;
+    gap: var(--s-2);
+    margin-top: var(--s-5);
+    font-size: var(--fs-xs);
+  }
+  .dn-foot a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--fg-muted);
+  }
+  .dn-foot a:hover {
+    color: var(--fg);
+  }
+
+  /* ---------- Small screens: jump bar ---------- */
+  .dn-jump {
+    display: none;
+  }
+  @media (max-width: 1000px) {
+    .dn {
+      margin-inline: calc(var(--gutter) * -1);
+    }
+    .dn-rack {
+      display: none;
+    }
+    .dn-jump {
+      position: relative;
+      display: block;
+      background: var(--bg);
+      border-block: var(--bw-strong) solid var(--line-strong);
+    }
+    .dn-jump summary {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: var(--s-3);
+      min-height: 3.1rem;
+      padding: 0.4rem var(--gutter);
+      cursor: pointer;
+      list-style: none;
+    }
+    .dn-jump summary::-webkit-details-marker {
+      display: none;
+    }
+    .dn-jump summary:focus-visible {
+      outline-offset: -4px;
+      box-shadow: none;
+    }
+    .dn-jump-label {
+      padding: 0.25rem 0.45rem;
+      background: var(--fg);
+      color: var(--bg);
+    }
+    .dn-jump-current {
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+      min-width: 0;
+      font-weight: 600;
+      font-size: var(--fs-sm);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dn-jump-current > span:last-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dn-jump-no {
+      font-size: var(--fs-2xs);
+      color: var(--signal-text);
+    }
+    .dn-chev {
+      display: grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      border: 1.5px solid var(--line-strong);
+      border-radius: 50%;
+      transition: transform var(--dur-2) var(--ease-out);
+    }
+    .dn-jump[open] .dn-chev {
+      transform: rotate(180deg);
+    }
+    .dn-jump > nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      background: var(--bg);
+      border-bottom: var(--bw-strong) solid var(--line-strong);
+    }
+    .dn-jump-list {
+      max-height: min(60dvh, 30rem);
+      overflow-y: auto;
+      padding: 0 var(--gutter) var(--s-3);
+      border-top: 1px dashed var(--line);
+      box-shadow: var(--shadow-paper);
+    }
+    .dn-jump-list li + li {
+      border-top: 1px solid var(--line);
+    }
+    .dn-jump-list a {
+      display: grid;
+      grid-template-columns: 2rem 1fr;
+      align-items: baseline;
+      padding-block: 0.7rem;
+      font-family: var(--font-display);
+      font-stretch: var(--stretch-semi);
+      font-weight: 800;
+      font-size: 1.15rem;
+      line-height: 1.15;
+      text-decoration: none;
+    }
+    .dn-jump-list a .mono {
+      font-family: var(--font-mono);
+      font-stretch: 100%;
+      font-weight: 500;
+      font-size: var(--fs-2xs);
+      color: var(--fg-subtle);
+    }
+    .dn-jump-list a[aria-current='location'] {
+      color: var(--signal-text);
+    }
+    .dn-jump-list a[aria-current='location'] .mono {
+      color: var(--signal-text);
+    }
+  }
+</style>
+
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-docs-nav]');
+  if (nav) {
+    const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>('[data-docs-link]'));
+    const ids = Array.from(new Set(links.map((a) => a.dataset.docsLink!)));
+    const sections = ids.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => !!el);
+    const jump = nav.querySelector<HTMLDetailsElement>('[data-docs-jump]');
+    const currentText = nav.querySelector<HTMLElement>('[data-docs-current]');
+    const currentNo = nav.querySelector<HTMLElement>('[data-docs-current-no]');
+    let active = '';
+
+    const setActive = (id: string) => {
+      if (id === active) return;
+      active = id;
+      links.forEach((a) => {
+        if (a.dataset.docsLink === id) a.setAttribute('aria-current', 'location');
+        else a.removeAttribute('aria-current');
+      });
+      const i = ids.indexOf(id);
+      const link = links.find((a) => a.dataset.docsLink === id);
+      if (currentText && link) currentText.textContent = link.dataset.title ?? "";
+      if (currentNo && i >= 0) currentNo.textContent = String(i + 1).padStart(2, '0');
+    };
+
+    // Pick the last section whose top has passed a line 30% down the viewport.
+    const update = () => {
+      const line = window.innerHeight * 0.3;
+      let current = sections[0]?.id ?? '';
+      for (const s of sections) {
+        if (s.getBoundingClientRect().top <= line) current = s.id;
+      }
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+        current = sections[sections.length - 1]?.id ?? current;
+      }
+      setActive(current);
+    };
+
+    const io = new IntersectionObserver(update, { rootMargin: '0px 0px -70% 0px', threshold: [0, 1] });
+    sections.forEach((s) => io.observe(s));
+    window.addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
+    update();
+
+    links.forEach((a) =>
+      a.addEventListener('click', () => {
+        if (jump) jump.open = false;
+      }),
+    );
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && jump?.open) {
+        jump.open = false;
+        jump.querySelector('summary')?.focus();
+      }
+    });
+  }
+</script>

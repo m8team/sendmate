@@ -1,0 +1,62 @@
+---
+/**
+ * The sign-off at the bottom of the pricing page: get an endpoint, read the docs, or self-host.
+ */
+import Icon from '../ui/Icon.astro';
+import { site } from '../../config/site';
+---
+
+<!-- Closing -->
+<section class="closing" aria-labelledby="closing-title">
+  <div class="wrap closing-inner">
+    <h2 id="closing-title" class="display closing-h">Postage paid. <br /><span class="muted">Go and send something.</span></h2>
+    <div class="closing-actions">
+      <a class="btn btn-signal btn-lg" href="/app/onboarding">Get your endpoint <Icon name="arrow-right" /></a>
+      <a class="btn btn-outline btn-lg" href="/docs">Read the quickstart</a>
+      <a class="closing-link" href={site.deployUrl} rel="noopener" target="_blank">
+        Or self-host it on your own Cloudflare account <Icon name="arrow-up-right" size={14} strokeWidth={2} />
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .closing {
+    padding-block: var(--section);
+    border-top: 1px solid var(--line);
+  }
+  .closing-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: var(--s-6);
+    align-items: end;
+  }
+  .closing-h {
+    font-size: clamp(3rem, 7.5vw, 7rem);
+  }
+  .closing-actions {
+    display: grid;
+    gap: var(--s-3);
+    justify-items: start;
+  }
+  .closing-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: var(--s-2);
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+
+  @media (max-width: 1000px) {
+    .closing-inner {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 520px) {
+    .closing-actions,
+    .closing-actions .btn {
+      width: 100%;
+    }
+  }
+</style>

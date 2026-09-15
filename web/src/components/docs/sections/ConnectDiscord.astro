@@ -1,0 +1,38 @@
+---
+/**
+ * Bay 09, connect Discord (and how Slack and Telegram compare).
+ */
+import Callout from '../Callout.astro';
+import DiscordPreview from '../DiscordPreview.astro';
+import DocsSection from './DocsSection.astro';
+---
+
+<DocsSection id="discord" kicker="About 2 minutes">
+  <div class="prose">
+    <p>
+      Send every submission to a Discord channel. It uses a Discord webhook, so there’s no bot to invite and no permissions to grant. You’ll need{' '}
+      <strong>Manage Webhooks</strong> on the server.
+    </p>
+  </div>
+
+  <ol class="steps">
+    <li>In Discord, open the server menu and choose <strong>Server Settings → Integrations</strong>.</li>
+    <li>Click <strong>Webhooks</strong>, then <strong>New Webhook</strong>.</li>
+    <li>Give it a name (sendm8 is fine), pick the channel submissions should go to, and click <strong>Copy Webhook URL</strong>.</li>
+    <li>
+      In sendm8, open <strong>Form settings → Channels → Discord</strong> and paste it. It should start with{' '}
+      <code>https://discord.com/api/webhooks/</code>.
+    </li>
+    <li>Hit <strong>Send test</strong>. A test message should appear in the channel within a couple of seconds.</li>
+  </ol>
+
+  <h3 class="ds-h3">What it looks like</h3>
+  <DiscordPreview />
+
+  <Callout title="Slack and Telegram work the same way" kind="info">
+    <p>
+      For Slack, create an incoming webhook for your channel and paste the <code>https://hooks.slack.com/…</code> URL. For Telegram, the dashboard walks
+      you through making a bot and finding your chat id. Every channel has a Send test button, and none of them count towards the email limit.
+    </p>
+  </Callout>
+</DocsSection>

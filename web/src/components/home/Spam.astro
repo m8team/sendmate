@@ -1,0 +1,207 @@
+---
+import Icon from '../ui/Icon.astro';
+import { limits } from '../../config/site';
+
+const layers = [
+  { name: 'Honeypot', text: 'A hidden field only bots fill in. Fill it, and you’re out. Costs your real visitors nothing.', verdict: 'Filled in', hit: true },
+  { name: 'Rate limits & blocklists', text: `${limits.ratePerIpPerMinute} a minute per visitor, per form. Repeat offenders get blocked by hashed IP, never stored raw.`, verdict: 'Passed', hit: false },
+  { name: 'Heuristics', text: 'Link-stuffing, known spam phrases, throwaway email domains, keyboard-mash gibberish.', verdict: '3 links, “guaranteed”', hit: true },
+  { name: 'Turnstile challenge', text: 'Borderline? The visitor gets a quick Cloudflare Turnstile check on our page. No puzzles about traffic lights.', verdict: 'Skipped', hit: false },
+  { name: 'AI score', text: 'Optional. Runs after we store the submission, so it never slows anyone down.', verdict: '0.97', hit: true },
+];
+---
+
+<section class="section spam" id="spam" aria-labelledby="spam-title">
+  <div class="wrap">
+    <p class="bay label label-lg"><span class="bay-no">05</span> Sorting office rules</p>
+
+    <div class="spam-head">
+      <h2 id="spam-title" class="h1">Spam gets <br /><span class="spam-red">returned to sender.</span></h2>
+      <p class="lede">Five layers, cheapest first. Most bots fall at the first one. The rest never make it to your inbox or your Discord.</p>
+    </div>
+
+    <div class="spam-grid">
+      <div class="spam-copy">
+        <ol class="sieve" role="list">
+          {
+            layers.map((l, i) => (
+              <li class="sieve-row" style={`--i:${i}`}>
+                <span class="sieve-no mono">{i + 1}</span>
+                <div class="sieve-body">
+                  <h3 class="h4">{l.name}</h3>
+                  <p>{l.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+        <p class="spam-foot muted">We don’t delete spam straight away. It sits in your spam folder for {limits.spamRetentionDays} days, and one click on “Not spam” delivers it as normal.</p>
+      </div>
+
+      <aside class="spam-exhibit" aria-label="Example: a spam submission, and why it was caught">
+        <p class="label muted exhibit-label">Exhibit A · an actual kind of message you’ll never see</p>
+        <div class="letter">
+          <div class="airmail" aria-hidden="true"></div>
+          <div class="letter-body">
+            <dl class="letter-fields">
+              <div><dt class="label">From</dt><dd>Top SEO Deals &lt;winner@mailinator.com&gt;</dd></div>
+              <div><dt class="label">Message</dt><dd>GUARANTEED page 1 on Google!!! Visit https://spam.example and https://bit.ly/x and https://bit.ly/y</dd></div>
+              <div><dt class="label">_gotcha</dt><dd class="mono">http://i-am-a-bot.example</dd></div>
+            </dl>
+            <span class="stamp stamp-lg exhibit-stamp" aria-hidden="true">Return to sender</span>
+          </div>
+          <ul class="checks" role="list" aria-label="How each layer judged it">
+            {
+              layers.map((l) => (
+                <li class:list={[l.hit && 'hit']}>
+                  <span>{l.name}</span>
+                  <span class="mono">{l.hit ? '✕' : '·'} {l.verdict}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div class="notice notice-signal spam-notice">
+          <span class="notice-icon"><Icon name="shield" size={20} /></span>
+          <p class="notice-title">Phishing guard</p>
+          <div class="notice-body">
+            <p>Forms that ask for passwords, card numbers or seed phrases are held for review, not delivered. Free form backends get used for phishing. Not this one.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<style>
+  .spam {
+    --section: clamp(3rem, 5vw, 4.5rem);
+  }
+  .spam-head > *,
+  .spam-grid > * {
+    min-width: 0;
+  }
+  .spam-head {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: var(--s-6);
+    align-items: end;
+    margin-top: var(--s-6);
+  }
+  .spam-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    margin-top: var(--s-6);
+    align-items: start;
+  }
+  .spam-red {
+    color: var(--signal);
+  }
+  .spam-head .lede {
+    color: var(--fg-muted);
+    font-size: var(--fs-md);
+  }
+  /* each layer is narrower than the last: a funnel you can read */
+  .sieve-row {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr;
+    gap: var(--s-3);
+    width: calc(100% - var(--i) * 5%);
+    padding: var(--s-3) var(--s-4) var(--s-3) 0;
+    border-top: 2px solid var(--line-strong);
+  }
+  .sieve-row:last-child {
+    border-bottom: 2px solid var(--line-strong);
+  }
+  .sieve-no {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--signal-text);
+    padding-top: 0.15rem;
+  }
+  .sieve-body p {
+    margin-top: 0.25rem;
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .spam-exhibit {
+    position: sticky;
+    top: 6rem;
+  }
+  .exhibit-label {
+    margin-bottom: var(--s-3);
+  }
+  .letter {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-paper);
+    transform: rotate(-1deg);
+  }
+  .letter-body {
+    position: relative;
+    padding: var(--s-5);
+  }
+  .letter-fields {
+    display: grid;
+    gap: var(--s-3);
+  }
+  .letter-fields dd {
+    margin: 0.15rem 0 0;
+    font-size: var(--fs-sm);
+    overflow-wrap: anywhere;
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in srgb, var(--signal) 70%, transparent);
+    text-decoration-thickness: 1.5px;
+    color: var(--fg-muted);
+  }
+  .letter-fields dt {
+    color: var(--fg-subtle);
+  }
+  .exhibit-stamp {
+    position: absolute;
+    right: var(--s-4);
+    top: 50%;
+    --stamp-rotate: -14deg;
+    /* --signal, not the brighter --signal-mark, so the words pass AA on the letter in both themes */
+    --stamp-color: var(--signal);
+    font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+  }
+  .checks {
+    border-top: 2px dashed var(--line);
+    padding: var(--s-3) var(--s-5) var(--s-4);
+    font-size: var(--fs-xs);
+  }
+  .checks li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-3);
+    padding-block: 0.3rem;
+    color: var(--fg-muted);
+  }
+  .checks li.hit .mono {
+    color: var(--signal-text);
+    font-weight: 600;
+  }
+  .spam-notice {
+    margin-top: var(--s-5);
+  }
+  .spam-foot {
+    max-width: 60ch;
+    margin-top: var(--s-4);
+    font-size: var(--fs-sm);
+  }
+  @media (max-width: 960px) {
+    .spam-head,
+    .spam-grid {
+      grid-template-columns: 1fr;
+    }
+    .spam-exhibit {
+      position: static;
+    }
+    .sieve-row {
+      width: calc(100% - var(--i) * 3%);
+    }
+  }
+</style>

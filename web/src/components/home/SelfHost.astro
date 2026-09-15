@@ -1,0 +1,124 @@
+---
+import CodeBlock from '../ui/CodeBlock.astro';
+import Icon from '../ui/Icon.astro';
+import Barcode from '../brand/Barcode.astro';
+import { site } from '../../config/site';
+
+const terminal = `
+git clone ${site.repo}
+cd sendm8 && npm install
+npx wrangler d1 create sendm8
+npm run deploy
+# ✓ Deployed to https://forms.yourdomain.com`;
+---
+
+<section class="band-ink selfhost" id="self-host" aria-labelledby="sh-title">
+  <div class="wrap section">
+    <p class="bay label label-lg"><span class="bay-no">06</span> Open source</p>
+
+    <div class="sh-grid">
+      <div class="sh-copy">
+        <h2 id="sh-title" class="display sh-h">Run your own <span>post office.</span></h2>
+        <p class="lede">sendm8 is open source, all of it. The code on sendm8.com is the code on GitHub. There’s no “enterprise edition” hiding the good bits.</p>
+        <ul class="sh-facts label" role="list" aria-label="What self-hosting takes">
+          <li>One Worker + one D1 database</li>
+          <li>Fits Cloudflare’s free plan</li>
+          <li>{site.license}</li>
+          <li>Your limits, one config file</li>
+        </ul>
+        <div class="sh-actions">
+          <a class="btn btn-lg cf-btn" href={site.deployUrl} rel="noopener" target="_blank">
+            <Icon name="cloudflare" size={22} /> Deploy to Cloudflare
+          </a>
+          <a class="btn btn-outline btn-lg" href={site.repo} rel="noopener" target="_blank">
+            <Icon name="github" /> View the source
+          </a>
+        </div>
+      </div>
+
+      <div class="sh-side">
+        <CodeBlock code={terminal} lang="bash" filename="terminal" />
+        <div class="sh-foot">
+          <Barcode value="SM8-OPEN-SOURCE" height={28} />
+          <p class="label muted">If we ever vanish, your forms don’t have to.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .selfhost .section {
+    --section: clamp(3rem, 5vw, 4.5rem);
+  }
+  .sh-grid > * {
+    min-width: 0;
+  }
+  .sh-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    margin-top: var(--s-6);
+    align-items: center;
+  }
+  .sh-h {
+    font-size: clamp(2.8rem, 5.6vw, 5.5rem);
+  }
+  .sh-h span {
+    display: block;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--fg);
+  }
+  .sh-copy .lede {
+    margin-top: var(--s-4);
+    color: var(--fg-muted);
+    max-width: 52ch;
+    font-size: var(--fs-md);
+  }
+  .sh-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-1) 0;
+    margin-top: var(--s-4);
+    color: var(--fg);
+  }
+  .sh-facts li:not(:last-child)::after {
+    content: '·';
+    margin-inline: 0.6em;
+    color: var(--fg-muted);
+  }
+  .sh-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-5);
+  }
+  .cf-btn {
+    --btn-bg: #f6821f;
+    --btn-border: #f6821f;
+    --btn-fg: var(--ink-900);
+    --btn-shadow: var(--paper-100);
+  }
+  .sh-side {
+    /* Shiki comments default to --fg-subtle from :root, which is too dim on the ink band. */
+    --astro-code-token-comment: var(--fg-muted);
+  }
+  .sh-side :global(.codeblock) {
+    background: var(--ink-850);
+  }
+  .sh-foot {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+    margin-top: var(--s-4);
+    color: var(--fg);
+  }
+  .sh-foot :global(.barcode) {
+    flex: none;
+  }
+  @media (max-width: 960px) {
+    .sh-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

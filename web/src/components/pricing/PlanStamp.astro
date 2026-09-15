@@ -1,0 +1,122 @@
+---
+/**
+ * The one plan, drawn as an oversized perforated postage stamp.
+ * Decorative summary: the same facts are spelled out in text on the page.
+ */
+import Postmark from '../brand/Postmark.astro';
+import { limits, fmt } from '../../config/site';
+---
+
+<figure class="plan" aria-label="The sendm8 plan: 0.00, everything included, for everyone">
+  <div class="plan-stamp">
+    <div class="plan-inner">
+      <div class="plan-top">
+        <span class="label">sendm8 · The plan</span>
+        <span class="label">No. 001 of 001</span>
+      </div>
+      <p class="plan-price" aria-hidden="true"><span class="plan-cur">£$€</span>0<span class="plan-dot">.</span>00</p>
+      <p class="plan-name caps-wide">Everything, for everyone</p>
+      <ul class="plan-list mono" role="list">
+        <li><span>Forms</span><span>{fmt.n(limits.forms)}</span></li>
+        <li><span>Discord · Slack · webhooks</span><span>{fmt.n(limits.channelDeliveries)}</span></li>
+        <li><span>Instant emails, our sender</span><span>{limits.emailsPerDay}/day</span></li>
+        <li><span>Emails, your Resend key</span><span>Unlimited</span></li>
+      </ul>
+    </div>
+  </div>
+  <Postmark class="plan-postmark" top="SENDM8.COM" bottom="NO CARD NEEDED" center="PAID" sub="0.00" size={104} />
+</figure>
+
+<style>
+  .plan {
+    position: relative;
+    width: min(100%, 27rem);
+    margin-inline: auto;
+  }
+  .plan-stamp {
+    --perf: 10px;
+    padding: 16px;
+    background: var(--signal);
+    transform: rotate(2.5deg);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box no-repeat,
+      radial-gradient(circle var(--perf) at var(--perf) var(--perf), #0000 98%, #000) calc(var(--perf) * -1) calc(var(--perf) * -1) / calc(var(--perf) * 2.6) calc(var(--perf) * 2.6) round;
+    mask:
+      linear-gradient(#000 0 0) content-box no-repeat,
+      radial-gradient(circle var(--perf) at var(--perf) var(--perf), #0000 98%, #000) calc(var(--perf) * -1) calc(var(--perf) * -1) / calc(var(--perf) * 2.6) calc(var(--perf) * 2.6) round;
+  }
+  .plan-inner {
+    --fg: var(--on-signal);
+    color: var(--on-signal);
+    border: 2px solid var(--on-signal);
+    padding: clamp(1rem, 3vw, 1.6rem);
+    display: grid;
+    gap: var(--s-3);
+  }
+  .plan-top {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+  .plan-price {
+    position: relative;
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: clamp(7rem, 22vw, 12.5rem);
+    line-height: 0.8;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    padding-top: 0.35em;
+  }
+  .plan-cur {
+    position: absolute;
+    top: 0.2rem;
+    left: 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+  }
+  .plan-dot {
+    margin-inline: 0.01em;
+  }
+  .plan-name {
+    font-size: clamp(0.95rem, 2vw, 1.15rem);
+    line-height: 1.1;
+    padding-top: var(--s-2);
+    border-top: 2px solid var(--on-signal);
+  }
+  .plan-list {
+    font-size: var(--fs-xs);
+    display: grid;
+  }
+  .plan-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-3);
+    padding-block: 0.3rem;
+    border-bottom: 1px dashed color-mix(in srgb, var(--on-signal) 45%, transparent);
+  }
+  .plan-list li span:last-child {
+    font-weight: 600;
+    text-align: right;
+  }
+  .plan :global(.plan-postmark) {
+    position: absolute;
+    left: -4.5rem;
+    bottom: -3.5rem;
+    width: min(250px, 62%);
+    z-index: 1;
+    transform: rotate(-12deg);
+    pointer-events: none;
+  }
+  @media (max-width: 640px) {
+    .plan :global(.plan-postmark) {
+      left: -1rem;
+      bottom: -2.6rem;
+      width: 62%;
+    }
+  }
+</style>

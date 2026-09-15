@@ -1,0 +1,78 @@
+---
+/**
+ * Bay 05, AJAX without writing JavaScript: the data-sendm8 helper script.
+ */
+import CodeBlock from '../../ui/CodeBlock.astro';
+import Callout from '../Callout.astro';
+import DocsSection from './DocsSection.astro';
+import { site } from '../../../config/site';
+import { FORM } from './docsSections';
+
+const helperSnippet = `
+<script src="${site.url}/s/v1.js" defer></script>
+
+<form action="${FORM}" method="POST"
+      data-sendm8 data-sendm8-success="Thanks! We’ll be in touch.">
+  <label>Your email <input name="email" type="email" required></label>
+  <label>Message <textarea name="message" required></textarea></label>
+  <button>Send</button>
+</form>`;
+
+const helperEvents = `
+const form = document.querySelector("form[data-sendm8]");
+
+form.addEventListener("sendm8:success", (event) => {
+  console.log("Stored as", event.detail.id);
+});
+
+form.addEventListener("sendm8:error", (event) => {
+  console.warn(event.detail.code, event.detail.message);
+});`;
+
+/** Rounded up from public/s/v1.js, which is shipped unminified so anyone can read it. */
+const helperKb = 6;
+---
+
+<DocsSection id="ajax-helper" kicker="One script tag">
+  <div class="prose">
+    <p>
+      Want the stay-on-the-page feel without writing the <code>fetch</code> yourself? Add our tiny helper script and a <code>data-sendm8</code> attribute to your
+      form. It sends the form in the background (file uploads included), disables the button while it’s sending, and shows a message when it’s done.
+    </p>
+  </div>
+
+  <CodeBlock code={helperSnippet} lang="html" filename="contact.html" highlight={[1, 4]} class="wide" />
+
+  <div class="prose">
+    <ul>
+      <li>
+        <strong>No JavaScript? Still works.</strong> The form posts the normal way and visitors land on your thank-you page, so nobody gets stuck.
+      </li>
+      <li>
+        <code>data-sendm8-success</code>: the message to show, or a selector like <code>#thanks</code> for an element to reveal. The default is “Thanks! Message
+        sent.” The form is cleared afterwards.
+      </li>
+      <li>
+        <code>data-sendm8-error</code>: a selector for where errors go. Without it we add a <code>role="alert"</code> paragraph to the form. The text is the API’s own
+        plain-English error, like “This form isn’t accepting submissions right now.”
+      </li>
+      <li>
+        Listen for <code>sendm8:success</code> (<code>event.detail.id</code>) and <code>sendm8:error</code> (<code>event.detail.message</code>,
+        <code>code</code>, <code>status</code>) on the form. Call <code>event.preventDefault()</code> to skip the built-in message and do your own thing.
+      </li>
+      <li>
+        Opt a form out with <code>data-sendm8="off"</code>. For a manual send, <code>window.sendm8.submit(form)</code> returns a promise of
+        <code>{'{ ok, id, error }'}</code>.
+      </li>
+    </ul>
+  </div>
+
+  <CodeBlock code={helperEvents} lang="js" filename="optional.js" compact class="wide" />
+
+  <Callout title="Small and dependency-free" kind="info">
+    <p>
+      About {helperKb} KB, no libraries, works in every browser with <code>fetch</code>. It only touches forms with <code>data-sendm8</code> whose
+      <code>action</code> is a sendm8 <code>/f/</code> endpoint, and adds nothing to the page apart from an optional <code>window.sendm8</code>.
+    </p>
+  </Callout>
+</DocsSection>

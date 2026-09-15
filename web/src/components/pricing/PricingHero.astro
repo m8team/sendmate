@@ -1,0 +1,126 @@
+---
+/**
+ * Pricing hero: the one-plan headline, the on-this-page jump links and the plan stamp.
+ */
+import PlanStamp from './PlanStamp.astro';
+---
+
+<!-- Hero -->
+<section class="hero" aria-labelledby="pricing-title">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="hero-kicker">
+        <span class="priority">Pricing</span>
+        <span class="label label-lg muted">One plan · Every feature · Every account</span>
+      </p>
+      <h1 id="pricing-title" class="hero-h1">
+        <span>There’s one plan.</span>
+        <span class="hero-red">It’s free.</span>
+      </h1>
+      <p class="hero-lede">
+        No Pro, no Team, no “contact sales”. Everyone gets the whole of sendm8. What there is instead is a short, honest list of fair-use limits,
+        because the email and storage we run on are shared by everyone.
+      </p>
+      <nav class="hero-jump" aria-label="On this page">
+        <a href="#rates"><span class="mono">01</span> Rates</a>
+        <a href="#fair-use"><span class="mono">02</span> Fair use</a>
+        <a href="#calculator"><span class="mono">03</span> Will I hit a limit?</a>
+        <a href="#byok"><span class="mono">04</span> Your own key</a>
+        <a href="#faq"><span class="mono">05</span> Questions</a>
+      </nav>
+    </div>
+    <div class="hero-stamp">
+      <PlanStamp />
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ---------- Hero ---------- */
+  .hero {
+    padding-block: clamp(2.5rem, 6vw, 5.5rem) clamp(4rem, 8vw, 7rem);
+    overflow: clip;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(2.5rem, 5vw, 5rem);
+    align-items: center;
+  }
+  .hero-kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3);
+  }
+  .hero-h1 {
+    margin-top: var(--s-5);
+    font-family: var(--font-display);
+    font-stretch: 66%;
+    font-weight: 900;
+    font-size: clamp(3.6rem, 9.4vw, 9.5rem);
+    line-height: 0.84;
+    letter-spacing: -0.01em;
+  }
+  .hero-h1 span {
+    display: block;
+  }
+  .hero-red {
+    color: var(--signal);
+  }
+  .hero-lede {
+    margin-top: var(--s-6);
+    max-width: 46ch;
+    font-size: var(--fs-lg);
+    line-height: 1.45;
+  }
+  .hero-jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin-top: var(--s-6);
+    border-top: 1px solid var(--line-strong);
+    border-left: 1px solid var(--line-strong);
+    width: fit-content;
+    max-width: 100%;
+  }
+  .hero-jump a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.85rem;
+    border-right: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line-strong);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .hero-jump a:hover {
+    background: var(--bg-raised);
+  }
+  .hero-jump .mono {
+    font-size: var(--fs-2xs);
+    color: var(--signal-text);
+  }
+  .hero-stamp {
+    padding-bottom: var(--s-6);
+  }
+
+  @media (max-width: 1000px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+    }
+    .hero-stamp {
+      max-width: 26rem;
+      padding-inline: var(--s-5);
+    }
+  }
+  @media (max-width: 520px) {
+    .hero-jump {
+      width: 100%;
+    }
+    .hero-jump a {
+      flex: 1 1 50%;
+    }
+  }
+</style>

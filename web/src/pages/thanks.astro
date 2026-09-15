@@ -1,0 +1,210 @@
+---
+/**
+ * Default thank-you page. Seen by other people's visitors after they submit a form
+ * that has no redirect, so it stays quiet and takes on the site's name and colour.
+ *
+ * Query params (all optional, read client-side):
+ *   name    Site name, e.g. "Achterberg Studio"
+ *   back    URL for the "← Back to <host>" link (shown only for http/https URLs)
+ *   accent  Hex colour, e.g. #335c67 (used for marks, never for text)
+ *   ref     Tracking number to quote to the site owner
+ */
+import System from '../layouts/System.astro';
+import { site } from '../config/site';
+---
+
+<System title="Thanks" description="Your message has been sent." brand={false} centre>
+  <div class="wrap ty-wrap">
+    <article class="ty" data-ty aria-labelledby="ty-title">
+      <div class="ty-main">
+        <p class="ty-site label label-lg">
+          <span class="ty-dot" aria-hidden="true"></span>
+          <span data-ty-site>Message sent</span>
+        </p>
+        <h1 id="ty-title" class="ty-h1"><span>Thanks.</span> Your message is on its way.</h1>
+        <p class="ty-body" data-ty-body>It’s been passed on to whoever runs the site. If they need to get back to you, they’ll use the details you gave.</p>
+        <a class="ty-back" href="/" data-ty-back hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"></path></svg>
+          <span data-ty-back-label>Back</span>
+        </a>
+      </div>
+
+      <footer class="ty-stub">
+        <p class="ty-ref label">
+          <span>Received <span class="mono" data-ty-time>just now</span></span>
+          <span data-ty-ref-wrap hidden> · Ref <span class="mono" data-ty-ref></span></span>
+        </p>
+        <p class="ty-links">
+          <a href="/" class="ty-powered">Powered by <span>sendm8</span></a>
+          <span aria-hidden="true">·</span>
+          <a href={`mailto:${site.abuseEmail}?subject=Report%20a%20form`} data-ty-abuse>Report abuse</a>
+        </p>
+      </footer>
+    </article>
+  </div>
+</System>
+
+<script is:inline>
+  (function () {
+    var q = new URLSearchParams(location.search);
+    var root = document.querySelector('[data-ty]');
+    if (!root) return;
+    var clean = function (v, max) {
+      return Array.from(v || '').filter(function (c) { return c.charCodeAt(0) > 31; }).join('').trim().slice(0, max);
+    };
+
+    var name = clean(q.get('name'), 60);
+    if (name) {
+      root.querySelector('[data-ty-site]').textContent = name;
+      root.querySelector('[data-ty-body]').textContent =
+        'It’s been passed on to ' + name + '. If they need to get back to you, they’ll use the details you gave.';
+      document.title = 'Thanks · ' + name;
+    }
+
+    var t = new Date();
+    root.querySelector('[data-ty-time]').textContent =
+      String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0');
+
+    // The back link only appears for a real http(s) URL, never javascript: or data: tricks.
+    var backLink = root.querySelector('[data-ty-back]');
+    var back = q.get('back');
+    if (back) {
+      try {
+        var u = new URL(back);
+        if (u.protocol === 'https:' || u.protocol === 'http:') {
+          backLink.href = u.href;
+          root.querySelector('[data-ty-back-label]').textContent = 'Back to ' + u.hostname.replace(/^www\./, '');
+          backLink.hidden = false;
+        }
+      } catch (e) {}
+    }
+
+    var accent = q.get('accent');
+    if (accent && /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.test(accent)) {
+      root.style.setProperty('--ty-accent', accent.charAt(0) === '#' ? accent : '#' + accent);
+    }
+
+    var ref = clean(q.get('ref'), 24);
+    if (ref) {
+      root.querySelector('[data-ty-ref]').textContent = ref;
+      root.querySelector('[data-ty-ref-wrap]').hidden = false;
+    }
+  })();
+</script>
+
+<style>
+  .ty-wrap {
+    display: flex;
+    justify-content: center;
+    padding-block: var(--s-7);
+  }
+  .ty {
+    --ty-accent: var(--fg);
+    width: 100%;
+    max-width: 34rem;
+    /* sits a little above centre, like a note left on the desk */
+    margin-bottom: 8vh;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--ty-mark);
+  }
+  .ty {
+    --ty-mark: var(--ty-accent);
+  }
+  :global([data-theme='dark']) .ty {
+    /* lift dark brand colours so the marks still read at night */
+    --ty-mark: color-mix(in srgb, var(--ty-accent) 62%, var(--paper-100));
+  }
+  .ty-main {
+    padding: clamp(1.5rem, 5vw, 2.75rem);
+  }
+  .ty-site {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    color: var(--fg-muted);
+  }
+  .ty-dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--ty-mark);
+    flex: none;
+  }
+  .ty-h1 span {
+    display: block;
+  }
+  .ty-h1 {
+    margin-top: var(--s-4);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 750;
+    font-size: clamp(1.6rem, 3.4vw, 2.1rem);
+    line-height: 1.08;
+    letter-spacing: -0.005em;
+  }
+  .ty-body {
+    margin-top: var(--s-3);
+    color: var(--fg-muted);
+    max-width: 44ch;
+  }
+  .ty-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: var(--s-6);
+    padding-block: 0.35rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--ty-mark);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3em;
+  }
+  .ty-back:hover {
+    text-decoration-thickness: 3px;
+  }
+  .ty-back svg {
+    flex: none;
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+  .ty-back:hover svg {
+    transform: translateX(-3px);
+  }
+  .ty-stub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-2) var(--s-4);
+    padding: var(--s-3) clamp(1.5rem, 5vw, 2.75rem);
+    border-top: 1px dashed var(--line);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  .ty-ref {
+    color: var(--fg-muted);
+  }
+  .ty-ref .mono {
+    color: var(--fg);
+    letter-spacing: 0.04em;
+  }
+  .ty-links {
+    display: flex;
+    gap: var(--s-2);
+    margin-left: auto;
+  }
+  .ty-links a {
+    color: var(--fg-muted);
+    text-decoration: none;
+  }
+  .ty-links a:hover {
+    color: var(--fg);
+    text-decoration: underline;
+  }
+  .ty-powered span {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: 1.05em;
+  }
+</style>

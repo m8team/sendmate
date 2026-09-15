@@ -1,0 +1,271 @@
+---
+import Icon from '../ui/Icon.astro';
+import { limits, fmt } from '../../config/site';
+// An illustrative "sent today" figure that stays under the real cap.
+const used = Math.max(1, Math.round(limits.emailsPerDay * 0.6));
+const pct = Math.round((used / limits.emailsPerDay) * 100);
+---
+
+<section class="section byok" id="byok" aria-labelledby="byok-title">
+  <div class="wrap">
+    <p class="bay label label-lg"><span class="bay-no">04</span> Postage</p>
+
+    <div class="byok-head">
+      <h2 id="byok-title" class="display byok-h">Use our stamps, <br /><span class="byok-own">or bring your own.</span></h2>
+      <div class="byok-intro">
+        <p class="lede">Use our sender for free, or plug in your <strong>Resend</strong> key and go unlimited. Your notifications, your quota, your domain in the From line.</p>
+        <a class="btn btn-outline" href="/docs#byok">Connect Resend in 2 minutes <Icon name="arrow-right" /></a>
+      </div>
+    </div>
+
+    <div class="stamps">
+      <!-- Ours -->
+      <article class="pstamp pstamp-ours" aria-labelledby="ours-title">
+        <div class="pstamp-inner">
+          <header class="pstamp-top">
+            <p class="label">Option A</p>
+            <h3 id="ours-title" class="h3">Our sender</h3>
+          </header>
+          <p class="pstamp-big"><span>{limits.emailsPerDay}</span><small class="label label-lg">instant emails<br />a day</small></p>
+          <ul class="pstamp-list" role="list">
+            <li><Icon name="check" size={16} /><span>Free, zero setup, from <code>notify@sendm8.com</code></span></li>
+            <li><Icon name="check" size={16} /><span>Hit the cap and the rest arrive in tonight’s digest. Nothing is dropped.</span></li>
+            <li><Icon name="check" size={16} /><span>Discord, Slack, Telegram and webhooks don’t count towards it</span></li>
+          </ul>
+          <div class="pstamp-meter">
+            <div class="meter-row mono"><span>Sent today</span><span>{used} / {limits.emailsPerDay}</span></div>
+            <div class="meter" style={`--pct:${pct}%`} role="img" aria-label={`Example: ${used} of ${limits.emailsPerDay} instant emails sent today`}></div>
+          </div>
+        </div>
+      </article>
+
+      <p class="stamps-or" aria-hidden="true">or</p>
+
+      <!-- Yours -->
+      <article class="pstamp pstamp-yours" aria-labelledby="yours-title">
+        <div class="pstamp-inner">
+          <header class="pstamp-top">
+            <p class="label">Option B · BYOK</p>
+            <h3 id="yours-title" class="h3">Your Resend key</h3>
+          </header>
+          <p class="pstamp-big pstamp-inf"><span>∞</span><small class="label label-lg">emails<br />a day</small></p>
+          <ul class="pstamp-list" role="list">
+            <li><Icon name="check" size={16} /><span>From your own domain, e.g. <code>forms@yourstudio.com</code></span></li>
+            <li><Icon name="check" size={16} /><span>Uses your Resend quota. Their free plan covers {fmt.n(limits.resendFreeEmailsPerMonth)} emails a month.</span></li>
+            <li><Icon name="check" size={16} /><span>Encrypted at rest, never shown in full again</span></li>
+          </ul>
+          <div class="keyfield" aria-hidden="true">
+            <span class="keyfield-icon"><Icon name="key" size={16} /></span>
+            <span class="mono keyfield-val">re_••••••••••••4f2a</span>
+            <span class="stamp stamp-flat keyfield-stamp">Verified</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  .byok {
+    --section: clamp(3rem, 5vw, 4.5rem);
+  }
+  .byok-head > *,
+  .stamps > * {
+    min-width: 0;
+  }
+  .byok-head {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    gap: var(--s-6);
+    align-items: end;
+    margin-top: var(--s-6);
+  }
+  .byok-h {
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+  }
+  .byok-own {
+    color: var(--signal);
+  }
+  .byok-intro {
+    display: grid;
+    justify-items: start;
+    gap: var(--s-4);
+  }
+  .byok-head .lede {
+    font-size: var(--fs-md);
+    color: var(--fg-muted);
+  }
+  .byok-head .lede strong {
+    color: var(--fg);
+  }
+  .stamps {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--s-5);
+    margin-top: var(--s-7);
+  }
+  .stamps-or {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: 2.2rem;
+    display: grid;
+    place-items: center;
+    width: 4rem;
+    height: 4rem;
+    border: 2px solid var(--line-strong);
+    border-radius: 50%;
+    background: var(--bg);
+    line-height: 1;
+    padding-bottom: 0.2rem;
+  }
+
+  /* A giant postage stamp: perforated via radial mask on the outer, framed inner */
+  .pstamp {
+    --perf: 9px;
+    position: relative;
+    padding: 14px;
+    background: var(--stamp-bg);
+    /* solid interior (content-box) unioned with a hole pattern that only shows at the edges */
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box no-repeat,
+      radial-gradient(circle var(--perf) at var(--perf) var(--perf), #0000 98%, #000) calc(var(--perf) * -1) calc(var(--perf) * -1) / calc(var(--perf) * 2.6) calc(var(--perf) * 2.6) round;
+    mask:
+      linear-gradient(#000 0 0) content-box no-repeat,
+      radial-gradient(circle var(--perf) at var(--perf) var(--perf), #0000 98%, #000) calc(var(--perf) * -1) calc(var(--perf) * -1) / calc(var(--perf) * 2.6) calc(var(--perf) * 2.6) round;
+    filter: drop-shadow(0 16px 18px color-mix(in srgb, var(--ink-900) 22%, transparent));
+  }
+  .pstamp-ours {
+    --stamp-bg: var(--bg-deep);
+    transform: rotate(-1.5deg);
+  }
+  .pstamp-yours {
+    --stamp-bg: var(--signal);
+    transform: rotate(1.5deg);
+  }
+  .pstamp-inner {
+    height: 100%;
+    padding: clamp(1.2rem, 2.4vw, 1.8rem);
+    border: 2px solid currentColor;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+  .pstamp-ours .pstamp-inner {
+    color: var(--fg);
+    background: var(--bg-raised);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .pstamp-yours .pstamp-inner {
+    --fg: var(--on-signal);
+    --fg-muted: color-mix(in srgb, var(--on-signal) 80%, transparent);
+    --line-strong: var(--on-signal);
+    color: var(--on-signal);
+    border-color: var(--on-signal);
+  }
+  .pstamp-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--s-3);
+    flex-direction: row-reverse;
+  }
+  .pstamp-big {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--s-3);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    line-height: 0.78;
+  }
+  .pstamp-big span {
+    font-size: clamp(5.5rem, 10vw, 9rem);
+    letter-spacing: -0.02em;
+  }
+  .pstamp-inf span {
+    font-stretch: 100%;
+    font-weight: 700;
+    font-size: clamp(6.5rem, 12.5vw, 11rem);
+    line-height: 0.62;
+  }
+  .pstamp-big small {
+    padding-bottom: 0.9rem;
+    line-height: 1.3;
+  }
+  .pstamp-list {
+    display: grid;
+    gap: var(--s-2);
+    font-size: var(--fs-sm);
+  }
+  .pstamp-list li {
+    display: grid;
+    grid-template-columns: 1.3rem 1fr;
+    align-items: start;
+  }
+  .pstamp-list :global(svg) {
+    margin-top: 0.2rem;
+  }
+  .pstamp-yours code {
+    background: color-mix(in srgb, var(--ink-900) 20%, transparent);
+    border-color: color-mix(in srgb, var(--on-signal) 40%, transparent);
+    color: inherit;
+  }
+  /* At night the text on red is ink, so the code chip lightens the red instead of darkening it (AA). */
+  :global([data-theme='dark']) .pstamp-yours code {
+    background: color-mix(in srgb, var(--paper-100) 18%, transparent);
+  }
+  .pstamp-meter {
+    margin-top: auto;
+    padding-top: var(--s-3);
+  }
+  .meter-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--fs-xs);
+    margin-bottom: 0.4rem;
+  }
+  .keyfield {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: 0.6rem 0.75rem;
+    border: 2px solid var(--on-signal);
+    background: color-mix(in srgb, var(--ink-900) 16%, transparent);
+    min-width: 0;
+  }
+  .keyfield-val {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--fs-sm);
+  }
+  .keyfield-stamp {
+    --stamp-color: var(--on-signal);
+    box-shadow: none;
+    border-width: 2px;
+  }
+  @media (max-width: 1000px) {
+    .byok-head {
+      grid-template-columns: 1fr;
+    }
+    .stamps {
+      grid-template-columns: 1fr;
+      justify-items: stretch;
+    }
+    .stamps-or {
+      justify-self: center;
+      margin-block: calc(var(--s-5) * -1);
+      position: relative;
+      z-index: 2;
+    }
+    .pstamp-ours,
+    .pstamp-yours {
+      transform: none;
+    }
+  }
+</style>

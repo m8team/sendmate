@@ -1,0 +1,207 @@
+---
+/**
+ * Fair use, written as numbered clauses: the limit, why it exists, and what happens when you reach it.
+ */
+import { limits, fmt, site } from '../../config/site';
+
+const h = limits.digestHourUtc;
+const digestAt = `${h % 12 || 12}${h < 12 ? 'am' : 'pm'} UTC`;
+
+const clauses = [
+  {
+    no: '2.1',
+    figure: fmt.n(limits.emailsPerDay),
+    unit: 'instant emails a day',
+    scope: 'Through our shared sender, per account',
+    why: 'Sending email costs real money, even when it isn’t ours. Our sender runs on a small free allowance from our email providers, and every sendm8 user shares it. The daily cap stops one busy form from spending everybody else’s postage.',
+    outcome: 'Digest, not dropped',
+    tone: 'ok',
+    then: `Nothing is lost. After instant email number ${fmt.n(limits.emailsPerDay)}, the rest of the day’s submissions arrive together in your ${digestAt} digest. Your dashboard, Discord, Slack, Telegram and webhooks still get every one, instantly.`,
+    fix: 'Add your own Resend key and the cap goes away.',
+    fixHref: '#byok',
+  },
+  {
+    no: '2.2',
+    figure: fmt.n(limits.submissionsPerFormPerMonth),
+    unit: 'submissions a month',
+    scope: 'Per form, per calendar month',
+    why: 'Every submission is a row in a database on Cloudflare’s free plan, which has a daily write budget for the whole service. The monthly cap keeps one runaway form, or one determined bot, from filling it for everyone.',
+    outcome: 'Rejected',
+    tone: 'signal',
+    then: 'We’d rather be straight with you: once a form reaches the cap, new submissions that month are turned away, not queued. Your visitor sees a clear error (JSON forms get a 429 with a message), so they know it didn’t go through. The count resets on the 1st.',
+    fix: `Need more? Self-host sendm8 with no cap, or tell us about it at ${site.helloEmail}.`,
+    fixHref: `mailto:${site.helloEmail}`,
+  },
+  {
+    no: '2.3',
+    figure: `${limits.fileUploadMb} MB`,
+    unit: 'per file',
+    scope: `And ${limits.submissionUploadMb} MB across one submission`,
+    why: 'Uploaded files live in storage with a fixed free budget. The caps fit documents, CVs and screenshots, which is what contact forms are for, and keep the storage from turning into somebody’s video backup.',
+    outcome: 'Turned away',
+    tone: 'signal',
+    then: 'A submission with a file over the limit is refused as a whole (HTTP 413), so nothing half-arrives. Nothing is stored and nothing is sent.',
+    fix: 'Big files? Ask people for a link to them instead.',
+    fixHref: '/docs#uploads',
+  },
+  {
+    no: '2.4',
+    figure: String(limits.ratePerIpPerMinute),
+    unit: 'a minute',
+    scope: `Per visitor, per form. ${fmt.n(limits.ratePerFormPerMinute)} a minute per form overall`,
+    why: 'Bots post hundreds of times a minute. People don’t. Burst limits stop a flood before it reaches your inbox, and keep sendm8 quick for everyone else. We count by a hash of the IP address, never the address itself.',
+    outcome: 'Slow down',
+    tone: 'warn',
+    then: 'Extra posts in that minute get a 429 and a polite “slow down” page. A real person filling in a form never gets anywhere near it.',
+    fix: 'How the spam layers work',
+    fixHref: '/docs#spam',
+  },
+];
+---
+
+<section class="section fair" id="fair-use" aria-labelledby="fair-title">
+  <div class="wrap">
+    <p class="bay label label-lg"><span class="bay-no">02</span> Fair use</p>
+
+    <div class="fair-head">
+      <h2 id="fair-title" class="h1">The small print, <br /><span class="muted">in large print.</span></h2>
+      <div class="fair-intro">
+        <p>
+          Free doesn’t mean bottomless. sendm8 runs on free allowances that everyone shares, so there are four limits. Here’s each one, why it’s there,
+          and exactly what happens if you reach it.
+        </p>
+        <p class="muted">No surprise bills, no features that quietly switch off, no “upgrade to continue”. There’s nothing to upgrade to.</p>
+      </div>
+    </div>
+
+    <ol class="clauses" role="list">
+      {
+        clauses.map((c) => (
+          <li class="clause">
+            <div class="cl-limit">
+              <p class="label cl-no">Clause {c.no}</p>
+              <p class="cl-figure">
+                <span class="cl-num">{c.figure}</span>
+                <span class="cl-unit">{c.unit}</span>
+              </p>
+              <p class="cl-scope mono">{c.scope}</p>
+            </div>
+            <div class="cl-why">
+              <h3 class="label cl-h">Why it’s there</h3>
+              <p>{c.why}</p>
+            </div>
+            <div class="cl-then">
+              <h3 class="label cl-h">When you reach it</h3>
+              <span class:list={['stamp', 'cl-stamp', c.tone === 'ok' && 'stamp-ok', c.tone === 'warn' && 'stamp-warn']}>{c.outcome}</span>
+              <p>{c.then}</p>
+              <a class="cl-fix link-signal" href={c.fixHref}>
+                {c.fix}&nbsp;<span aria-hidden="true">→</span>
+              </a>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .fair-head {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: var(--s-6);
+    align-items: end;
+    margin-top: var(--s-7);
+  }
+  .fair-intro {
+    display: grid;
+    gap: var(--s-3);
+    max-width: 46ch;
+  }
+  .clauses {
+    margin-top: var(--s-8);
+    border-top: var(--bw-heavy) solid var(--line-strong);
+  }
+  .clause {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 4fr) minmax(0, 4fr);
+    gap: clamp(1.25rem, 3vw, 3rem);
+    padding-block: clamp(1.75rem, 3.5vw, 2.75rem);
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .cl-no {
+    color: var(--signal-text);
+    font-weight: 600;
+  }
+  .cl-figure {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: var(--s-3);
+    margin-top: var(--s-2);
+  }
+  .cl-num {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: clamp(4rem, 8vw, 7rem);
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .cl-unit {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: var(--fs-h4);
+    line-height: 1.1;
+  }
+  .cl-scope {
+    margin-top: var(--s-3);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  .cl-h {
+    color: var(--fg-muted);
+    padding-bottom: var(--s-2);
+    margin-bottom: var(--s-3);
+    border-bottom: 1px dashed var(--line);
+  }
+  .cl-why p,
+  .cl-then p {
+    font-size: var(--fs-sm);
+    max-width: 52ch;
+  }
+  .cl-why p {
+    color: var(--fg-muted);
+  }
+  .cl-then {
+    position: relative;
+  }
+  .cl-stamp {
+    --stamp-rotate: -3deg;
+    margin-bottom: var(--s-3);
+  }
+  .cl-fix {
+    display: inline-block;
+    margin-top: var(--s-3);
+    font-size: var(--fs-sm);
+  }
+  @media (max-width: 1000px) {
+    .fair-head {
+      grid-template-columns: 1fr;
+    }
+    .clause {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .cl-limit {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (max-width: 640px) {
+    .clause {
+      grid-template-columns: 1fr;
+      gap: var(--s-5);
+    }
+  }
+</style>

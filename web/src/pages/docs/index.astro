@@ -1,0 +1,77 @@
+---
+import Marketing from '../../layouts/Marketing.astro';
+import DocsHero from '../../components/docs/DocsHero.astro';
+import DocsNav from '../../components/docs/DocsNav.astro';
+import DocsFooter from '../../components/docs/DocsFooter.astro';
+import BasicForm from '../../components/docs/sections/BasicForm.astro';
+import ZeroSignup from '../../components/docs/sections/ZeroSignup.astro';
+import SpecialFields from '../../components/docs/sections/SpecialFields.astro';
+import Ajax from '../../components/docs/sections/Ajax.astro';
+import AjaxHelper from '../../components/docs/sections/AjaxHelper.astro';
+import Redirects from '../../components/docs/sections/Redirects.astro';
+import SpamProtection from '../../components/docs/sections/SpamProtection.astro';
+import FileUploads from '../../components/docs/sections/FileUploads.astro';
+import ConnectDiscord from '../../components/docs/sections/ConnectDiscord.astro';
+import ConnectResend from '../../components/docs/sections/ConnectResend.astro';
+import Webhooks from '../../components/docs/sections/Webhooks.astro';
+import { docsSections } from '../../components/docs/sections/docsSections';
+import { site } from '../../config/site';
+
+// Docs content lives in one component per section.
+const editUrl = `${site.repo}/tree/main/web/src/components/docs/sections`;
+---
+
+<Marketing title="Docs: quickstart" description="Everything you need to point a form at sendm8: the basic form, zero-signup, AJAX, redirects, spam protection, file uploads, Discord, your own Resend key and webhooks.">
+  <div class="wrap docs">
+    <DocsHero />
+
+    <div class="docs-grid">
+      <DocsNav sections={[...docsSections]} editUrl={editUrl} />
+
+      <article class="docs-body">
+        <BasicForm />
+        <ZeroSignup />
+        <SpecialFields />
+        <Ajax />
+        <AjaxHelper />
+        <Redirects />
+        <SpamProtection />
+        <FileUploads />
+        <ConnectDiscord />
+        <ConnectResend />
+        <Webhooks />
+
+        <DocsFooter editUrl={editUrl} />
+      </article>
+    </div>
+  </div>
+</Marketing>
+
+<style>
+  .docs {
+    padding-bottom: var(--section);
+  }
+
+  /* ---------- Grid ---------- */
+  .docs-grid {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 5.5rem);
+    align-items: start;
+  }
+  .docs-body {
+    min-width: 0;
+    padding-top: var(--s-7);
+    max-width: 56rem;
+  }
+
+  @media (max-width: 1000px) {
+    .docs-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+    .docs-body {
+      padding-top: var(--s-6);
+    }
+  }
+</style>

@@ -1,0 +1,385 @@
+---
+import Postmark from '../brand/Postmark.astro';
+import { limits, fmt, site } from '../../config/site';
+
+const items: { name: string; desc: string; qty: string[] }[] = [
+  {
+    name: 'Forms & a dashboard inbox',
+    desc: 'One per site, per page, per whim. Search, star, filter and bulk-tidy, with spam kept to one side so you can double-check it.',
+    qty: [`${fmt.n(limits.forms)} forms`, `${fmt.n(limits.submissionsPerFormPerMonth)}/form/mo`],
+  },
+  {
+    name: 'Email notifications & digest',
+    desc: 'Instant up to the daily cap, then one tidy digest instead of forty pings. Reply-To is whoever wrote in.',
+    qty: [`${limits.emailsPerDay} instant/day`, '∞ with BYOK'],
+  },
+  { name: 'Discord, Slack, Telegram & webhooks', desc: 'Signed webhooks, automatic retries, and a “send test” button on every channel.', qty: ['∞'] },
+  { name: 'Spam protection', desc: 'Honeypot, rate limits, heuristics, a Turnstile challenge page and optional AI scoring.', qty: ['5 layers'] },
+  { name: 'File uploads', desc: 'CVs, screenshots, the lot, with sensible size caps.', qty: [`${limits.fileUploadMb} MB/file`] },
+  { name: 'CSV & JSON export', desc: 'It’s your data. There’s no export fee to get it back.', qty: ['∞'] },
+  { name: 'Redirects & thank-you pages', desc: 'Send people to your own page, or use our quiet default one.', qty: ['Yours or ours'] },
+  { name: 'The source code', desc: `All of it, ${site.license}. Self-host on Cloudflare in one click.`, qty: ['100%'] },
+];
+---
+
+<section class="section manifest" id="features" aria-labelledby="manifest-title">
+  <div class="wrap">
+    <p class="bay label label-lg"><span class="bay-no">03</span> What’s in the box</p>
+
+    <div class="mf-head">
+      <h2 id="manifest-title" class="h2">Everything’s included. <br /><span class="muted">Declared value: nothing.</span></h2>
+      <p class="lede">No feature grid, no locked padlock icons. Here’s the full manifest, the same for everyone.</p>
+    </div>
+
+    <article class="declaration" aria-label="Customs declaration listing sendm8 features">
+      <header class="decl-top">
+        <div class="decl-title">
+          <p class="caps-wide">Customs declaration</p>
+          <p class="label muted">sendm8 · May be opened officially</p>
+        </div>
+        <ul class="decl-boxes" role="list" aria-label="Category">
+          <li><span class="box checked" aria-hidden="true">✕</span> Gift</li>
+          <li><span class="box" aria-hidden="true"></span> Commercial sample</li>
+          <li><span class="box" aria-hidden="true"></span> Free trial</li>
+          <li><span class="box" aria-hidden="true"></span> Upsell</li>
+        </ul>
+      </header>
+
+      <div class="table-wrap">
+        <table class="decl-table">
+          <caption class="sr-only">sendm8 features, limits and cost</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="c-no">No.</th>
+              <th scope="col">Detailed description of contents</th>
+              <th scope="col" class="c-qty">Qty / limit</th>
+              <th scope="col" class="c-val">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              items.map((it, i) => (
+                <tr>
+                  <td class="c-no mono">{String(i + 1).padStart(3, '0')}</td>
+                  <th scope="row" class="c-desc">
+                    <span class="d-row">
+                      <span class="d-name">{it.name}</span>
+                      <span class="d-text">{it.desc}</span>
+                    </span>
+                  </th>
+                  <td class="c-qty mono">
+                    {it.qty.map((q) => (
+                      <span class="q-line">{q}</span>
+                    ))}
+                  </td>
+                  <td class="c-val mono">0.00</td>
+                </tr>
+              ))
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2" class="decl-sign-cell">
+                <div class="decl-sign">
+                  <div class="decl-signer">
+                    <span class="label muted">Signature of sender</span>
+                    <svg class="signature" viewBox="0 0 220 50" aria-hidden="true">
+                      <path d="M6 36c10-18 22-30 28-26 6 5-14 26-6 28 9 2 16-24 24-22 7 2-4 20 3 21 8 1 14-18 22-17 6 1 0 14 6 15 7 1 12-12 18-12s2 12 9 12c9 0 13-16 22-16 7 0 3 12 10 12 10 0 22-20 36-24 6-2 10 0 12 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
+                    </svg>
+                    <span class="label muted decl-signer-name">The sendm8 contributors</span>
+                  </div>
+                  {/* The postmark's waves run left of the Total column, so they cancel the stamp, never the figure. */}
+                  <Postmark class="decl-postmark" top="SENDM8.COM" bottom="NO CHARGE" center="0.00" sub="PAID" size={84} tone="signal" />
+                </div>
+              </td>
+              <td colspan="2" class="decl-total-cell">
+                <div class="decl-total-row">
+                  <span class="label decl-total-label">Total</span>
+                  <span class="mono decl-total">0.00</span>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </article>
+  </div>
+</section>
+
+<style>
+  .manifest {
+    --section: clamp(3rem, 5vw, 4.5rem);
+  }
+  .mf-head > * {
+    min-width: 0;
+  }
+  .mf-head {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: var(--s-6);
+    align-items: end;
+    margin-top: var(--s-6);
+  }
+  .mf-head .lede {
+    color: var(--fg-muted);
+    font-size: var(--fs-md);
+  }
+  .declaration {
+    margin-top: var(--s-6);
+    border: 2px solid var(--line-strong);
+    background: var(--bg-raised);
+  }
+  .decl-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-4) var(--s-6);
+    flex-wrap: wrap;
+    padding: var(--s-4) var(--s-5);
+    border-bottom: 2px solid var(--line-strong);
+  }
+  .decl-title .caps-wide {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    line-height: 1;
+  }
+  .decl-title .label {
+    margin-top: 0.35rem;
+  }
+  .decl-boxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-5);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+  }
+  .decl-boxes li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .box {
+    display: inline-grid;
+    place-items: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 1.5px solid var(--line-strong);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--signal-mark);
+  }
+  .decl-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .decl-table thead th {
+    padding: 0.55rem var(--s-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    font-weight: 600;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    text-align: left;
+    color: var(--fg-muted);
+    border-bottom: 1px solid var(--line-strong);
+    white-space: nowrap;
+  }
+  .decl-table tbody td,
+  .decl-table tbody th {
+    padding: 0.7rem var(--s-4);
+    border-bottom: 1px solid var(--line);
+    vertical-align: baseline;
+    text-align: left;
+  }
+  .decl-table tbody tr {
+    transition: background var(--dur-1);
+  }
+  .decl-table tbody tr:hover {
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  .c-no {
+    width: 4.5rem;
+    color: var(--fg-muted);
+    font-size: var(--fs-xs);
+  }
+  .c-desc {
+    font-weight: 400;
+  }
+  /* Name and description side by side on wide screens: one scannable line per item. */
+  .d-row {
+    display: grid;
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    gap: 0.2rem var(--s-5);
+    align-items: baseline;
+  }
+  .d-name {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+    line-height: 1.1;
+  }
+  .d-text {
+    color: var(--fg-muted);
+    font-size: var(--fs-sm);
+    max-width: 60ch;
+  }
+  .c-qty {
+    width: 12rem;
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+  }
+  .q-line {
+    display: block;
+  }
+  .c-val {
+    width: 6rem;
+    text-align: right !important;
+    font-size: var(--fs-sm);
+  }
+  .decl-table tfoot td {
+    padding: var(--s-3) var(--s-4);
+    border-top: 2px solid var(--line-strong);
+    vertical-align: middle;
+  }
+  .decl-sign {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+  }
+  .decl-signer {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2) var(--s-4);
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  .signature {
+    width: 12rem;
+    color: var(--fg);
+  }
+  .decl-sign :global(.decl-postmark) {
+    flex: none;
+    width: 13rem;
+    margin-right: var(--s-5);
+    transform: rotate(-6deg);
+  }
+  /* Total sits across the Qty and Value columns, so the big figure has room and stays clear of the postmark. */
+  .decl-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--s-4);
+  }
+  .decl-total-label {
+    font-size: var(--fs-xs);
+  }
+  .decl-total {
+    font-size: clamp(1.5rem, 3vw, 2.4rem);
+    font-weight: 600;
+    line-height: 1;
+    color: var(--signal-text);
+  }
+  @media (max-width: 1000px) {
+    .d-row {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .mf-head {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 640px) {
+    .decl-table,
+    .decl-table tbody,
+    .decl-table tfoot {
+      display: block;
+      width: 100%;
+    }
+    .decl-table thead {
+      display: none;
+    }
+    .decl-table tbody tr {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 0.25rem var(--s-3);
+      padding: var(--s-3) var(--s-4);
+      border-bottom: 1px solid var(--line);
+    }
+    .decl-table tbody td,
+    .decl-table tbody th {
+      padding: 0;
+      border: 0;
+      width: auto;
+    }
+    .decl-table tbody .c-desc {
+      grid-column: 2 / -1;
+      grid-row: 1;
+    }
+    .decl-table tbody .c-no {
+      grid-row: 1;
+      grid-column: 1;
+    }
+    .decl-table tbody .c-qty {
+      grid-column: 2;
+      grid-row: 2;
+      font-size: var(--fs-xs);
+      color: var(--fg);
+      white-space: normal;
+    }
+    .decl-table tbody .c-qty::before {
+      content: 'Qty ';
+      color: var(--fg-muted);
+    }
+    .q-line {
+      display: inline-block;
+    }
+    .q-line + .q-line {
+      margin-left: 0.5em;
+    }
+    .q-line + .q-line::before {
+      content: '·\00a0';
+      color: var(--fg-muted);
+    }
+    .decl-table tbody .c-val {
+      grid-column: 3;
+      grid-row: 2;
+      font-size: var(--fs-xs);
+    }
+    .decl-table tfoot tr {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: center;
+      gap: var(--s-2) var(--s-3);
+      padding: var(--s-3) var(--s-4);
+      border-top: 2px solid var(--line-strong);
+    }
+    .decl-table tfoot td {
+      padding: 0;
+      border: 0;
+      width: auto;
+    }
+    .decl-total-row {
+      justify-content: flex-end;
+    }
+    .decl-signer {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--s-1);
+    }
+    .signature {
+      width: 7rem;
+    }
+    .decl-signer-name {
+      display: none;
+    }
+    .decl-sign :global(.decl-postmark) {
+      width: 9.5rem;
+      margin-right: 0;
+    }
+    .decl-top {
+      padding: var(--s-4);
+    }
+  }
+</style>

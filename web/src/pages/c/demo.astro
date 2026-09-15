@@ -1,0 +1,313 @@
+---
+/**
+ * Turnstile challenge page mock: sendm8.com/c/:submissionId.
+ * The widget here is a stand-in, deliberately unbranded. The real page renders
+ * Cloudflare's Turnstile widget in its place.
+ */
+import System from '../../layouts/System.astro';
+import Icon from '../../components/ui/Icon.astro';
+import { getForm, submissionsFor, trackingNo } from '../../mocks';
+
+const form = getForm('k3x9q2m7ab')!;
+const sub = submissionsFor(form.id)[1];
+const siteName = 'Achterberg Studio';
+const siteUrl = `https://${form.allowedOrigins[0]}`;
+const next = `/thanks?name=${encodeURIComponent(siteName)}&back=${encodeURIComponent(siteUrl)}&accent=${encodeURIComponent('#335c67')}&ref=${encodeURIComponent(sub.tracking)}`;
+---
+
+<System title="Quick check" note="Challenge · held submission" showThemeToggle>
+  <div class="wrap ch">
+    <div class="ch-card">
+      <header class="ch-head">
+        <p class="label label-lg muted">Almost posted</p>
+        <h1 class="h2 ch-h1">Quick check before we post this.</h1>
+        <p class="ch-lede">
+          Your message to <strong>{siteName}</strong> is packed and ready. It looked a little unusual on the way in, so before we pass it on we just need to know there’s a person on the other end. One tick and you’re done.
+        </p>
+      </header>
+
+      <dl class="ch-parcel" aria-label="The held submission">
+        <div>
+          <dt class="label">To</dt>
+          <dd>{siteName} · <span class="mono">{form.allowedOrigins[0]}</span></dd>
+        </div>
+        <div>
+          <dt class="label">Tracking</dt>
+          <dd class="mono">{trackingNo(sub.id)}</dd>
+        </div>
+        <div>
+          <dt class="label">Contains</dt>
+          <dd class="mono ch-fields">{Object.keys(sub.data).join(' · ')}</dd>
+        </div>
+      </dl>
+
+      <div class="ch-step">
+        <p class="label ch-step-no"><span>01</span> Tick the box</p>
+
+        <div class="mockwidget" data-widget data-state="idle">
+          <button type="button" role="checkbox" aria-checked="false" class="mw-check" data-verify aria-describedby="mw-status">
+            <span class="mw-box" aria-hidden="true">
+              <span class="mw-spinner"></span>
+              <Icon name="check" size={20} strokeWidth={3} class="mw-tick" />
+            </span>
+            <span class="mw-label">Verify you’re human</span>
+          </button>
+          <p id="mw-status" class="mw-status" aria-live="polite" data-status></p>
+          <div class="mw-tag">
+            <span class="mw-tag-name">Mock challenge</span>
+            <span>Stands in for a Turnstile check</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ch-step">
+        <p class="label ch-step-no"><span>02</span> Send it on</p>
+        <button type="button" class="btn btn-signal btn-lg ch-continue" data-continue data-href={next} disabled>
+          Continue <Icon name="arrow-right" />
+        </button>
+      </div>
+
+      <footer class="ch-foot">
+        <p><Icon name="lock" size={14} /> No puzzles, no tracking cookies. The check runs once and we keep nothing about you.</p>
+        <p>Stuck? Your message hasn’t been sent yet, so it’s safe to contact {siteName} another way.</p>
+      </footer>
+    </div>
+  </div>
+</System>
+
+<script>
+  const widget = document.querySelector<HTMLElement>('[data-widget]');
+  const btn = widget?.querySelector<HTMLButtonElement>('[data-verify]');
+  const status = widget?.querySelector<HTMLElement>('[data-status]');
+  const next = document.querySelector<HTMLButtonElement>('[data-continue]');
+
+  if (widget && btn && status && next) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    btn.addEventListener('click', () => {
+      if (widget.dataset.state !== 'idle') return;
+      widget.dataset.state = 'checking';
+      btn.setAttribute('aria-busy', 'true');
+      status.textContent = 'Checking…';
+      window.setTimeout(
+        () => {
+          widget.dataset.state = 'ok';
+          btn.setAttribute('aria-checked', 'true');
+          btn.removeAttribute('aria-busy');
+          status.textContent = 'You’re human. Nice.';
+          next.disabled = false;
+          next.focus();
+        },
+        reduce ? 300 : 1400,
+      );
+    });
+    next.addEventListener('click', () => {
+      if (next.dataset.href) location.href = next.dataset.href;
+    });
+  }
+</script>
+
+<style>
+  .ch {
+    display: flex;
+    justify-content: flex-start;
+    padding-block: clamp(1.5rem, 6vw, 5rem) var(--s-9);
+  }
+  .ch-card {
+    width: 100%;
+    max-width: 40rem;
+    margin-left: clamp(0rem, 12vw, 14rem);
+  }
+  .ch-h1 {
+    margin-top: var(--s-3);
+  }
+  .ch-lede {
+    margin-top: var(--s-4);
+    max-width: 52ch;
+  }
+  .ch-parcel {
+    margin-top: var(--s-6);
+    border-top: var(--bw-strong) solid var(--line-strong);
+  }
+  .ch-parcel > div {
+    display: grid;
+    grid-template-columns: 6rem minmax(0, 1fr);
+    gap: var(--s-3);
+    align-items: baseline;
+    padding-block: var(--s-2);
+    border-bottom: 1px solid var(--line);
+    font-size: var(--fs-sm);
+  }
+  .ch-parcel dt {
+    color: var(--fg-muted);
+  }
+  .ch-fields {
+    overflow-wrap: anywhere;
+  }
+  .ch-step {
+    margin-top: var(--s-6);
+  }
+  .ch-step-no {
+    display: flex;
+    gap: var(--s-2);
+    margin-bottom: var(--s-3);
+    color: var(--fg-muted);
+  }
+  .ch-step-no span {
+    color: var(--signal-text);
+    font-weight: 600;
+  }
+
+  /* ---- Mock widget: generic, clearly not a real vendor widget ---- */
+  .mockwidget {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'check tag'
+      'status status';
+    align-items: center;
+    gap: 0 var(--s-4);
+    max-width: 30rem;
+    padding: var(--s-3) var(--s-4);
+    border: 1px dashed var(--line-strong);
+    background: var(--bg-raised);
+  }
+  .mw-check {
+    grid-area: check;
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-height: 3rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+  }
+  .mw-box {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 1.9rem;
+    height: 1.9rem;
+    border: 2px solid var(--line-strong);
+    border-radius: var(--r-1);
+    background: var(--bg);
+  }
+  .mw-check:hover .mw-box {
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+  }
+  .mw-label {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .mw-spinner,
+  .mw-box :global(.mw-tick) {
+    display: none;
+  }
+  .mw-spinner {
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 2px solid var(--line);
+    border-top-color: var(--fg);
+    border-radius: 50%;
+    animation: mw-spin 700ms linear infinite;
+  }
+  @keyframes mw-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  [data-state='checking'] .mw-box {
+    border-color: transparent;
+    background: transparent;
+  }
+  [data-state='checking'] .mw-spinner {
+    display: block;
+  }
+  [data-state='ok'] .mw-box {
+    border-color: var(--ok);
+    background: var(--ok);
+    color: var(--bg);
+  }
+  [data-state='ok'] .mw-box :global(.mw-tick) {
+    display: block;
+    animation: mw-pop var(--dur-3) var(--ease-thunk);
+  }
+  @keyframes mw-pop {
+    from {
+      transform: scale(0.3);
+    }
+  }
+  .mw-status {
+    grid-area: status;
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  .mw-status:empty {
+    display: none;
+  }
+  [data-state='ok'] .mw-status {
+    color: var(--ok);
+    font-weight: 600;
+  }
+  .mw-tag {
+    grid-area: tag;
+    display: grid;
+    justify-items: end;
+    gap: 0.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    line-height: 1.25;
+    color: var(--fg-muted);
+    text-align: right;
+  }
+  .mw-tag-name {
+    padding: 0.1rem 0.35rem;
+    border: 1px solid var(--line-strong);
+    color: var(--fg);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .ch-foot {
+    display: grid;
+    gap: var(--s-2);
+    margin-top: var(--s-7);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  .ch-foot p {
+    display: flex;
+    gap: 0.4rem;
+    align-items: baseline;
+  }
+  .ch-foot :global(svg) {
+    flex: none;
+    transform: translateY(2px);
+  }
+
+  @media (max-width: 900px) {
+    .ch-card {
+      margin-left: 0;
+    }
+  }
+  @media (max-width: 520px) {
+    .mockwidget {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'check' 'status' 'tag';
+      gap: var(--s-2);
+    }
+    .mw-tag {
+      justify-items: start;
+      text-align: left;
+      padding-top: var(--s-2);
+      border-top: 1px dashed var(--line);
+    }
+    .ch-continue {
+      width: 100%;
+    }
+  }
+</style>

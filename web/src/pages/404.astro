@@ -1,0 +1,366 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import Barcode from '../components/brand/Barcode.astro';
+import Icon from '../components/ui/Icon.astro';
+import { site } from '../config/site';
+
+const routes = [
+  { href: '/', label: 'Home', note: 'Start again from the front counter' },
+  { href: '/docs', label: 'Docs', note: 'Get a form working in a minute' },
+  { href: '/pricing', label: 'Pricing', note: 'Short read. It’s free.' },
+  { href: '/app', label: 'Dashboard', note: 'Your forms and their inboxes' },
+];
+const reasons = [
+  { label: 'Moved away', ticked: false },
+  { label: 'Refused', ticked: false },
+  { label: 'Address unknown', ticked: true },
+  { label: 'Insufficient postage', ticked: false },
+];
+---
+
+<Marketing title="Return to sender" description="That page doesn’t exist. Here’s where to go instead.">
+  <section class="wrap nf" aria-labelledby="nf-title">
+    <div class="nf-label-col">
+      <div class="nf-label" role="img" aria-label="An undeliverable mail label marked 404, address unknown, return to sender">
+        <div class="nf-label-top" aria-hidden="true">
+          <span class="caps-wide">Undeliverable</span>
+          <span class="mono">Item 404</span>
+        </div>
+        <p class="nf-404" aria-hidden="true">404</p>
+        <ul class="nf-reasons" role="list" aria-hidden="true">
+          {
+            reasons.map((r) => (
+              <li class:list={[r.ticked && 'is-ticked']}>
+                <span class="nf-box">{r.ticked ? '✕' : ''}</span>
+                {r.label}
+              </li>
+            ))
+          }
+        </ul>
+        <div class="nf-addr" aria-hidden="true">
+          <span class="label">Addressed to</span>
+          <span class="mono nf-addr-val"><span class="nf-host">{site.domain}</span><span data-nf-path>/this-page</span></span>
+        </div>
+        <div class="nf-label-foot" aria-hidden="true">
+          <Barcode value="RTS 404 0000 00" height={34} class="nf-barcode" />
+          <span class="label muted">Returned by the<br />sendm8 sorting office</span>
+        </div>
+        <span class="stamp stamp-lg nf-stamp" aria-hidden="true">Return to sender</span>
+      </div>
+    </div>
+
+    <div class="nf-copy">
+      <p class="label label-lg nf-kicker"><span class="bay-no">404</span> · Not found</p>
+      <h1 id="nf-title" class="h1 nf-h1">Return to sender. <span>Address unknown.</span></h1>
+      <p class="lede nf-lede">
+        We checked every pigeonhole and nothing lives at <code class="nf-inline-path" data-nf-path>this address</code>. It might have moved, or there’s a typo in the link.
+      </p>
+
+      <nav class="nf-routes" aria-label="Where to go instead">
+        <p class="label muted">Try one of these instead</p>
+        <ol role="list">
+          {
+            routes.map((r, i) => (
+              <li>
+                <a href={r.href}>
+                  <span class="mono nf-route-no">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="nf-route-label">{r.label}</span>
+                  <span class="nf-route-note">{r.note}</span>
+                  <Icon name="arrow-right" class="nf-route-arrow" />
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+
+      <div class="notice nf-notice">
+        <span class="notice-icon"><Icon name="code" size={20} /></span>
+        <p class="notice-title">Were you posting a form?</p>
+        <div class="notice-body">
+          <p>If you landed here after hitting submit, check the form ID in your <code>action</code> URL. It should look like one of these:</p>
+          <ul class="nf-examples" role="list">
+            <li class="mono"><span class="muted">{site.endpointBase}</span><strong>k3x9q2m7ab</strong></li>
+            <li class="mono"><span class="muted">{site.endpointBase}</span><strong>you@example.com</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</Marketing>
+
+<script is:inline>
+  (function () {
+    var path = location.pathname || '/';
+    if (path.length > 60) path = path.slice(0, 57) + '…';
+    document.querySelectorAll('[data-nf-path]').forEach(function (el) {
+      el.textContent = path;
+    });
+  })();
+</script>
+
+<style>
+  .nf {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    gap: clamp(2.5rem, 7vw, 7rem);
+    align-items: start;
+    padding-block: clamp(2.5rem, 7vw, 6rem) var(--section);
+  }
+
+  /* ---- The returned-mail label ---- */
+  .nf-label-col {
+    position: sticky;
+    top: 6rem;
+    padding: var(--s-4) var(--s-5) var(--s-7) 0;
+  }
+  .nf-label {
+    position: relative;
+    container-type: inline-size;
+    background: var(--bg-raised);
+    border: var(--bw-heavy) solid var(--line-strong);
+    box-shadow: var(--shadow-label-lg);
+    transform: rotate(-2deg);
+  }
+  .nf-label-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-3);
+    padding: 0.6rem var(--s-4);
+    background: var(--fg);
+    color: var(--bg);
+    font-size: var(--fs-xs);
+  }
+  .nf-label-top .caps-wide {
+    letter-spacing: 0.12em;
+  }
+  .nf-404 {
+    padding: var(--s-3) var(--s-4) 0;
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: 72cqi;
+    line-height: 0.78;
+    letter-spacing: -0.03em;
+    color: var(--fg);
+  }
+  .nf-reasons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-2) var(--s-4);
+    margin-top: var(--s-4);
+    padding: var(--s-4);
+    border-top: var(--bw-strong) solid var(--line-strong);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--fg-muted);
+  }
+  .nf-reasons li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .nf-reasons .is-ticked {
+    color: var(--fg);
+    font-weight: 600;
+  }
+  .nf-box {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 1.05rem;
+    height: 1.05rem;
+    border: 1.5px solid var(--line-strong);
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--signal-text);
+  }
+  .nf-addr {
+    display: grid;
+    gap: 0.3rem;
+    padding: var(--s-3) var(--s-4);
+    border-top: 1px dashed var(--line);
+    color: var(--fg-muted);
+  }
+  .nf-addr-val {
+    font-size: var(--fs-md);
+    color: var(--fg);
+    overflow-wrap: anywhere;
+  }
+  .nf-host {
+    color: var(--fg-muted);
+  }
+  .nf-addr-val [data-nf-path] {
+    color: var(--signal-text);
+    font-weight: 600;
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+  }
+  .nf-label-foot {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding: var(--s-3) var(--s-4) var(--s-4);
+    border-top: 1px dashed var(--line);
+  }
+  .nf-label-foot :global(.nf-barcode) {
+    width: 10rem;
+  }
+  .nf-label-foot .label {
+    text-align: right;
+  }
+  .nf-stamp {
+    --stamp-rotate: -14deg;
+    position: absolute;
+    right: -1.25rem;
+    top: 38%;
+    font-size: clamp(1.1rem, 2.2vw, 1.75rem);
+    background: color-mix(in srgb, var(--bg-raised) 88%, transparent);
+    animation: nf-thunk var(--dur-4) var(--ease-thunk) 250ms both;
+  }
+  @keyframes nf-thunk {
+    0% {
+      transform: scale(2.4) rotate(calc(var(--stamp-rotate) - 12deg));
+      opacity: 0;
+    }
+    55% {
+      transform: scale(0.92) rotate(var(--stamp-rotate));
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1) rotate(var(--stamp-rotate));
+    }
+  }
+
+  /* ---- Copy and routes ---- */
+  .nf-kicker {
+    color: var(--fg-muted);
+  }
+  .nf-kicker .bay-no {
+    color: var(--signal-text);
+  }
+  .nf-h1 {
+    margin-top: var(--s-4);
+  }
+  .nf-h1 span {
+    display: block;
+    color: var(--signal);
+  }
+  .nf-lede {
+    margin-top: var(--s-5);
+    max-width: 42ch;
+  }
+  .nf-inline-path {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .nf-routes {
+    margin-top: var(--s-7);
+  }
+  .nf-routes ol {
+    margin-top: var(--s-3);
+    border-top: var(--bw-strong) solid var(--line-strong);
+  }
+  .nf-routes li {
+    border-bottom: 1px solid var(--line);
+  }
+  .nf-routes a {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(7rem, auto) minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: var(--s-3);
+    padding: var(--s-3) var(--s-2) var(--s-3) 0;
+    text-decoration: none;
+    transition: background-color var(--dur-1), padding var(--dur-2) var(--ease-out);
+  }
+  .nf-routes a:hover {
+    background: var(--bg-raised);
+    padding-left: var(--s-2);
+  }
+  .nf-route-no {
+    font-size: var(--fs-xs);
+    color: var(--signal-text);
+  }
+  .nf-route-label {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: clamp(1.9rem, 3.2vw, 2.6rem);
+    line-height: 1;
+  }
+  .nf-route-note {
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .nf-routes :global(.nf-route-arrow) {
+    align-self: center;
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+  .nf-routes a:hover :global(.nf-route-arrow) {
+    transform: translateX(4px);
+    color: var(--signal-text);
+  }
+  .nf-notice {
+    margin-top: var(--s-6);
+  }
+  .nf-examples {
+    display: grid;
+    gap: 0.2rem;
+    font-size: var(--fs-xs);
+    overflow-wrap: anywhere;
+  }
+  .nf-examples strong {
+    color: var(--signal-text);
+    font-weight: 600;
+  }
+
+  @media (max-width: 1000px) {
+    .nf {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .nf-label-col {
+      position: relative;
+      top: 0;
+      max-width: 34rem;
+    }
+  }
+  @media (max-width: 520px) {
+    .nf-label-col {
+      padding-right: var(--s-2);
+    }
+    .nf-reasons {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .nf-404 {
+      font-size: 62cqi;
+    }
+    .nf-stamp {
+      right: -0.5rem;
+      top: 26%;
+      font-size: 1.15rem;
+    }
+    .nf-label-foot {
+      display: none;
+    }
+    .nf-reasons li:not(.is-ticked) {
+      display: none;
+    }
+    .nf-routes a {
+      grid-template-columns: 2rem minmax(0, 1fr) auto;
+      row-gap: 0.1rem;
+    }
+    .nf-route-note {
+      grid-column: 2;
+      grid-row: 2;
+    }
+    .nf-routes :global(.nf-route-arrow) {
+      grid-column: 3;
+      grid-row: 1 / span 2;
+    }
+  }
+</style>

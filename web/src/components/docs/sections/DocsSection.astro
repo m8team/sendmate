@@ -1,0 +1,138 @@
+---
+/**
+ * One quickstart section: the numbered heading plus the long-form type its content uses.
+ * The content lives in the section components next to this one, so the shared rules reach into the
+ * slot with :global(). `:where(.ds)` keeps each rule's specificity what it was when the docs were one page.
+ */
+import DocsHeading from '../DocsHeading.astro';
+import { sec, type DocsSectionId } from './docsSections';
+
+interface Props {
+  id: DocsSectionId;
+  kicker: string;
+}
+const { id, kicker } = Astro.props;
+---
+
+<section class="ds" id={id} aria-labelledby={`${id}-title`}>
+  <DocsHeading {...sec(id)} kicker={kicker} />
+  <slot />
+</section>
+
+<style>
+  .ds {
+    scroll-margin-top: 1rem;
+  }
+  .ds + .ds {
+    margin-top: clamp(4rem, 8vw, 6.5rem);
+  }
+  .ds > :global(* + *) {
+    margin-top: var(--s-5);
+  }
+  :where(.ds) :global(.prose) {
+    max-width: 70ch;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+  :where(.ds) :global(.prose > * + *) {
+    margin-top: 1em;
+  }
+  :where(.ds) :global(.prose ul),
+  :where(.ds) :global(.prose ol) {
+    padding-left: 1.3rem;
+  }
+  :where(.ds) :global(.prose li + li) {
+    margin-top: 0.45em;
+  }
+  :where(.ds) :global(.prose li::marker) {
+    color: var(--signal-text);
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+  }
+  :where(.ds) :global(.prose a),
+  :where(.ds) :global(.steps a),
+  .ds :global(.notice-body a) {
+    color: var(--signal-text);
+    font-weight: 600;
+  }
+  :where(.ds) :global(.prose strong),
+  :where(.ds) :global(.steps strong) {
+    font-weight: 650;
+  }
+  .ds :global(:not(pre) > code) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  :where(.ds) :global(.ds-h3) {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: 1.5rem;
+    line-height: 1.15;
+    scroll-margin-top: 1rem;
+  }
+  .ds > :global(.ds-h3) {
+    margin-top: var(--s-7);
+  }
+  :where(.ds) :global(.ds-h3-no) {
+    font-family: var(--font-mono);
+    font-stretch: 100%;
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    color: var(--signal-text);
+    vertical-align: 0.2em;
+    margin-right: 0.3rem;
+  }
+
+  /* Numbered steps */
+  :where(.ds) :global(.steps-lead) {
+    color: var(--fg-muted);
+  }
+  .ds > :global(.steps-lead) {
+    margin-top: var(--s-6);
+  }
+  .ds > :global(.steps-lead + .steps) {
+    margin-top: var(--s-3);
+  }
+  :where(.ds) :global(.steps) {
+    counter-reset: step;
+    list-style: none;
+    padding: 0;
+    max-width: 70ch;
+    border-top: 1px solid var(--line-strong);
+  }
+  :where(.ds) :global(.steps li) {
+    counter-increment: step;
+    position: relative;
+    padding: 0.9rem 0 0.9rem 3.2rem;
+    border-bottom: 1px dashed var(--line);
+    line-height: 1.6;
+  }
+  :where(.ds) :global(.steps li::before) {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0.8rem;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    background: var(--fg);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+
+  @media (max-width: 1000px) {
+    .ds,
+    :where(.ds) :global(.ds-h3) {
+      scroll-margin-top: 4rem;
+    }
+  }
+  @media (max-width: 720px) {
+    :where(.ds) :global(.prose) {
+      font-size: 1rem;
+    }
+  }
+</style>

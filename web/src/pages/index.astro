@@ -1,0 +1,111 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import LiveDemo from '../components/home/LiveDemo.vue';
+import Setup from '../components/home/Setup.astro';
+import Manifest from '../components/home/Manifest.astro';
+import Byok from '../components/home/Byok.astro';
+import Spam from '../components/home/Spam.astro';
+import SelfHost from '../components/home/SelfHost.astro';
+import Compare from '../components/home/Compare.astro';
+import CopyButton from '../components/ui/CopyButton.astro';
+import Icon from '../components/ui/Icon.astro';
+import { site } from '../config/site';
+---
+
+<Marketing>
+  <LiveDemo client:load>
+    <div slot="headline">
+      <p class="hero-kicker">
+        <span class="priority">Free for real</span>
+        <span class="label label-lg">Form backend · Open source · No server</span>
+      </p>
+      <h1 class="hero-h1">
+        <span class="hero-line">Your form’s</span>
+        <span class="hero-line">got <em>mail.</em></span>
+      </h1>
+    </div>
+    <div slot="intro" class="hero">
+      <p class="hero-lede">
+        Point any HTML form at sendm8 and the submissions land in your inbox, Discord, Slack or wherever you like. No server to run, no signup to start, no catch.
+      </p>
+      <div class="hero-snippet">
+        <p class="label muted">The whole setup, give or take:</p>
+        <div class="endpoint">
+          <code class="endpoint-url"><span class="ep-base">&lt;form action="{site.endpointBase}</span><span class="ep-id">you@example.com</span><span class="ep-base">"&gt;</span></code>
+          <CopyButton text={`<form action="${site.endpointBase}you@example.com" method="POST">`} label="Copy" variant="outline" size="sm" />
+        </div>
+      </div>
+      <div class="hero-cta">
+        <a class="btn btn-signal btn-lg" href="/app/onboarding">Get your endpoint <Icon name="arrow-right" /></a>
+        <a class="btn btn-ghost btn-lg" href="#setup">How it works</a>
+      </div>
+    </div>
+  </LiveDemo>
+
+  <Setup />
+  <Manifest />
+  <Byok />
+  <Spam />
+  <SelfHost />
+  <Compare />
+</Marketing>
+
+<style>
+  .hero-kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3);
+    color: var(--fg-muted);
+  }
+  .hero-h1 {
+    margin-top: var(--s-4);
+    font-family: var(--font-display);
+    font-stretch: 68%;
+    font-weight: 900;
+    font-size: clamp(4.2rem, 15.5vw, 16rem);
+    line-height: 0.8;
+    letter-spacing: -0.005em;
+    text-wrap: initial;
+  }
+  .hero-line {
+    display: block;
+    white-space: nowrap;
+  }
+  .hero-h1 em {
+    font-style: normal;
+    color: var(--signal);
+  }
+  .hero-lede {
+    margin-top: var(--s-6);
+    max-width: 36ch;
+    font-size: var(--fs-lg);
+    line-height: 1.45;
+  }
+  .hero-snippet {
+    margin-top: var(--s-5);
+    max-width: 36rem;
+  }
+  .hero-snippet .label {
+    margin-bottom: var(--s-2);
+  }
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-5);
+  }
+  @media (max-width: 1100px) {
+    .hero-h1 {
+      font-size: clamp(3.4rem, 19.5vw, 11rem);
+    }
+    .hero-lede {
+      margin-top: 0;
+    }
+  }
+  @media (max-width: 520px) {
+    .hero-cta .btn {
+      flex: 1 1 100%;
+    }
+  }
+</style>

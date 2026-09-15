@@ -1,0 +1,137 @@
+---
+/**
+ * What a sendm8 notification looks like in Discord. Uses Discord's own colours
+ * on purpose, contained to this one panel.
+ */
+---
+
+<figure class="dc" aria-label="Example Discord message from sendm8">
+  <div class="dc-msg">
+    <div class="dc-avatar" aria-hidden="true">m8</div>
+    <div class="dc-main">
+      <p class="dc-meta"><span class="dc-name">sendm8</span><span class="dc-app">APP</span><span class="dc-time">Today at 16:42</span></p>
+      <div class="dc-embed">
+        <p class="dc-author">Studio contact · new submission</p>
+        <p class="dc-title">Alex Moreno wrote in</p>
+        <dl class="dc-fields">
+          <div><dt>name</dt><dd>Alex Moreno</dd></div>
+          <div><dt>email</dt><dd>alex@moreno.dev</dd></div>
+          <div class="dc-wide"><dt>message</dt><dd>Hiya! Loved the portfolio. Are you free for a quick project in October?</dd></div>
+        </dl>
+        <p class="dc-foot">SM8 7Q2K 9F4X 3M · Spam score 0.04 · View in dashboard</p>
+      </div>
+    </div>
+  </div>
+</figure>
+
+<style>
+  .dc {
+    max-width: 36rem;
+    padding: 1rem 1rem 1.1rem;
+    background: #313338;
+    color: #dbdee1;
+    border-radius: var(--r-3);
+    font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.375;
+  }
+  .dc-msg {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: 0.9rem;
+  }
+  .dc-avatar {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: #cc3117;
+    color: #fff8ee;
+    font-family: var(--font-display);
+    font-stretch: 80%;
+    font-weight: 900;
+    font-size: 0.95rem;
+  }
+  .dc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .dc-name {
+    color: #f2f3f5;
+    font-weight: 600;
+  }
+  .dc-app {
+    padding: 0 0.3rem;
+    border-radius: 3px;
+    background: #5865f2;
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .dc-time {
+    color: #949ba4;
+    font-size: 0.75rem;
+  }
+  .dc-embed {
+    margin-top: 0.35rem;
+    padding: 0.6rem 0.9rem 0.75rem;
+    background: #2b2d31;
+    border-left: 4px solid #ff5a38;
+    border-radius: 4px;
+  }
+  .dc-author {
+    color: #f2f3f5;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .dc-title {
+    margin-top: 0.3rem;
+    color: #00a8fc;
+    font-weight: 600;
+  }
+  .dc-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+  }
+  .dc-wide {
+    grid-column: 1 / -1;
+  }
+  .dc-fields dt {
+    color: #f2f3f5;
+    font-weight: 600;
+    font-size: 0.8125rem;
+  }
+  .dc-fields dd {
+    margin: 0.1rem 0 0;
+    overflow-wrap: anywhere;
+  }
+  .dc-foot {
+    margin-top: 0.6rem;
+    color: #b5bac1;
+    font-size: 0.75rem;
+  }
+  @media (max-width: 480px) {
+    .dc {
+      padding: 0.8rem 0.75rem 0.9rem;
+    }
+    .dc-msg {
+      grid-template-columns: 2rem minmax(0, 1fr);
+      gap: 0.6rem;
+    }
+    .dc-avatar {
+      width: 2rem;
+      height: 2rem;
+      font-size: 0.8rem;
+    }
+    .dc-fields {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

@@ -1,0 +1,398 @@
+---
+/**
+ * The post office rate card. Every service row costs 0.00, which is the joke and also the truth.
+ */
+import Waves from '../brand/Waves.astro';
+import { limits, fmt } from '../../config/site';
+
+const h = limits.digestHourUtc;
+const digestAt = `${h % 12 || 12}${h < 12 ? 'am' : 'pm'} UTC`;
+
+interface Row {
+  cls: string;
+  name: string;
+  desc: string;
+  allowance: string;
+  probably?: boolean;
+  href?: string;
+}
+
+const rows: Row[] = [
+  {
+    cls: 'Letters',
+    name: 'Form submissions',
+    desc: 'Stored, searchable and waiting in your dashboard inbox.',
+    allowance: `${fmt.n(limits.submissionsPerFormPerMonth)} per form, a month`,
+    href: '#fair-use',
+  },
+  { cls: 'Pigeonholes', name: 'Forms', desc: 'One per site, per page, per whim.', allowance: fmt.n(limits.forms) },
+  {
+    cls: 'First class',
+    name: 'Email notifications',
+    desc: 'Sent through our shared sender, from notify@sendm8.com.',
+    allowance: `${fmt.n(limits.emailsPerDay)} instant a day, then the digest`,
+    href: '#fair-use',
+  },
+  {
+    cls: 'Express',
+    name: 'Discord, Slack, Telegram & webhooks',
+    desc: 'Instant, signed where it matters, retried if the other end is down.',
+    allowance: fmt.n(limits.channelDeliveries),
+  },
+  {
+    cls: 'Parcels',
+    name: 'File uploads',
+    desc: 'CVs, screenshots, briefs. Not your holiday videos.',
+    allowance: `${limits.fileUploadMb} MB a file · ${limits.submissionUploadMb} MB a submission`,
+  },
+  { cls: 'Evening round', name: 'Daily digest', desc: 'One tidy email with the day’s post, instead of forty pings.', allowance: `1 a day, ${digestAt}` },
+  {
+    cls: 'Sorting',
+    name: 'Spam protection',
+    desc: 'Honeypot, rate limits, heuristics, Turnstile and an optional AI score.',
+    allowance: 'All five layers',
+  },
+  {
+    cls: 'Registered',
+    name: 'Bring your own Resend key',
+    desc: 'Unlimited email notifications from your own domain.',
+    allowance: 'Unlimited, on your Resend plan',
+    href: '#byok',
+  },
+  { cls: 'Collection', name: 'CSV & JSON export', desc: 'It’s your data. Take it whenever you like.', allowance: 'As often as you like' },
+  {
+    cls: 'Self-service',
+    name: 'Self-hosted sendm8',
+    desc: 'Deploy it to your own Cloudflare account. You set the limits.',
+    allowance: 'Whatever you set',
+    probably: true,
+  },
+];
+---
+
+<section class="tariff band-ink" id="rates" aria-labelledby="tariff-title">
+  <div class="wrap">
+    <div class="board">
+      <header class="board-head">
+        <div>
+          <p class="label board-kicker">01 · Schedule of rates</p>
+          <h2 id="tariff-title" class="caps-wide board-title">Tariff of charges</h2>
+        </div>
+        <dl class="board-meta mono">
+          <div><dt>Effective</dt><dd>14 Sep 2026</dd></div>
+          <div><dt>Currency</dt><dd>Any. It’s all zero.</dd></div>
+          <div><dt>Plans on offer</dt><dd>1</dd></div>
+        </dl>
+      </header>
+
+      <div class="board-cols label" aria-hidden="true">
+        <span>Class</span>
+        <span>Service</span>
+        <span>Allowance</span>
+        <span class="bc-rate">Rate</span>
+      </div>
+
+      <ol class="board-rows" role="list">
+        {
+          rows.map((r, i) => (
+            <li class="row">
+              <span class="row-cls label">
+                <span class="row-no">{String(i + 1).padStart(2, '0')}</span>
+                {r.cls}
+              </span>
+              <div class="row-svc">
+                <h3 class="row-name">{r.name}</h3>
+                <p class="row-desc">{r.desc}</p>
+              </div>
+              <p class="row-allow mono">
+                <span class="sr-only">Allowance: </span>
+                {r.href ? <a href={r.href}>{r.allowance}</a> : r.allowance}
+              </p>
+              <p class="row-rate">
+                <span class="sr-only">{r.probably ? 'Rate: probably also 0.00, on Cloudflare’s free plan' : 'Rate: 0.00'}</span>
+                <span class="flaps" aria-hidden="true">
+                  <span class="flap">0</span>
+                  <span class="flap-dot">.</span>
+                  <span class="flap">0</span>
+                  <span class="flap">0</span>
+                </span>
+                {r.probably && (
+                  <span class="stamp row-probably" aria-hidden="true">
+                    Probably
+                  </span>
+                )}
+              </p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <footer class="board-foot">
+        <div class="bf-notes">
+          <p>
+            <strong>Self-service small print:</strong> Cloudflare bills you, not us. sendm8 is built to fit Cloudflare’s free plan, so for most forms that
+            bill is also 0.00.
+          </p>
+          <p>No card. No trial that ends. No “contact sales”. The allowances are the same for every account.</p>
+        </div>
+        <p class="bf-total">
+          <span class="label">Total due</span>
+          <span class="bf-sum">0.00</span>
+        </p>
+      </footer>
+    </div>
+    <Waves lines={4} tone="muted" class="board-waves" />
+  </div>
+</section>
+
+<style>
+  .tariff {
+    padding-block: clamp(3.5rem, 8vw, 7rem);
+  }
+  .board {
+    position: relative;
+    border: 2px solid var(--line-strong);
+    /* letterboard grooves */
+    background:
+      repeating-linear-gradient(180deg, transparent 0 7px, color-mix(in srgb, var(--fg) 4%, transparent) 7px 8px),
+      var(--bg);
+  }
+  .board-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: var(--s-5);
+    padding: clamp(1.25rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem);
+    border-bottom: 2px solid var(--line-strong);
+  }
+  .board-kicker {
+    color: var(--signal-text);
+  }
+  .board-title {
+    margin-top: var(--s-2);
+    font-size: clamp(1.7rem, 4.6vw, 3.4rem);
+    line-height: 0.95;
+  }
+  .board-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-6);
+    font-size: var(--fs-xs);
+  }
+  .board-meta dt {
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--track-label);
+    font-size: var(--fs-2xs);
+  }
+  .board-meta dd {
+    margin: 0.15rem 0 0;
+    font-weight: 600;
+  }
+
+  .board-cols,
+  .row {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr) minmax(0, 16rem) 10rem;
+    gap: var(--s-5);
+    padding-inline: clamp(1rem, 3vw, 2rem);
+  }
+  .board-cols {
+    padding-block: 0.7rem;
+    color: var(--fg-muted);
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .bc-rate {
+    text-align: right;
+  }
+  .row {
+    align-items: center;
+    padding-block: 1rem;
+    border-bottom: 1px solid var(--line);
+    transition: background-color var(--dur-1);
+  }
+  .row:hover {
+    background: color-mix(in srgb, var(--fg) 5%, transparent);
+  }
+  .row-cls {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    color: var(--fg);
+    font-weight: 600;
+  }
+  .row-no {
+    color: var(--fg-muted);
+  }
+  .row-name {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+    line-height: 1.1;
+  }
+  .row-desc {
+    margin-top: 0.2rem;
+    color: var(--fg-muted);
+    font-size: var(--fs-sm);
+  }
+  .row-allow {
+    font-size: var(--fs-sm);
+    line-height: 1.35;
+  }
+  .row-allow a {
+    text-decoration-style: dotted;
+  }
+  .row-rate {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .flaps {
+    display: inline-flex;
+    align-items: stretch;
+    gap: 3px;
+  }
+  .flap {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 2.5rem;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--r-1);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--fg);
+  }
+  /* split-flap hinge */
+  .flap::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 1px solid var(--bg);
+  }
+  .flap-dot {
+    align-self: end;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--accent);
+  }
+  .row-probably {
+    position: absolute;
+    right: -0.6rem;
+    top: -1.1rem;
+    --stamp-rotate: -9deg;
+    --stamp-color: var(--accent);
+    background: var(--bg);
+    font-size: var(--fs-2xs);
+  }
+
+  .board-foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: var(--s-5) var(--s-7);
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+  .bf-notes {
+    max-width: 62ch;
+    display: grid;
+    gap: var(--s-2);
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .bf-notes strong {
+    color: var(--fg);
+  }
+  .bf-total {
+    display: grid;
+    justify-items: end;
+    gap: var(--s-1);
+  }
+  .bf-total .label {
+    color: var(--fg-muted);
+  }
+  .bf-sum {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: clamp(4rem, 10vw, 7.5rem);
+    line-height: 0.8;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .tariff :global(.board-waves) {
+    margin-top: var(--s-4);
+  }
+
+  @media (max-width: 1100px) {
+    .board-cols,
+    .row {
+      grid-template-columns: 9rem minmax(0, 1fr) minmax(0, 12rem) 9rem;
+      gap: var(--s-4);
+    }
+    .flap {
+      width: 1.6rem;
+      height: 2.2rem;
+      font-size: 1.3rem;
+    }
+  }
+  @media (max-width: 800px) {
+    .board-cols {
+      display: none;
+    }
+    .row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'cls rate'
+        'svc rate'
+        'allow allow';
+      gap: 0.35rem var(--s-4);
+      align-items: start;
+    }
+    .row-cls {
+      grid-area: cls;
+    }
+    .row-svc {
+      grid-area: svc;
+    }
+    .row-allow {
+      grid-area: allow;
+      padding-top: 0.35rem;
+      margin-top: 0.2rem;
+      border-top: 1px dashed var(--line);
+      font-size: var(--fs-xs);
+    }
+    .row-allow::before {
+      content: 'Allowance · ' / '';
+      color: var(--fg-muted);
+    }
+    .row-rate {
+      grid-area: rate;
+      padding-top: 0.2rem;
+    }
+    .flap {
+      width: 1.35rem;
+      height: 1.9rem;
+      font-size: 1.1rem;
+    }
+    .row-probably {
+      top: -1.35rem;
+      right: -0.25rem;
+    }
+    .bf-total {
+      justify-items: start;
+    }
+  }
+</style>

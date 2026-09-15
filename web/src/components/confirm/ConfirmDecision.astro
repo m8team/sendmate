@@ -1,0 +1,165 @@
+---
+/**
+ * The three states of the confirm page: asking, confirmed and declined.
+ * Rendered as three sibling panels in the page grid; the page's script shows one at a time (data-panel).
+ */
+import Icon from '../ui/Icon.astro';
+import { limits, site } from '../../config/site';
+
+interface Props {
+  /** The zero-signup form's address, e.g. hello@example.com. */
+  formId: string;
+  /** The form address without the scheme. */
+  endpoint: string;
+}
+const { formId, endpoint } = Astro.props;
+---
+
+<!-- State: asking -->
+<section class="cf-act" data-panel="ask" aria-label="Confirm or decline">
+  <div class="cf-buttons">
+    <button type="button" class="btn btn-signal btn-lg" data-cf="yes">Yes, send them to me <Icon name="arrow-right" /></button>
+    <button type="button" class="btn btn-outline btn-lg" data-cf="no">No, this wasn’t me</button>
+  </div>
+  <ul class="cf-small" role="list">
+    <li><span class="mono cf-bullet">01</span><p><strong>Yes</strong> delivers the waiting submission to {formId}, and every one after it lands straight in that inbox.</p></li>
+    <li><span class="mono cf-bullet">02</span><p><strong>Doing nothing</strong> is fine too. The submission stays sealed and nothing else gets sent.</p></li>
+    <li>
+      <span class="mono cf-bullet">03</span>
+      <p>We send at most one of these emails per address every {limits.confirmationCooldownHours} hours, and never a second while one is waiting. Nobody can use sendm8 to flood your inbox.</p>
+    </li>
+  </ul>
+</section>
+
+<!-- State: confirmed -->
+<section class="cf-act cf-done" data-panel="yes" hidden aria-labelledby="yes-title">
+  <p class="label cf-state-label cf-ok"><Icon name="check" size={14} strokeWidth={2.5} /> Confirmed</p>
+  <h2 id="yes-title" class="h2 cf-state-h" tabindex="-1">Sorted. It’s on its way.</h2>
+  <p class="cf-state-body">
+    Your waiting submission is on its way to <strong>{formId}</strong>. From now on, anything posted to this form goes straight to your inbox.
+  </p>
+  <div class="cf-upsell">
+    <div>
+      <p class="h4">Want a dashboard?</p>
+      <p class="muted">Sign in with the same email and this form is already there, with search, spam filtering, exports and Discord or Slack alerts. Still free.</p>
+    </div>
+    <a class="btn btn-signal" href="/app/sign-in">Sign in <Icon name="arrow-right" /></a>
+  </div>
+</section>
+
+<!-- State: declined -->
+<section class="cf-act cf-done" data-panel="no" hidden aria-labelledby="no-title">
+  <p class="label cf-state-label">
+    <Icon name="x" size={14} strokeWidth={2.5} /> Declined
+  </p>
+  <h2 id="no-title" class="h2 cf-state-h" tabindex="-1">Fair enough. We won’t email this address again for this form.</h2>
+  <p class="cf-state-body">
+    The waiting submission has been binned, and <span class="mono cf-inline-mono">{endpoint}</span> won’t deliver anything to you. There’s nothing else you need to do.
+  </p>
+  <p class="cf-state-body">
+    Think someone is doing this on purpose? <a class="link-signal" href={`mailto:${site.abuseEmail}?subject=Unwanted%20form%20confirmation%20for%20${encodeURIComponent(formId)}`}>Report abuse</a> and a human will take a look.
+  </p>
+  <button type="button" class="btn btn-ghost btn-sm cf-undo" data-cf="ask"><Icon name="arrow-left" size={16} /> Undo, I clicked the wrong one</button>
+</section>
+
+<style>
+  .cf-act {
+    grid-area: act;
+    margin-top: var(--s-6);
+  }
+  .cf-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+  }
+  .cf-small {
+    display: grid;
+    gap: var(--s-3);
+    margin-top: var(--s-7);
+    max-width: 38rem;
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--line);
+  }
+  .cf-small li {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .cf-small strong {
+    color: var(--fg);
+  }
+  .cf-bullet {
+    font-size: var(--fs-xs);
+    color: var(--signal-text);
+    padding-top: 0.15rem;
+  }
+  .cf-done {
+    max-width: 40rem;
+  }
+  .cf-state-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--fg-muted);
+  }
+  .cf-ok {
+    color: var(--ok);
+  }
+  .cf-state-h {
+    margin-top: var(--s-3);
+  }
+  .cf-state-h:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  .cf-state-body {
+    margin-top: var(--s-4);
+    max-width: 52ch;
+  }
+  .cf-inline-mono {
+    font-size: 0.9em;
+    overflow-wrap: anywhere;
+  }
+  .cf-upsell {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--s-5);
+    margin-top: var(--s-6);
+    padding: var(--s-5);
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--accent);
+    background: var(--bg-raised);
+  }
+  .cf-upsell .muted {
+    margin-top: var(--s-2);
+    font-size: var(--fs-sm);
+    max-width: 44ch;
+  }
+  .cf-undo {
+    margin-top: var(--s-5);
+    margin-left: calc(var(--s-3) * -1);
+  }
+
+  @media (max-width: 960px) {
+    .cf-act {
+      margin-top: var(--s-7);
+    }
+  }
+  @media (max-width: 520px) {
+    .cf-act {
+      margin-top: var(--s-5);
+    }
+    .cf-small {
+      margin-top: var(--s-5);
+    }
+    .cf-buttons .btn {
+      flex: 1 1 100%;
+    }
+    .cf-upsell {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+</style>

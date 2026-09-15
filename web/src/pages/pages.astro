@@ -1,0 +1,380 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import Icon from '../components/ui/Icon.astro';
+import { forms } from '../mocks';
+
+type Entry = { href: string; name: string; desc: string; note?: string };
+type Group = { code: string; title: string; blurb: string; entries: Entry[] };
+
+const studio = forms.find((f) => f.id === 'k3x9q2m7ab')!;
+const otherForms = forms.filter((f) => f.id !== studio.id);
+const formStatus: Record<string, string> = {
+  active: 'Active',
+  paused: 'Paused',
+  pending_confirmation: 'Waiting for confirmation',
+  disabled: 'Disabled',
+};
+
+const thanksExample = `/thanks?name=${encodeURIComponent('Achterberg Studio')}&back=${encodeURIComponent('https://achterberg.studio')}&accent=${encodeURIComponent('#335c67')}`;
+
+const groups: Group[] = [
+  {
+    code: 'A',
+    title: 'Marketing',
+    blurb: 'The front counter',
+    entries: [
+      { href: '/', name: 'Home', desc: 'The poster, the live demo and the whole pitch.' },
+      { href: '/pricing', name: 'Pricing', desc: 'One plan, it’s free. Fair-use limits, BYOK and the FAQ.' },
+      { href: '/docs', name: 'Docs quickstart', desc: 'Basic form, AJAX, redirects, spam, uploads, Discord and Resend.' },
+    ],
+  },
+  {
+    code: 'B',
+    title: 'App',
+    blurb: 'The sorting office',
+    entries: [
+      { href: '/app/sign-in', name: 'Sign in', desc: 'GitHub or Google, and nothing else to remember.' },
+      { href: '/app/onboarding', name: 'Onboarding', desc: 'Name a form, pick where it goes, copy the snippet.' },
+      { href: '/app', name: 'Forms list', desc: 'Every pigeonhole with counts, sparklines and status.' },
+      { href: `/app/forms/${studio.id}`, name: `Inbox: ${studio.name}`, desc: 'The submission inbox with filters, search and the delivery journey.' },
+      { href: `/app/forms/${studio.id}/settings`, name: 'Form settings', desc: 'General, notifications, channels, spam and the danger zone.' },
+      { href: '/app/account/email', name: 'Email & BYOK', desc: 'Paste a Resend key, see usage against the free sender.' },
+      ...otherForms.map((f) => ({
+        href: `/app/forms/${f.id}`,
+        name: `Inbox: ${f.name}`,
+        desc: `Another mock form, ${f.monthCount} submission${f.monthCount === 1 ? '' : 's'} this month.`,
+        note: formStatus[f.status],
+      })),
+    ],
+  },
+  {
+    code: 'C',
+    title: 'System',
+    blurb: 'Notices, slips and the odd returned letter',
+    entries: [
+      { href: '/confirm', name: 'Email confirmation', desc: 'The one-time “want these submissions?” page for zero-signup forms.' },
+      { href: '/thanks', name: 'Thank-you page', desc: 'The quiet default after submitting. Brandable with query params.' },
+      { href: thanksExample, name: 'Thank-you, branded', desc: 'The same page with a site name, back link and accent colour.' },
+      { href: '/nope', name: '404', desc: 'Return to sender. Any unknown URL lands here.' },
+      { href: '/blocked?reason=rate', name: 'Rate limited', desc: 'Too many submissions in a minute, with a live countdown.' },
+      { href: '/blocked?reason=blocked', name: 'Blocked', desc: 'A form that won’t accept posts from here, explained calmly.' },
+      { href: '/c/demo', name: 'Challenge page', desc: 'A quick human check before a held submission is released.' },
+      { href: '/emails', name: 'Notification email', desc: 'The “New submission” email at desktop and phone widths.' },
+      { href: '/emails/new-submission.html', name: 'Email, raw HTML', desc: 'The email-safe template on its own, as a mail client sees it.' },
+    ],
+  },
+];
+
+const total = groups.reduce((n, g) => n + g.entries.length, 0);
+
+const params = [
+  { page: '/thanks', name: 'name', example: 'Achterberg%20Studio', desc: 'Site name shown above the message and in the back link.' },
+  { page: '/thanks', name: 'back', example: 'https://achterberg.studio', desc: 'Where the back link goes. http and https only. Without it, the link goes back a page.' },
+  { page: '/thanks', name: 'accent', example: '%23335c67', desc: 'A hex colour for the top rule, dot and underline. Never used for text, so contrast stays safe.' },
+  { page: '/thanks', name: 'ref', example: 'SM8%20RH0M%208DJT%207Z', desc: 'A tracking number for the visitor to quote.' },
+  { page: '/blocked', name: 'reason', example: 'rate | blocked', desc: 'Which notice to show. Defaults to rate.' },
+];
+---
+
+<Marketing title="Every page in this mockup" description="A directory of every page in the sendm8 frontend mockup.">
+  <section class="wrap dir" aria-labelledby="dir-title">
+    <div class="dir-head">
+      <div>
+        <p class="bay label label-lg"><span class="bay-no">Directory</span> Ground floor to loading bay</p>
+        <h1 id="dir-title" class="display dir-h1">Every page <span>in this mockup.</span></h1>
+      </div>
+      <p class="lede dir-lede">
+        {total} stops, all clickable, all running on mock data. If it’s not on this board, it doesn’t exist yet.
+      </p>
+    </div>
+
+    <div class="board band-ink">
+      <div class="board-top" aria-hidden="true">
+        <span class="caps-wide">Sorting office directory</span>
+        <span class="mono board-count">{String(total).padStart(3, '0')} addresses</span>
+      </div>
+
+      {
+        groups.map((g) => (
+          <section class="board-group" aria-labelledby={`g-${g.code}`}>
+            <header class="board-group-head">
+              <span class="board-code" aria-hidden="true">{g.code}</span>
+              <h2 id={`g-${g.code}`} class="board-title">{g.title}</h2>
+              <p class="label board-blurb">{g.blurb}</p>
+            </header>
+            <ol class="board-list" role="list">
+              {g.entries.map((e, i) => (
+                <li>
+                  <a class="board-row" href={e.href}>
+                    <span class="mono board-no">
+                      {g.code}
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span class="board-name">
+                      {e.name}
+                      {e.note && <span class="tag tag-plain board-note">{e.note}</span>}
+                    </span>
+                    <span class="mono board-url">{decodeURIComponent(e.href)}</span>
+                    <span class="board-desc">{e.desc}</span>
+                    <Icon name="arrow-right" size={18} class="board-arrow" />
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))
+      }
+    </div>
+
+    <div class="dir-params">
+      <div class="dir-params-head">
+        <p class="label muted">For the system pages</p>
+        <h2 class="h3">Query params worth knowing</h2>
+        <p class="muted">
+          The thank-you page is seen by other people’s visitors, so it borrows the site’s name and colour from the redirect. Try <a class="link-signal" href={thanksExample}>the branded example</a>.
+        </p>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <caption class="sr-only">Query parameters for the system pages</caption>
+          <thead>
+            <tr>
+              <th scope="col">Page</th>
+              <th scope="col">Param</th>
+              <th scope="col">Example</th>
+              <th scope="col">What it does</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              params.map((p) => (
+                <tr>
+                  <td class="mono">{p.page}</td>
+                  <th scope="row" class="mono dir-param">{p.name}</th>
+                  <td class="mono dir-example">{p.example}</td>
+                  <td>{p.desc}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .dir {
+    padding-block: clamp(2.5rem, 6vw, 5rem) var(--section);
+  }
+  .dir-head {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    gap: var(--s-6);
+    align-items: end;
+  }
+  .dir-h1 {
+    margin-top: var(--s-5);
+  }
+  .dir-h1 span {
+    display: block;
+    color: var(--signal);
+  }
+  .dir-lede {
+    color: var(--fg-muted);
+    font-size: var(--fs-md);
+  }
+
+  /* ---- The board ---- */
+  .board {
+    margin-top: var(--s-7);
+    padding: clamp(1rem, 2.5vw, 2rem);
+    border-radius: var(--r-1);
+    box-shadow: var(--shadow-label-lg);
+    background-image: repeating-linear-gradient(0deg, transparent 0 3px, color-mix(in srgb, #fff 2.5%, transparent) 3px 4px);
+  }
+  :global([data-theme='dark']) .board {
+    box-shadow: 0 0 0 1px var(--inv-line), 6px 6px 0 0 var(--signal-mark);
+  }
+  .board-top {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+    padding-bottom: var(--s-3);
+    border-bottom: var(--bw-heavy) double var(--line-strong);
+    font-size: var(--fs-xs);
+  }
+  .board-count {
+    color: var(--accent);
+  }
+  .board-group + .board-group {
+    margin-top: var(--s-6);
+  }
+  .board-group-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-3);
+    padding-block: var(--s-5) var(--s-2);
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .board-code {
+    display: inline-grid;
+    place-items: center;
+    align-self: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+  .board-title {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    line-height: 0.9;
+    text-transform: uppercase;
+  }
+  .board-blurb {
+    margin-left: auto;
+    color: var(--fg-muted);
+    text-align: right;
+  }
+  .board-row {
+    display: grid;
+    grid-template-columns: 3.2rem minmax(0, 3fr) minmax(0, 3.2fr) minmax(0, 4fr) 1.5rem;
+    align-items: baseline;
+    gap: var(--s-4);
+    padding: 0.8rem var(--s-2);
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+    transition: background-color var(--dur-1);
+  }
+  .board-row:hover {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  .board-row:hover .board-name {
+    color: var(--accent);
+  }
+  .board-no {
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+    letter-spacing: 0.04em;
+  }
+  .board-name {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 750;
+    font-size: 1.15rem;
+    line-height: 1.15;
+  }
+  .board-note {
+    margin-left: var(--s-2);
+    vertical-align: 0.15em;
+    font-family: var(--font-mono);
+    font-stretch: normal;
+  }
+  .board-url {
+    font-size: var(--fs-xs);
+    color: var(--accent);
+    overflow-wrap: anywhere;
+  }
+  .board-desc {
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .board-row :global(.board-arrow) {
+    align-self: center;
+    color: var(--fg-muted);
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+  .board-row:hover :global(.board-arrow) {
+    transform: translateX(3px);
+    color: var(--accent);
+  }
+
+  /* ---- Params ---- */
+  .dir-params {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: var(--s-6);
+    margin-top: var(--s-9);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--line);
+  }
+  .dir-params-head .h3 {
+    margin-top: var(--s-2);
+  }
+  .dir-params-head .muted {
+    margin-top: var(--s-3);
+    font-size: var(--fs-sm);
+  }
+  .dir-param {
+    color: var(--signal-text);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: var(--fs-sm);
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    padding: 0.8rem 0.75rem;
+  }
+  .dir-example {
+    font-size: var(--fs-xs);
+    overflow-wrap: anywhere;
+    min-width: 10rem;
+  }
+
+  @media (max-width: 1100px) {
+    .board-row {
+      grid-template-columns: 3rem minmax(0, 1fr) minmax(0, 1fr) 1.5rem;
+      grid-template-areas:
+        'no name url arrow'
+        'no desc desc arrow';
+      row-gap: 0.2rem;
+    }
+    .board-no {
+      grid-area: no;
+    }
+    .board-name {
+      grid-area: name;
+    }
+    .board-url {
+      grid-area: url;
+      text-align: right;
+    }
+    .board-desc {
+      grid-area: desc;
+    }
+    .board-row :global(.board-arrow) {
+      grid-area: arrow;
+    }
+  }
+  @media (max-width: 900px) {
+    .dir-head,
+    .dir-params {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 640px) {
+    .board-row {
+      grid-template-columns: 2.4rem minmax(0, 1fr) 1.25rem;
+      grid-template-areas:
+        'no name arrow'
+        'no url arrow'
+        'no desc arrow';
+      gap: 0.15rem var(--s-2);
+      padding-inline: 0;
+    }
+    .board-url {
+      text-align: left;
+    }
+    .board-blurb {
+      display: none;
+    }
+  }
+</style>

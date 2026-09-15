@@ -1,0 +1,147 @@
+---
+/**
+ * Bay 03, special fields: the Formspree-compatible underscore fields.
+ */
+import CodeBlock from '../../ui/CodeBlock.astro';
+import DocsSection from './DocsSection.astro';
+import { FORM } from './docsSections';
+
+const fieldsCode = `
+<form action="${FORM}" method="POST">
+  <input type="hidden" name="_subject" value="New enquiry from the website">
+  <input type="hidden" name="_next" value="https://yourstudio.com/thanks">
+  <input type="hidden" name="_cc" value="team@yourstudio.com">
+  <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+
+  <label>Your email <input name="_replyto" type="email" required></label>
+  <label>Message <textarea name="message"></textarea></label>
+  <button>Send</button>
+</form>`;
+---
+
+<DocsSection id="fields" kicker="Formspree-compatible">
+  <div class="prose">
+    <p>
+      A few field names starting with an underscore change how a submission is handled. They match Formspree’s, so if you’re moving over, changing the
+      URL is the only edit you need. Underscore fields are used and then removed: they aren’t stored with the submission.
+    </p>
+  </div>
+
+  <div class="table-wrap wide fields-table">
+    <table class="table">
+      <caption class="sr-only">Special field names</caption>
+      <thead>
+        <tr>
+          <th scope="col">Field</th>
+          <th scope="col">Also accepts</th>
+          <th scope="col">What it does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><code>_replyto</code></th>
+          <td><code>email</code></td>
+          <td>Sets Reply-To on the notification email, so hitting reply answers the person who wrote in. Must be a valid address.</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>_subject</code></th>
+          <td class="no-alias"><span class="sr-only">None</span><span aria-hidden="true">–</span></td>
+          <td>The subject line of the notification email.</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>_next</code></th>
+          <td><code>_redirect</code></td>
+          <td>Where to send the visitor after a normal form post. Must be on one of the form’s allowed domains. <a href="#redirects">Redirects</a>.</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>_gotcha</code></th>
+          <td><code>_honeypot</code></td>
+          <td>A hidden honeypot. If it has anything in it, the submission is treated as spam. <a href="#spam">Spam protection</a>.</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>_cc</code></th>
+          <td class="no-alias"><span class="sr-only">None</span><span aria-hidden="true">–</span></td>
+          <td>Extra recipients, comma-separated. Only addresses you’ve verified in your account get a copy, so it can’t be used to email strangers.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <CodeBlock code={fieldsCode} lang="html" filename="contact.html" highlight={[2, 3, 4, 5, 7]} class="wide" />
+</DocsSection>
+
+<style>
+  .wide {
+    max-width: 100%;
+  }
+
+  .fields-table {
+    border-top: 2px solid var(--line-strong);
+  }
+  .fields-table th[scope='row'] {
+    padding: 0.8rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .fields-table td {
+    line-height: 1.5;
+  }
+  .fields-table th[scope='row'] {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: var(--fs-sm);
+    color: var(--fg);
+  }
+  :global(.ds) .fields-table :global(code) {
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+  .fields-table td:nth-child(2) {
+    white-space: nowrap;
+    color: var(--fg-muted);
+  }
+  .fields-table a {
+    color: var(--signal-text);
+    font-weight: 600;
+  }
+
+  @media (max-width: 640px) {
+    .fields-table thead {
+      display: none;
+    }
+    .fields-table table,
+    .fields-table tbody {
+      display: block;
+    }
+    .fields-table tr {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: baseline;
+      column-gap: var(--s-2);
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .fields-table th[scope='row'],
+    .fields-table td {
+      padding: 0;
+      border: 0;
+    }
+    .fields-table td:nth-of-type(1)::before {
+      content: 'or ' / '';
+      color: var(--fg-muted);
+      font-size: var(--fs-xs);
+    }
+    .fields-table td:nth-of-type(2) {
+      grid-column: 1 / -1;
+      margin-top: 0.4rem;
+    }
+    .fields-table td.no-alias {
+      display: none;
+    }
+    .fields-table tr:has(.no-alias) td:nth-of-type(2) {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

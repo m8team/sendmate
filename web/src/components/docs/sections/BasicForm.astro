@@ -1,0 +1,48 @@
+---
+/**
+ * Bay 01, the basic form: point any HTML form at the endpoint.
+ */
+import CodeTabs from '../../ui/CodeTabs.astro';
+import Callout from '../Callout.astro';
+import DocsSection from './DocsSection.astro';
+import { limits } from '../../../config/site';
+import { setupTabs } from '../../../config/snippets';
+import { FORM } from './docsSections';
+---
+
+<DocsSection id="basic-form" kicker="Start here">
+  <div class="prose">
+    <p>
+      Point any HTML form at your sendm8 endpoint with <code>method="POST"</code>. Every field with a <code>name</code> is stored and delivered,
+      using the names you chose. Keep your own markup, styling and validation: we don’t inject anything into your page.
+    </p>
+    <p>There are two kinds of endpoint, and they work the same way:</p>
+    <ul>
+      <li>
+        <strong><code>/f/you@example.com</code></strong>: no account needed. Great for trying it out and for small sites.{' '}
+        <a href="#zero-signup">How it works</a>.
+      </li>
+      <li>
+        <strong><code>/f/k3x9q2m7ab</code></strong>: a form you created in the dashboard. The id keeps your email address out of your page source, and
+        unlocks channels, allowed domains and your own Resend key.
+      </li>
+    </ul>
+  </div>
+
+  <CodeTabs tabs={setupTabs(FORM)} name="Basic form by framework" class="wide" />
+
+  <div class="prose">
+    <p>
+      We accept <code>application/x-www-form-urlencoded</code> (a normal form post), <code>multipart/form-data</code> (for{' '}
+      <a href="#uploads">files</a>) and <code>application/json</code>. A submission can have up to {limits.fieldsPerSubmission} fields and{' '}
+      {limits.bodyKb} KB of text.
+    </p>
+  </div>
+
+  <Callout title="Fields need a name" kind="accent" icon="info">
+    <p>
+      Browsers only send inputs that have a <code>name</code> attribute. If a field is missing from your submissions, that’s nearly always why. An{' '}
+      <code>id</code> on its own isn’t enough.
+    </p>
+  </Callout>
+</DocsSection>

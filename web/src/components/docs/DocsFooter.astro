@@ -1,0 +1,121 @@
+---
+/**
+ * End of the quickstart: where to go next, the edit link and back to top.
+ */
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  editUrl: string;
+}
+const { editUrl } = Astro.props;
+---
+
+<footer class="docs-foot">
+  <p class="label muted">You’ve reached the end of the quickstart</p>
+  <div class="next">
+    <a class="next-card next-main" href="/app/onboarding">
+      <span class="label">Next</span>
+      <span class="next-title">Create your first form</span>
+      <span class="next-desc">Name it, choose where submissions go, copy the snippet.</span>
+      <Icon name="arrow-right" size={24} class="next-arrow" />
+    </a>
+    <a class="next-card" href="/pricing">
+      <span class="label">Also</span>
+      <span class="next-title">Pricing & fair use</span>
+      <span class="next-desc">One free plan, and what happens at each limit.</span>
+      <Icon name="arrow-right" size={24} class="next-arrow" />
+    </a>
+    <a class="next-card" href="/#self-host">
+      <span class="label">Also</span>
+      <span class="next-title">Self-host sendm8</span>
+      <span class="next-desc">Run your own copy on Cloudflare in one click.</span>
+      <Icon name="arrow-right" size={24} class="next-arrow" />
+    </a>
+  </div>
+  <div class="foot-meta">
+    <a href={editUrl} rel="noopener" target="_blank"><Icon name="github" size={16} /> Edit this page on GitHub</a>
+    <span class="mono muted">Last updated 14 Sep 2026</span>
+    <a href="#main">Back to top ↑</a>
+  </div>
+</footer>
+
+<style>
+  .docs-foot {
+    margin-top: clamp(4rem, 8vw, 6.5rem);
+    padding-top: var(--s-5);
+    border-top: var(--bw-heavy) solid var(--line-strong);
+  }
+  .next {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-3);
+    margin-top: var(--s-4);
+  }
+  .next-card {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: var(--s-2);
+    padding: var(--s-5) var(--s-5) var(--s-7);
+    border: 2px solid var(--line-strong);
+    text-decoration: none;
+    transition:
+      transform var(--dur-1) var(--ease-out),
+      box-shadow var(--dur-1) var(--ease-out);
+  }
+  .next-card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-label);
+  }
+  .next-card .label {
+    color: var(--fg-muted);
+  }
+  .next-title {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: 1.35rem;
+    line-height: 1.1;
+  }
+  .next-desc {
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .next-card :global(.next-arrow) {
+    position: absolute;
+    right: var(--s-4);
+    bottom: var(--s-4);
+  }
+  .next-main {
+    background: var(--signal);
+    border-color: var(--signal);
+    color: var(--on-signal);
+  }
+  .next-main .label,
+  .next-main .next-desc {
+    color: var(--on-signal);
+  }
+  .foot-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-3) var(--s-5);
+    margin-top: var(--s-6);
+    font-size: var(--fs-sm);
+  }
+  .foot-meta a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .foot-meta .mono {
+    font-size: var(--fs-xs);
+  }
+
+  @media (max-width: 720px) {
+    .next {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

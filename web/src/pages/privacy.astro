@@ -1,0 +1,12 @@
+---
+import LegalPage from '../components/docs/LegalPage.astro';
+import source from '../../../docs/legal/privacy.md?raw';
+---
+
+<LegalPage
+  source={source}
+  repoPath="docs/legal/privacy.md"
+  kicker="Privacy policy · what we keep and why"
+  description="What sendm8 stores about form owners and the people who fill in their forms, who processes it, and how long it's kept."
+  sibling={{ href: '/terms', label: 'Read the terms of service' }}
+/>

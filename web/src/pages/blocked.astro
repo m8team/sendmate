@@ -1,0 +1,396 @@
+---
+/**
+ * Two system states on one page:
+ *   ?reason=rate     (default) Burst rate limit hit, with a countdown.
+ *   ?reason=blocked  The form refused this submission (origin, paused, flagged).
+ *   ?reason=suspended  The signed-in account is suspended (the dashboard sends people here on 403 account_suspended).
+ */
+import System from '../layouts/System.astro';
+import Postmark from '../components/brand/Postmark.astro';
+import Icon from '../components/ui/Icon.astro';
+import CopyButton from '../components/ui/CopyButton.astro';
+import { limits, site } from '../config/site';
+
+const retrySeconds = 60;
+const refCode = 'BLK-7Q2K-9F4X';
+const reasons = [
+  {
+    title: 'The form only accepts posts from certain websites',
+    body: 'Its owner has limited it to their own domains, and this page isn’t one of them. If it’s your form, add this site under Settings → General → Allowed domains.',
+  },
+  {
+    title: 'The form is paused or switched off',
+    body: 'The owner may have closed it for now. They can switch it back on from their dashboard in one click.',
+  },
+  {
+    title: 'The form has been flagged for a look',
+    body: 'Forms that appear to collect passwords or card details are held while a person checks them. Most turn out to be fine.',
+  },
+];
+---
+
+<System title="Hold on a moment" note="Sorting office notice" showThemeToggle>
+  <!-- ============ Rate limited (default) ============ -->
+  <section class="wrap bl" data-reason-panel="rate" aria-labelledby="rate-title">
+    <div class="bl-mark">
+      <Postmark top="SENDM8.COM" bottom="PLEASE WAIT" center="429" sub={`${limits.ratePerIpPerMinute}/MIN`} size={150} tone="signal" class="bl-postmark" />
+    </div>
+
+    <div class="bl-copy">
+      <p class="label label-lg bl-kicker"><span class="bl-code">429</span> · Too many requests</p>
+      <h1 id="rate-title" class="display bl-h1">Whoa, easy, mate.</h1>
+      <p class="lede bl-lede">
+        More than {limits.ratePerIpPerMinute} submissions came from you in a minute, so we’ve put the kettle on and your next one on hold. It’s how we keep bots out, not a judgement on you.
+      </p>
+
+      <div class="bl-timer" data-timer data-seconds={retrySeconds}>
+        <div class="bl-timer-read">
+          <p class="label muted" id="timer-label">You can try again in</p>
+          <p class="bl-count mono tabular" aria-hidden="true"><span data-count>{retrySeconds}</span><small>s</small></p>
+        </div>
+        <div class="meter bl-meter" style="--pct:100%" data-meter aria-hidden="true"></div>
+        <p class="sr-only" aria-live="polite" data-timer-live>You can try again in {retrySeconds} seconds.</p>
+        <div class="bl-actions">
+          <button type="button" class="btn btn-signal btn-lg" data-retry disabled aria-describedby="timer-label">
+            <Icon name="refresh" /> <span data-retry-label>Try again</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="notice notice-ok bl-notice">
+        <span class="notice-icon"><Icon name="check" size={20} /></span>
+        <p class="notice-title">Your message wasn’t lost</p>
+        <div class="notice-body">
+          <p>It’s still sitting in the form you came from. <a href="#" data-back>Go back</a> and resend it once the timer runs out.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Blocked ============ -->
+  <section class="wrap bl" data-reason-panel="blocked" hidden aria-labelledby="blocked-title">
+    <div class="bl-mark">
+      <Postmark top="SENDM8.COM" bottom="NOT ACCEPTED" center="403" sub="SORRY" size={150} tone="ink" class="bl-postmark" />
+    </div>
+
+    <div class="bl-copy">
+      <p class="label label-lg bl-kicker"><span class="bl-code bl-code-ink">403</span> · Not accepted</p>
+      <h1 id="blocked-title" class="h1 bl-h1 bl-h1-calm">This form isn’t accepting submissions from here.</h1>
+      <p class="lede bl-lede">
+        Nothing’s wrong with you or your browser. The form has a rule this submission didn’t fit, so we didn’t send it. Here’s what that rule is usually about:
+      </p>
+
+      <ol class="bl-reasons" role="list">
+        {
+          reasons.map((r, i) => (
+            <li>
+              <span class="mono bl-reason-no">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <h2 class="h4">{r.title}</h2>
+                <p>{r.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="bl-ref">
+        <div class="bl-ref-code">
+          <p class="label muted">Reference</p>
+          <p class="mono bl-ref-val">{refCode}</p>
+        </div>
+        <CopyButton text={refCode} label="Copy ref" size="sm" />
+        <p class="bl-ref-help">
+          Think this is a mistake? Contact whoever runs the site another way, or email <a href={`mailto:${site.abuseEmail}?subject=Blocked%20submission%20${refCode}`}>{site.abuseEmail}</a> with this reference and we’ll take a look.
+        </p>
+      </div>
+
+      <a href="#" class="btn btn-outline bl-back" data-back><Icon name="arrow-left" /> Back to where you were</a>
+    </div>
+  </section>
+
+  <!-- ============ Account suspended ============ -->
+  <section class="wrap bl" data-reason-panel="suspended" hidden aria-labelledby="suspended-title">
+    <div class="bl-mark">
+      <Postmark top="SENDM8.COM" bottom="ACCOUNT ON HOLD" center="403" sub="SORRY" size={150} tone="ink" class="bl-postmark" />
+    </div>
+
+    <div class="bl-copy">
+      <p class="label label-lg bl-kicker"><span class="bl-code bl-code-ink">403</span> · Account suspended</p>
+      <h1 id="suspended-title" class="h1 bl-h1 bl-h1-calm">This account has been suspended.</h1>
+      <p class="lede bl-lede">
+        We’ve put this sendm8 account on hold, usually because its forms were reported for phishing or spam. The dashboard is closed and its forms aren’t taking submissions.
+      </p>
+
+      <div class="notice bl-notice">
+        <span class="notice-icon"><Icon name="mail" size={20} /></span>
+        <p class="notice-title">Think we got it wrong?</p>
+        <div class="notice-body">
+          <p>
+            Email <a href={`mailto:${site.abuseEmail}?subject=Suspended%20account`}>{site.abuseEmail}</a> from the address you sign in with, and a person will take a look.
+          </p>
+        </div>
+      </div>
+
+      <form method="post" action="/api/auth/sign-out" class="bl-back" data-suspended-signout>
+        <button type="submit" class="btn btn-outline"><Icon name="logout" /> Sign out</button>
+      </form>
+    </div>
+  </section>
+</System>
+
+<script is:inline>
+  (function () {
+    var asked = new URLSearchParams(location.search).get('reason');
+    var reason = asked === 'blocked' || asked === 'suspended' ? asked : 'rate';
+    document.querySelectorAll('[data-reason-panel]').forEach(function (el) {
+      el.hidden = el.getAttribute('data-reason-panel') !== reason;
+    });
+    document.documentElement.dataset.reason = reason;
+    if (reason === 'blocked') document.title = 'Not accepted here · sendm8';
+    if (reason === 'suspended') document.title = 'Account suspended · sendm8';
+  })();
+</script>
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>('[data-back]').forEach((a) =>
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (history.length > 1) history.back();
+      else location.href = '/';
+    }),
+  );
+
+  document.querySelector<HTMLFormElement>('[data-suspended-signout]')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      await fetch('/api/auth/sign-out', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: '{}' });
+    } finally {
+      location.href = '/';
+    }
+  });
+
+  const timer = document.querySelector<HTMLElement>('[data-timer]');
+  if (timer && document.documentElement.dataset.reason === 'rate') {
+    const total = Number(timer.dataset.seconds) || 60;
+    const count = timer.querySelector<HTMLElement>('[data-count]')!;
+    const meter = timer.querySelector<HTMLElement>('[data-meter]')!;
+    const live = timer.querySelector<HTMLElement>('[data-timer-live]')!;
+    const label = timer.querySelector<HTMLElement>('#timer-label')!;
+    const btn = timer.querySelector<HTMLButtonElement>('[data-retry]')!;
+    const announceAt = new Set([30, 10]);
+    const started = Date.now();
+
+    const tick = () => {
+      const left = Math.max(0, total - Math.floor((Date.now() - started) / 1000));
+      count.textContent = String(left);
+      meter.style.setProperty('--pct', `${(left / total) * 100}%`);
+      if (announceAt.has(left)) {
+        announceAt.delete(left);
+        live.textContent = `${left} seconds to go.`;
+      }
+      if (left === 0) {
+        window.clearInterval(id);
+        timer.classList.add('is-ready');
+        label.textContent = 'All clear';
+        count.textContent = 'Ready';
+        btn.disabled = false;
+        live.textContent = 'All clear. You can try again now.';
+        return;
+      }
+    };
+    const id = window.setInterval(tick, 250);
+    tick();
+
+    btn.addEventListener('click', () => {
+      if (history.length > 1) history.back();
+      else location.reload();
+    });
+  }
+</script>
+
+<style>
+  .bl {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: start;
+    padding-block: clamp(2rem, 7vw, 6rem) var(--s-9);
+  }
+  .bl-mark {
+    position: sticky;
+    top: var(--s-7);
+    display: flex;
+    justify-content: flex-end;
+    padding-top: var(--s-6);
+  }
+  .bl-mark :global(.bl-postmark) {
+    width: 100%;
+    max-width: 30rem;
+    transform: rotate(-8deg);
+    opacity: 1;
+  }
+  .bl-copy {
+    max-width: 50rem;
+  }
+  .bl-kicker {
+    color: var(--fg-muted);
+  }
+  .bl-code {
+    color: var(--signal-text);
+    font-weight: 600;
+  }
+  .bl-code-ink {
+    color: var(--fg);
+  }
+  .bl-h1 {
+    margin-top: var(--s-4);
+    font-size: clamp(3.4rem, 9vw, 9rem);
+  }
+  .bl-h1-calm {
+    font-size: var(--fs-h1);
+    max-width: 22ch;
+  }
+  .bl-lede {
+    margin-top: var(--s-5);
+    max-width: 46ch;
+  }
+
+  /* ---- Countdown ---- */
+  .bl-timer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'read actions'
+      'meter meter';
+    align-items: end;
+    gap: var(--s-4) var(--s-5);
+    margin-top: var(--s-7);
+    padding: var(--s-5);
+    border: var(--bw-strong) solid var(--line-strong);
+    background: var(--bg-raised);
+    box-shadow: var(--shadow-label);
+    max-width: 38rem;
+  }
+  .bl-timer-read {
+    grid-area: read;
+  }
+  .bl-count {
+    font-size: clamp(3rem, 7vw, 4.5rem);
+    font-weight: 600;
+    line-height: 1;
+    margin-top: var(--s-2);
+    letter-spacing: -0.03em;
+  }
+  .bl-count small {
+    font-size: 0.4em;
+    color: var(--fg-muted);
+    margin-left: 0.15em;
+  }
+  .bl-meter {
+    grid-area: meter;
+  }
+  .bl-meter::before {
+    transition: width 250ms linear;
+    background: var(--signal);
+  }
+  .bl-actions {
+    grid-area: actions;
+  }
+  .is-ready .bl-count {
+    color: var(--ok);
+  }
+  .is-ready .bl-count small {
+    display: none;
+  }
+  .is-ready .bl-timer-read .label {
+    color: var(--ok);
+  }
+  .bl-notice {
+    margin-top: var(--s-6);
+    max-width: 38rem;
+  }
+
+  /* ---- Blocked ---- */
+  .bl-reasons {
+    margin-top: var(--s-6);
+    border-top: var(--bw-strong) solid var(--line-strong);
+    max-width: 44rem;
+  }
+  .bl-reasons li {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: var(--s-3);
+    padding-block: var(--s-4);
+    border-bottom: 1px solid var(--line);
+  }
+  .bl-reason-no {
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+    padding-top: 0.2rem;
+  }
+  .bl-reasons p {
+    margin-top: var(--s-1);
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+    max-width: 58ch;
+  }
+  .bl-ref {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: var(--s-3) var(--s-5);
+    margin-top: var(--s-6);
+    padding: var(--s-4) var(--s-5);
+    border: 1px dashed var(--line-strong);
+    max-width: 44rem;
+  }
+  .bl-ref-val {
+    font-size: var(--fs-lg);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+  .bl-ref-help {
+    grid-column: 1 / -1;
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .bl-ref-help a {
+    color: var(--fg);
+  }
+  .bl-back {
+    margin-top: var(--s-6);
+  }
+
+  @media (max-width: 900px) {
+    .bl {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+    .bl-mark {
+      position: relative;
+      top: 0;
+      justify-content: flex-start;
+      padding-top: 0;
+      margin-bottom: var(--s-4);
+    }
+    .bl-mark :global(.bl-postmark) {
+      max-width: 18rem;
+      transform: rotate(-5deg);
+    }
+  }
+  @media (max-width: 520px) {
+    .bl-timer {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'read' 'meter' 'actions';
+      padding: var(--s-4);
+    }
+    .bl-actions .btn {
+      width: 100%;
+    }
+    .bl-ref {
+      grid-template-columns: minmax(0, 1fr) auto;
+      padding: var(--s-4);
+    }
+  }
+</style>

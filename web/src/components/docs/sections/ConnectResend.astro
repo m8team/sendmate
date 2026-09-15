@@ -1,0 +1,52 @@
+---
+/**
+ * Bay 10, connect your own Resend key (BYOK).
+ */
+import Callout from '../Callout.astro';
+import DocsSection from './DocsSection.astro';
+import { limits } from '../../../config/site';
+
+const h = limits.digestHourUtc;
+const digestAt = `${h % 12 || 12}${h < 12 ? 'am' : 'pm'} UTC`;
+---
+
+<DocsSection id="byok" kicker="Unlimited email">
+  <div class="prose">
+    <p>
+      Out of the box, notifications go through our shared sender, which sends up to {limits.emailsPerDay} instant emails a day per account (the rest arrive in your daily digest). Add your own{' '}
+      <a href="https://resend.com" rel="noopener" target="_blank">Resend</a> API key and every notification goes through your Resend account instead:
+      no daily cap from us, and it comes from your own domain.
+    </p>
+  </div>
+
+  <ol class="steps">
+    <li>
+      In Resend, go to <strong>Domains</strong>, add the domain you want to send from and add the DNS records it shows you. Wait until it says{' '}
+      <strong>Verified</strong>.
+    </li>
+    <li>
+      Go to <strong>API Keys → Create API Key</strong>. Choose <strong>Sending access</strong> (you can limit it to that one domain) and copy the key. It
+      starts with <code>re_</code> and Resend only shows it once.
+    </li>
+    <li>
+      In sendm8, open <strong><a href="/app/account/email">Account → Email</a></strong>, paste the key and click <strong>Save</strong>. We check it works
+      straight away.
+    </li>
+    <li>Pick the From address, for example <code>forms@yourstudio.com</code>, then send yourself a test.</li>
+  </ol>
+
+  <div class="prose">
+    <p>
+      Keys are encrypted before they’re stored and are never shown in full again: you’ll only see something like <code>re_••••4f2a</code>. To remove
+      one, delete it in sendm8, and revoke it in Resend too for good measure.
+    </p>
+  </div>
+
+  <Callout title="If your key stops working" kind="warn">
+    <p>
+      If Resend rejects your key (it was revoked, or your Resend quota ran out), we don’t quietly switch you back to our sender. Notifications wait for
+      your {digestAt} digest instead, and a banner in the dashboard tells you what went wrong. Submissions are still stored, and Discord, Slack and
+      webhooks carry on as normal.
+    </p>
+  </Callout>
+</DocsSection>

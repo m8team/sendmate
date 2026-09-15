@@ -1,0 +1,12 @@
+---
+import LegalPage from '../components/docs/LegalPage.astro';
+import source from '../../../docs/legal/terms.md?raw';
+---
+
+<LegalPage
+  source={source}
+  repoPath="docs/legal/terms.md"
+  kicker="Terms of service · the rules of the sorting office"
+  description="The terms for using the hosted sendm8 form backend: acceptable use, no warranty, liability and changes."
+  sibling={{ href: '/privacy', label: 'Read the privacy policy' }}
+/>

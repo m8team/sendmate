@@ -1,0 +1,47 @@
+---
+/**
+ * Bay 06, redirects and the thank-you page.
+ */
+import CodeBlock from '../../ui/CodeBlock.astro';
+import Callout from '../Callout.astro';
+import DocsSection from './DocsSection.astro';
+import { FORM } from './docsSections';
+
+const nextCode = `
+<form action="${FORM}" method="POST">
+  <input type="hidden" name="_next" value="https://yourstudio.com/thanks">
+  <!-- your fields -->
+</form>`;
+---
+
+<DocsSection id="redirects" kicker="After they hit send">
+  <div class="prose">
+    <p>
+      After a normal form post (not AJAX), sendm8 answers with a <code>303</code> redirect, so refreshing the next page never submits the form twice.
+      Where the visitor lands is decided in this order:
+    </p>
+    <ol>
+      <li>The <code>_next</code> field in the form, if there is one.</li>
+      <li>The redirect URL in the dashboard, under <strong>Form settings → General</strong>.</li>
+      <li>Our default thank-you page.</li>
+    </ol>
+  </div>
+
+  <CodeBlock code={nextCode} lang="html" filename="contact.html" highlight={[2]} class="wide" />
+
+  <Callout title="Redirects must be on an allowed domain" kind="signal" icon="lock">
+    <p>
+      <code>_next</code> only works for addresses on one of the form’s allowed domains (<strong>Form settings → General → Allowed domains</strong>). If it
+      points anywhere else, we ignore it and show the default thank-you page. This stops a sendm8 form being used as an open redirect to send people to a
+      phishing site.
+    </p>
+  </Callout>
+
+  <div class="prose">
+    <p>
+      The default thank-you page is deliberately quiet: it thanks the visitor, links back to the page they came from and carries a small “Powered by
+      sendm8” and a report link. Your visitors see it, not you, so it doesn’t try to sell them anything.{' '}
+      <a href="/thanks">See the default thank-you page</a>.
+    </p>
+  </div>
+</DocsSection>

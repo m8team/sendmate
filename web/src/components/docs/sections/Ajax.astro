@@ -1,0 +1,183 @@
+---
+/**
+ * Bay 04, AJAX / fetch: JSON in, JSON out, and the status codes.
+ */
+import CodeBlock from '../../ui/CodeBlock.astro';
+import CodeTabs from '../../ui/CodeTabs.astro';
+import Callout from '../Callout.astro';
+import DocsSection from './DocsSection.astro';
+import { limits } from '../../../config/site';
+import { ajaxSnippet } from '../../../config/snippets';
+import { FORM } from './docsSections';
+
+const ajaxHtml = `
+<form id="contact">
+  <label>Your email <input name="email" type="email" required></label>
+  <label>Message <textarea name="message" required></textarea></label>
+  <button>Send</button>
+</form>`;
+
+const ajaxJson = `
+const res = await fetch("${FORM}", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+  body: JSON.stringify({
+    email: "alex@moreno.dev",
+    message: "Hiya! Are you free in October?",
+  }),
+});
+
+const result = await res.json();
+// { ok: true, id: "01K53N7XQ2R8M4DE7Q2K9F4X3M" }`;
+
+const okResponse = `
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "ok": true,
+  "id": "01K53N7XQ2R8M4DE7Q2K9F4X3M"
+}`;
+
+const errResponse = `
+HTTP/1.1 429 Too Many Requests
+Content-Type: application/json
+
+{
+  "ok": false,
+  "error": "This form is full for this month."
+}`;
+
+const statusRows = [
+  { code: '200', means: 'Stored. A 2xx always means the submission is safely saved.' },
+  { code: '303', means: 'Browser posts only: redirect to your thank-you page, or to the Turnstile challenge page.' },
+  { code: '400', means: `We couldn’t read it: bad JSON, more than ${limits.fieldsPerSubmission} fields, or a body over ${limits.bodyKb} KB without files.` },
+  { code: '403', means: 'The page it came from isn’t on the form’s allowed domains, or a Turnstile check failed.' },
+  { code: '404', means: 'No form with that id. Check for a typo in the URL.' },
+  { code: '410', means: 'The form has been disabled by its owner.' },
+  { code: '413', means: `A file is over ${limits.fileUploadMb} MB, or the files add up to more than ${limits.submissionUploadMb} MB.` },
+  { code: '423', means: 'The form is paused. Nothing is stored until it’s switched back on.' },
+  { code: '429', means: `Too many too fast (${limits.ratePerIpPerMinute} a minute per visitor), or the form’s monthly cap is used up.` },
+];
+---
+
+<DocsSection id="ajax" kicker="JSON in, JSON out">
+  <div class="prose">
+    <p>
+      Want to stay on the page and show your own message? Send the form with <code>fetch</code> and an <code>Accept: application/json</code> header.
+      Instead of a redirect you get JSON back, with a proper HTTP status code. It works with any framework, or none.
+    </p>
+  </div>
+
+  <CodeTabs
+    class="wide"
+    name="AJAX examples"
+    tabs={[
+      { label: 'FormData', lang: 'js', filename: 'contact.js', code: ajaxSnippet(FORM), highlight: [8] },
+      { label: 'HTML', lang: 'html', filename: 'contact.html', code: ajaxHtml },
+      { label: 'JSON body', lang: 'js', filename: 'contact.js', code: ajaxJson, highlight: [4, 5] },
+    ]}
+  />
+
+  <h3 class="ds-h3">What comes back</h3>
+  <div class="responses wide">
+    <div>
+      <p class="label resp-label"><span class="tag tag-ok">Success</span></p>
+      <CodeBlock code={okResponse} lang="http" filename="200 OK" compact />
+    </div>
+    <div>
+      <p class="label resp-label"><span class="tag tag-signal">Error</span></p>
+      <CodeBlock code={errResponse} lang="http" filename="4xx" compact />
+    </div>
+  </div>
+  <div class="prose">
+    <p>
+      <code>ok</code> is always there, so checking it is enough. The <code>id</code> is the submission’s id in your dashboard. <code>error</code> is a
+      plain-English sentence you can show to your visitor as it is.
+    </p>
+  </div>
+
+  <div class="table-wrap wide status-table">
+    <table class="table">
+      <caption class="sr-only">HTTP status codes</caption>
+      <thead>
+        <tr>
+          <th scope="col">Status</th>
+          <th scope="col">What it means</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          statusRows.map((r) => (
+            <tr>
+              <th scope="row" class:list={['mono', 'status-code', r.code.startsWith('2') || r.code.startsWith('3') ? 'is-ok' : 'is-err']}>
+                {r.code}
+              </th>
+              <td>{r.means}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <Callout title="Sending files with fetch?" kind="info">
+    <p>
+      Pass the <code>FormData</code> as the body and don’t set a <code>Content-Type</code> header yourself. The browser adds the right multipart header,
+      boundary included.
+    </p>
+  </Callout>
+</DocsSection>
+
+<style>
+  .wide {
+    max-width: 100%;
+  }
+
+  .status-table {
+    border-top: 2px solid var(--line-strong);
+  }
+  .status-table th[scope='row'] {
+    padding: 0.8rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .status-code {
+    font-size: var(--fs-sm) !important;
+    font-weight: 600;
+    width: 5rem;
+  }
+  .status-code.is-ok {
+    color: var(--ok);
+  }
+  .status-code.is-err {
+    color: var(--signal-text);
+  }
+
+  /* Responses */
+  .responses {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-4);
+  }
+  .resp-label {
+    margin-bottom: var(--s-2);
+  }
+
+  @media (max-width: 640px) {
+    .status-table th[scope='row'] {
+      width: 3.5rem;
+      padding-left: 0;
+    }
+  }
+  @media (max-width: 720px) {
+    .responses {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

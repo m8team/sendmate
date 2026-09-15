@@ -1,0 +1,31 @@
+---
+/**
+ * Postal notice callout built on the shared .notice classes.
+ */
+import Icon from '../ui/Icon.astro';
+import type { IconName } from '../ui/icons';
+
+interface Props {
+  kind?: 'info' | 'warn' | 'signal' | 'ok' | 'accent';
+  title: string;
+  icon?: IconName;
+}
+const { kind = 'info', title, icon } = Astro.props;
+const icons: Record<string, IconName> = { info: 'info', warn: 'alert', signal: 'shield', ok: 'check', accent: 'zap' };
+const cls = kind === 'info' ? '' : `notice-${kind}`;
+---
+
+<aside class:list={['notice', 'callout', cls]} aria-label={title}>
+  <span class="notice-icon"><Icon name={icon ?? icons[kind]} size={20} /></span>
+  <p class="notice-title">{title}</p>
+  <div class="notice-body"><slot /></div>
+</aside>
+
+<style>
+  .callout {
+    max-width: 70ch;
+  }
+  .callout :global(code) {
+    white-space: normal;
+  }
+</style>

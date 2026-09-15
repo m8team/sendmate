@@ -1,0 +1,62 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import PricingHero from '../components/pricing/PricingHero.astro';
+import TariffBoard from '../components/pricing/TariffBoard.astro';
+import FairUse from '../components/pricing/FairUse.astro';
+import PricingCalculator from '../components/pricing/PricingCalculator.vue';
+import ByokCompare from '../components/pricing/ByokCompare.astro';
+import Faq from '../components/pricing/Faq.astro';
+import PricingClosing from '../components/pricing/PricingClosing.astro';
+import { site } from '../config/site';
+
+const sponsorUrl = site.sponsorUrl;
+---
+
+<Marketing title="Pricing" description="sendm8 has one plan and it costs nothing. Here are the fair-use limits, why they exist, and how your own Resend key removes the email cap.">
+  <PricingHero />
+
+  <TariffBoard />
+
+  <FairUse />
+
+  <!-- Calculator -->
+  <section class="section calc-section" id="calculator" aria-labelledby="calc-title">
+    <div class="wrap">
+      <p class="bay label label-lg"><span class="bay-no">03</span> Weigh your post</p>
+      <div class="calc-head">
+        <h2 id="calc-title" class="h1">How busy are <br />your forms?</h2>
+        <p class="calc-lede">
+          Tell us roughly how much post you get and we’ll tell you, in plain words, whether you’d reach a limit and what would happen if you did.
+        </p>
+      </div>
+      <PricingCalculator client:visible />
+    </div>
+  </section>
+
+  <ByokCompare />
+
+  <Faq sponsorUrl={sponsorUrl} />
+
+  <PricingClosing />
+</Marketing>
+
+<style>
+  /* ---------- Calculator ---------- */
+  .calc-head {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: var(--s-6);
+    align-items: end;
+    margin-block: var(--s-7) var(--s-7);
+  }
+  .calc-lede {
+    max-width: 44ch;
+    color: var(--fg-muted);
+  }
+
+  @media (max-width: 1000px) {
+    .calc-head {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

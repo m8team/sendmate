@@ -1,0 +1,144 @@
+---
+import CodeTabs from '../ui/CodeTabs.astro';
+import Icon from '../ui/Icon.astro';
+import { setupTabs } from '../../config/snippets';
+---
+
+<section class="section setup" id="setup" aria-labelledby="setup-title">
+  <div class="wrap">
+    <p class="bay label label-lg"><span class="bay-no">02</span> The 30-second setup</p>
+
+    <div class="setup-head">
+      <p class="setup-clock" aria-hidden="true">0:30</p>
+      <h2 id="setup-title" class="h2">Paste one URL. <br />That’s the setup.</h2>
+    </div>
+
+    <div class="setup-grid">
+      <ol class="steps" role="list">
+        <li>
+          <span class="step-no mono">1</span>
+          <div>
+            <h3 class="h4">Point your form at sendm8</h3>
+            <p>Set the <code>action</code> to <code>sendm8.com/f/</code> plus your email. Keep your own HTML, styling and fields.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-no mono">2</span>
+          <div>
+            <h3 class="h4">Send a test</h3>
+            <p>Fill it in yourself. We email you once to check the address is really yours.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-no mono">3</span>
+          <div>
+            <h3 class="h4">Click confirm. Done.</h3>
+            <p>That first submission is delivered, and so is every one after it. Sign in later if you want the dashboard.</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="setup-code">
+        <CodeTabs tabs={setupTabs()} name="Setup code by framework" />
+        <div class="setup-notes">
+          <p><Icon name="zap" size={16} /><span>Want JSON back instead of a redirect? Send <code>Accept: application/json</code>. <a class="link-signal" href="/docs#ajax">AJAX guide</a></span></p>
+          <p><Icon name="refresh" size={16} /><span>Moving from Formspree? Our field names match (<code>_replyto</code>, <code>_next</code>, <code>_gotcha</code>). Change the URL and you’re done.</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .setup {
+    --section: clamp(3rem, 5vw, 4.5rem);
+  }
+  /* The clock and the headline share one row, so the steps and the code start level below. */
+  .setup-head {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: var(--s-4) clamp(1.5rem, 3vw, 3rem);
+    margin-top: var(--s-6);
+  }
+  .setup-clock {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: clamp(6rem, 11vw, 10.5rem);
+    line-height: 0.75;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--signal-mark);
+    font-variant-numeric: tabular-nums;
+  }
+  .setup-grid > * {
+    min-width: 0;
+  }
+  .setup-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    margin-top: var(--s-6);
+    align-items: start;
+  }
+  .steps {
+    border-top: 2px solid var(--line-strong);
+  }
+  .steps li {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: var(--s-3);
+    padding-block: var(--s-4);
+    border-bottom: 1px dashed var(--line);
+  }
+  .step-no {
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border: 2px solid var(--line-strong);
+    border-radius: 50%;
+    font-weight: 600;
+  }
+  .steps p {
+    margin-top: 0.3rem;
+    color: var(--fg-muted);
+    font-size: var(--fs-sm);
+  }
+  .setup-code :global(.codeblock) {
+    box-shadow: var(--shadow-label-lg);
+  }
+  .setup-notes {
+    display: grid;
+    gap: var(--s-3);
+    margin-top: var(--s-5);
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .setup-notes p {
+    display: grid;
+    grid-template-columns: 1.4rem 1fr;
+    align-items: start;
+  }
+  .setup-notes :global(svg) {
+    margin-top: 0.2rem;
+    color: var(--fg);
+  }
+  .setup-notes code {
+    white-space: normal;
+  }
+  @media (max-width: 900px) {
+    .setup-grid {
+      grid-template-columns: 1fr;
+    }
+    .setup-clock {
+      position: absolute;
+      right: 0;
+      top: -1rem;
+      font-size: 7rem;
+      opacity: 0.6;
+      z-index: -1;
+    }
+  }
+</style>

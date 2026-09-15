@@ -1,0 +1,152 @@
+---
+import System from '../layouts/System.astro';
+import HeldDocket from '../components/confirm/HeldDocket.astro';
+import ConfirmDecision from '../components/confirm/ConfirmDecision.astro';
+import { getForm, submissionsFor, endpointFor } from '../mocks';
+
+const form = getForm('hello@achterberg.studio')!;
+const waiting = submissionsFor(form.id);
+const first = waiting[waiting.length - 1];
+const since = new Date(first.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
+const origin = first.meta.referrer;
+const fields = Object.keys(first.data);
+const [local, domain] = form.id.split('@');
+const endpoint = endpointFor(form.id).replace('https://', '');
+---
+
+<System title="Confirm your address" note="One-time confirmation" showThemeToggle>
+  <div class="wrap cf" data-cf-root data-state="ask">
+    <div class="cf-head">
+      <p class="cf-kicker">
+        <span class="priority">Your call</span>
+        <span class="label label-lg muted">Zero-signup form · asked once</span>
+      </p>
+      <h1 class="cf-h1">
+        Someone <span class="cf-aside">(probably you)</span> pointed a form at
+        <span class="cf-addr">{local}@<wbr />{domain}.</span>
+      </h1>
+      <p class="cf-ask">Want the submissions?</p>
+    </div>
+
+    <HeldDocket tracking={first.tracking} waitingCount={waiting.length} since={since} origin={origin} endpoint={endpoint} fields={fields} />
+
+    <ConfirmDecision formId={form.id} endpoint={endpoint} />
+
+    <p class="sr-only" aria-live="polite" data-cf-live></p>
+  </div>
+</System>
+
+<style>
+  .cf {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas:
+      'head docket'
+      'act docket';
+    grid-template-rows: auto 1fr;
+    column-gap: clamp(2rem, 6vw, 6.5rem);
+    padding-block: clamp(2rem, 6vw, 5rem) var(--s-9);
+  }
+  .cf-head {
+    grid-area: head;
+  }
+  .cf-kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3);
+  }
+  .cf-h1 {
+    margin-top: var(--s-5);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: clamp(2.5rem, 5.4vw, 5.2rem);
+    line-height: 0.9;
+    letter-spacing: -0.005em;
+    text-wrap: pretty;
+  }
+  .cf-aside {
+    font-weight: 500;
+    color: var(--fg-muted);
+  }
+  .cf-addr {
+    display: block;
+    margin-top: 0.08em;
+    color: var(--signal);
+    overflow-wrap: anywhere;
+  }
+  .cf-ask {
+    margin-top: var(--s-5);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 750;
+    font-size: var(--fs-h3);
+    line-height: 1.05;
+  }
+  [data-state='ask'] .cf-ask {
+    display: block;
+  }
+  .cf:not([data-state='ask']) .cf-ask {
+    display: none;
+  }
+
+  @media (max-width: 960px) {
+    .cf {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'head' 'docket' 'act';
+      grid-template-rows: auto;
+    }
+  }
+  @media (max-width: 640px) {
+    /* on phones the decision comes first; the docket follows as the evidence */
+    .cf {
+      grid-template-areas: 'head' 'act' 'docket';
+    }
+  }
+</style>
+
+<script>
+  type State = 'ask' | 'yes' | 'no';
+  const root = document.querySelector<HTMLElement>('[data-cf-root]');
+  if (root) {
+    const live = root.querySelector<HTMLElement>('[data-cf-live]')!;
+    const docket = root.querySelector<HTMLElement>('.docket')!;
+    const messages: Record<State, string> = {
+      ask: 'Back to the question. Nothing has been sent or blocked.',
+      yes: 'Confirmed. Your waiting submission is on its way.',
+      no: 'Declined. We won’t email this address again for this form.',
+    };
+
+    const set = (state: State) => {
+      root.dataset.state = state;
+      root.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== state));
+      root.querySelectorAll<HTMLElement>('[data-status]').forEach((s) => (s.hidden = s.dataset.status !== state));
+      root.querySelectorAll<HTMLElement>('[data-stamp]').forEach((s) => {
+        const on = s.dataset.stamp === state;
+        s.hidden = !on;
+        s.classList.remove('is-thunk');
+        if (on && state !== 'ask') {
+          void s.offsetWidth;
+          s.classList.add('is-thunk');
+        }
+      });
+      if (state !== 'ask') {
+        docket.classList.remove('is-shake');
+        void docket.offsetWidth;
+        docket.classList.add('is-shake');
+      }
+      live.textContent = messages[state];
+      const focusTarget =
+        state === 'ask'
+          ? root.querySelector<HTMLElement>('[data-cf="yes"]')
+          : root.querySelector<HTMLElement>(`[data-panel="${state}"] .cf-state-h`);
+      focusTarget?.focus();
+    };
+
+    root.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-cf]');
+      if (btn) set(btn.dataset.cf as State);
+    });
+  }
+</script>

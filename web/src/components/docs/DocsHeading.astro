@@ -1,0 +1,82 @@
+---
+/**
+ * Numbered section heading with a copyable "#" anchor link.
+ */
+interface Props {
+  id: string;
+  no: number;
+  title: string;
+  kicker?: string;
+}
+const { id, no, title, kicker } = Astro.props;
+const num = String(no).padStart(2, '0');
+---
+
+<header class="dh">
+  <p class="dh-kicker label">
+    <span class="dh-no">Bay {num}</span>
+    {kicker && <span class="dh-sep" aria-hidden="true">·</span>}
+    {kicker && <span>{kicker}</span>}
+  </p>
+  <h2 class="dh-title" id={`${id}-title`}>
+    <a class="dh-anchor" href={`#${id}`} aria-label={`Link to “${title}”`}>#</a>{title}
+  </h2>
+</header>
+
+<style>
+  .dh {
+    position: relative;
+    padding-top: var(--s-4);
+    border-top: var(--bw-heavy) solid var(--line-strong);
+    margin-bottom: var(--s-5);
+  }
+  .dh-kicker {
+    display: flex;
+    gap: 0.5rem;
+    color: var(--fg-muted);
+  }
+  .dh-no {
+    color: var(--signal-text);
+    font-weight: 600;
+  }
+  .dh-title {
+    position: relative;
+    margin-top: var(--s-3);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: clamp(2.3rem, 4.2vw, 3.6rem);
+    line-height: 0.92;
+    letter-spacing: -0.005em;
+  }
+  .dh-anchor {
+    position: absolute;
+    right: 100%;
+    top: 0;
+    padding-right: 0.6rem;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-stretch: 100%;
+    font-size: 0.55em;
+    line-height: 1.7;
+    color: var(--fg-subtle);
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity var(--dur-1);
+  }
+  .dh-title:hover .dh-anchor,
+  .dh-anchor:focus-visible {
+    opacity: 1;
+  }
+  .dh-anchor:hover {
+    color: var(--signal-text);
+  }
+  @media (max-width: 1240px) {
+    .dh-anchor {
+      position: static;
+      opacity: 1;
+      padding-right: 0.3rem;
+      vertical-align: 0.35em;
+    }
+  }
+</style>

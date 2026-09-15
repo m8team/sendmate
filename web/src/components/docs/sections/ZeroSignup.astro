@@ -1,0 +1,122 @@
+---
+/**
+ * Bay 02, no signup: put your email in the URL and confirm it once.
+ */
+import CodeBlock from '../../ui/CodeBlock.astro';
+import Callout from '../Callout.astro';
+import DocsSection from './DocsSection.astro';
+import { site, limits } from '../../../config/site';
+
+const zeroSignupCode = `
+<form action="${site.endpointBase}you@example.com" method="POST">
+  <label>Your email <input name="email" type="email" required></label>
+  <label>Message <textarea name="message" required></textarea></label>
+  <button>Send</button>
+</form>`;
+---
+
+<DocsSection id="zero-signup" kicker="No account">
+  <div class="prose">
+    <p>
+      Put your own email address at the end of the URL and the form works straight away. There’s no account to create and no password to forget. We
+      just need to check the address is really yours before we send anything to it.
+    </p>
+  </div>
+
+  <CodeBlock code={zeroSignupCode} lang="html" filename="contact.html" highlight={[1]} class="wide" />
+
+  <ol class="journey" role="list">
+    <li>
+      <span class="j-no mono">1</span>
+      <div>
+        <h3 class="h4">Someone submits the form</h3>
+        <p>It might be you testing it. We store the submission safely, and the visitor sees the thank-you page as normal.</p>
+      </div>
+    </li>
+    <li>
+      <span class="j-no mono">2</span>
+      <div>
+        <h3 class="h4">We send one confirmation email</h3>
+        <p>It goes to the address in the URL and asks whether you want submissions from this form. It comes from <code>notify@sendm8.com</code>.</p>
+      </div>
+    </li>
+    <li>
+      <span class="j-no mono">3</span>
+      <div>
+        <h3 class="h4">You click Confirm</h3>
+        <p>The form goes live, and anything that arrived while we were waiting is delivered to you straight away.</p>
+      </div>
+    </li>
+    <li>
+      <span class="j-no mono j-done">✓</span>
+      <div>
+        <h3 class="h4">Every submission after that just arrives</h3>
+        <p>No more confirmation emails for that address.</p>
+      </div>
+    </li>
+  </ol>
+
+  <Callout title={`One confirmation per ${limits.confirmationCooldownHours} hours`} kind="warn">
+    <p>
+      To stop people using sendm8 to spam random inboxes, we send at most one confirmation email to an address every{' '}
+      {limits.confirmationCooldownHours} hours, and we don’t resend it while it’s waiting. Can’t find it? Check your spam folder first. If it’s really
+      gone, submit the form again once {limits.confirmationCooldownHours} hours have passed.
+    </p>
+  </Callout>
+
+  <div class="prose">
+    <p>
+      Zero-signup forms send email only. When you want Discord, Slack, webhooks or the dashboard inbox, <a href="/app/sign-in">sign in</a> with GitHub or
+      Google using the same verified email address, and your existing forms move into your account automatically.
+    </p>
+  </div>
+</DocsSection>
+
+<style>
+  .wide {
+    max-width: 100%;
+  }
+
+  /* Zero-signup journey: a tracking timeline */
+  .journey {
+    position: relative;
+    max-width: 70ch;
+    padding: var(--s-2) 0 0;
+  }
+  .journey::before {
+    content: '';
+    position: absolute;
+    left: calc(1.1rem - 1px);
+    top: 1.5rem;
+    bottom: 1.5rem;
+    border-left: 2px dashed var(--line-strong);
+  }
+  .journey li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.2rem 1fr;
+    gap: var(--s-4);
+    padding-block: var(--s-3);
+  }
+  .journey p {
+    margin-top: 0.2rem;
+    color: var(--fg-muted);
+    font-size: var(--fs-sm);
+  }
+  .j-no {
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border: 2px solid var(--line-strong);
+    border-radius: 50%;
+    background: var(--bg);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+  .j-done {
+    background: var(--ok);
+    border-color: var(--ok);
+    color: var(--bg);
+  }
+</style>
