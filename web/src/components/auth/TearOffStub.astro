@@ -1,0 +1,55 @@
+---
+/**
+ * Tear-off stub under the sign-in card: you don't need an account to start.
+ */
+import Icon from '../ui/Icon.astro';
+import { site } from '../../config/site';
+---
+
+<aside class="stub" aria-labelledby="stub-title">
+  <p class="label stub-cut" aria-hidden="true">✂ Tear here</p>
+  <h2 id="stub-title" class="h4">Don’t fancy an account?</h2>
+  <p>You don’t need one to start. Point a form at your email address and it just works:</p>
+  <p class="stub-code mono"><span class="muted">action=</span>"{site.endpointBase}<b>you@example.com</b>"</p>
+  <a class="link-signal stub-link" href="/docs#zero-signup">How zero-signup forms work <Icon name="arrow-right" size={16} /></a>
+</aside>
+
+<style>
+  .stub {
+    position: relative;
+    margin-top: var(--s-6);
+    padding: var(--s-5);
+    border: 2px dashed var(--line-strong);
+    border-radius: var(--r-1);
+  }
+  .stub-cut {
+    position: absolute;
+    top: -0.7rem;
+    left: var(--s-4);
+    padding-inline: 0.4rem;
+    background: var(--bg);
+    color: var(--fg-muted);
+  }
+  .stub > p {
+    margin-top: var(--s-2);
+    font-size: var(--fs-sm);
+  }
+  .stub-code {
+    padding: 0.5rem 0.65rem;
+    background: var(--bg-sunk);
+    border: 1px solid var(--line);
+    font-size: var(--fs-xs) !important;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .stub-code b {
+    color: var(--signal-text);
+  }
+  .stub-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: var(--s-3);
+    font-size: var(--fs-sm);
+  }
+</style>

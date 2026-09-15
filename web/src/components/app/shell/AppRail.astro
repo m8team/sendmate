@@ -1,0 +1,277 @@
+---
+/**
+ * The dashboard rail: sections, the pigeonholes (one per form), and the account at the bottom.
+ * A sticky sidebar on wide screens, a drawer opened from the topbar's menu button below 960px.
+ * Everything user-specific is filled in by the scripts below; the static build ships skeletons.
+ */
+import Logo from '../../brand/Logo.astro';
+import Icon from '../../ui/Icon.astro';
+import ThemeToggle from '../../ui/ThemeToggle.astro';
+import RailPigeonholes from './RailPigeonholes.astro';
+
+interface Props {
+  /** 'forms' | 'email' | 'admin' | 'form' (the form is read from the URL) */
+  active: string;
+}
+const { active } = Astro.props;
+---
+
+<aside class="rail" id="app-rail" aria-label="Dashboard">
+  <div class="rail-top">
+    <Logo href="/app" size="sm" />
+    <button type="button" class="icon-btn rail-close" data-rail-close>
+      <Icon name="x" size={18} /><span class="sr-only">Close menu</span>
+    </button>
+  </div>
+
+  <nav class="rail-nav" aria-label="Dashboard sections">
+    <a class="rail-link" href="/app" aria-current={active === 'forms' ? 'page' : undefined}>
+      <Icon name="grid" size={18} /> All forms
+    </a>
+    <a class="rail-link" href="/app/account/email" aria-current={active === 'email' ? 'page' : undefined}>
+      <Icon name="key" size={18} /> Email & BYOK
+    </a>
+    <a class="rail-link" href="/app/admin" aria-current={active === 'admin' ? 'page' : undefined} data-admin-link hidden>
+      <Icon name="shield" size={18} /> Admin
+    </a>
+
+    <p class="label rail-heading">Pigeonholes</p>
+    <RailPigeonholes />
+    <a class="btn btn-outline btn-sm rail-new" href="/app/onboarding"><Icon name="plus" size={16} /> New form</a>
+  </nav>
+
+  <div class="rail-bottom">
+    <a class="rail-usage" href="/app/account/email">
+      <span class="rail-usage-row mono"><span>Emails today</span><span data-usage-count>··/··</span></span>
+      <span class="meter" data-usage-meter style="--pct:0%" aria-hidden="true"></span>
+    </a>
+    <div class="rail-account">
+      <span class="avatar" aria-hidden="true" data-account-initials>··</span>
+      <span class="rail-who">
+        <span class="rail-name" data-account-name><span class="skel" style="width:7rem;height:0.8rem;margin-block:0.15rem"></span></span>
+        <span class="rail-mail" data-account-mail><span class="skel" style="width:9rem;height:0.6rem;margin-top:0.2rem"></span></span>
+      </span>
+      <ThemeToggle />
+    </div>
+    <button type="button" class="rail-link rail-signout" data-signout><Icon name="logout" size={18} /> Sign out</button>
+  </div>
+</aside>
+<div class="rail-scrim" data-rail-close aria-hidden="true"></div>
+
+<style>
+  .rail {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-sunk);
+    border-right: 1px solid var(--line);
+    overflow-y: auto;
+  }
+  .rail-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 3.75rem;
+    padding: 0 var(--s-4);
+    border-bottom: 1px solid var(--line);
+  }
+  .rail-close {
+    display: none;
+  }
+  .rail-nav {
+    padding: var(--s-3);
+    display: grid;
+    gap: 2px;
+    align-content: start;
+  }
+  .rail-link {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: 0.5rem 0.6rem;
+    border-radius: var(--r-1);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    text-decoration: none;
+    color: var(--fg-muted);
+  }
+  .rail-link:hover {
+    background: var(--bg);
+    color: var(--fg);
+  }
+  .rail-link[aria-current='page'] {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  .rail-heading {
+    margin: var(--s-5) 0.6rem var(--s-2);
+    color: var(--fg-muted);
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  .rail-heading::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--line);
+  }
+  .rail-signout {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+  }
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .rail-new {
+    margin-top: var(--s-3);
+    justify-self: start;
+  }
+  .rail-bottom {
+    margin-top: auto;
+    padding: var(--s-3);
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: var(--s-3);
+  }
+  .rail-usage {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.5rem 0.6rem;
+    text-decoration: none;
+    border: 1px dashed var(--line);
+  }
+  .rail-usage:hover {
+    border-color: var(--fg);
+  }
+  .rail-usage-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--fs-2xs);
+    color: var(--fg-muted);
+  }
+  .rail-usage .meter {
+    height: 10px;
+  }
+  .rail-account {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding-inline: 0.2rem;
+  }
+  .avatar {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border: 2px solid var(--fg);
+    border-radius: 50%;
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 850;
+    font-size: 0.8rem;
+  }
+  .rail-who {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    line-height: 1.25;
+  }
+  .rail-name {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+  .rail-mail {
+    font-size: var(--fs-2xs);
+    color: var(--fg-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rail-scrim {
+    display: none;
+  }
+
+  @media (max-width: 960px) {
+    .rail {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: var(--z-overlay);
+      width: min(20rem, 86vw);
+      transform: translateX(-102%);
+      transition: transform var(--dur-3) var(--ease-out);
+      box-shadow: var(--shadow-label-lg);
+    }
+    :global(.rail-is-open) .rail {
+      transform: none;
+    }
+    :global(.rail-is-open) .rail-scrim {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: calc(var(--z-overlay) - 1);
+      background: color-mix(in srgb, var(--ink-900) 45%, transparent);
+    }
+    .rail-close {
+      display: inline-grid;
+    }
+  }
+</style>
+
+<script>
+  // The drawer: the topbar's menu button opens it; the close button, the scrim or Escape shut it.
+  const root = document.documentElement;
+  const openBtn = document.querySelector<HTMLButtonElement>('[data-rail-open]');
+  const rail = document.getElementById('app-rail');
+  const setOpen = (open: boolean) => {
+    root.classList.toggle('rail-is-open', open);
+    openBtn?.setAttribute('aria-expanded', String(open));
+    if (open) rail?.querySelector<HTMLElement>('a, button')?.focus();
+    else openBtn?.focus();
+  };
+  openBtn?.addEventListener('click', () => setOpen(true));
+  document.querySelectorAll('[data-rail-close]').forEach((el) => el.addEventListener('click', () => setOpen(false)));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && root.classList.contains('rail-is-open')) setOpen(false);
+  });
+</script>
+
+<script>
+  import { setUnauthorizedHandler } from '../../../lib/api/client';
+  import { friendlyError } from '../../../lib/api/errors';
+  import { guardSession, SIGN_IN_PATH } from '../../../lib/api/session';
+  import { toast } from '../../../lib/toast';
+  import { mountAccount } from './railAccount';
+  import { mountPigeonholes } from './railPigeonholes';
+
+  // Any 401 from any island means the session ended: back to sign-in.
+  setUnauthorizedHandler(() => window.location.replace(SIGN_IN_PATH));
+
+  const pigeonholes = mountPigeonholes();
+  const account = mountAccount();
+
+  async function boot() {
+    const me = await guardSession().catch((err) => {
+      toast(friendlyError(err), 6000);
+      return null;
+    });
+    if (!me) return;
+    account.show(me);
+    pigeonholes.refresh();
+    account.refreshUsage();
+    account.showAdminLink(me);
+  }
+
+  boot();
+</script>

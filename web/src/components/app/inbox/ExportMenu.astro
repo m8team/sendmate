@@ -1,0 +1,98 @@
+---
+/**
+ * The inbox's Export button and its popover menu, in the topbar outside the Vue island.
+ * Picking a format sends `sendm8:export`; the inbox answers `sendm8:inbox-view` with what's in view
+ * (see useInboxExport.ts).
+ */
+import Icon from '../../ui/Icon.astro';
+---
+
+<button type="button" class="btn btn-outline btn-sm export-btn" popovertarget="inbox-export" aria-haspopup="true">
+  <Icon name="download" size={16} /> <span class="hide-narrow">Export</span>
+</button>
+<div id="inbox-export" popover class="export-menu" aria-label="Export submissions">
+  <p class="label export-scope" data-export-scope>Exports everything in the current folder</p>
+  <button type="button" class="export-opt" data-export="csv">
+    <Icon name="file" size={18} />
+    <span><b>CSV</b><small>For spreadsheets. Opens in Excel, Numbers, Sheets.</small></span>
+  </button>
+  <button type="button" class="export-opt" data-export="json">
+    <Icon name="code" size={18} />
+    <span><b>JSON</b><small>Everything, including delivery history. For code.</small></span>
+  </button>
+</div>
+
+<style>
+  .export-menu {
+    inset: auto;
+    top: 3.4rem;
+    right: clamp(1rem, 2.5vw, 2rem);
+    margin: 0;
+    width: min(20rem, calc(100vw - 2rem));
+    padding: var(--s-2);
+    border: var(--bw-strong) solid var(--line-strong);
+    background: var(--bg-raised);
+    color: var(--fg);
+    box-shadow: var(--shadow-label-lg);
+  }
+  .export-scope {
+    padding: 0.4rem 0.5rem 0.6rem;
+    color: var(--fg-muted);
+    border-bottom: 1px dashed var(--line);
+    margin-bottom: var(--s-1);
+  }
+  .export-opt {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--s-3);
+    align-items: start;
+    width: 100%;
+    padding: 0.65rem 0.5rem;
+    border: 0;
+    border-radius: var(--r-1);
+    background: transparent;
+    text-align: left;
+  }
+  .export-opt:hover {
+    background: var(--bg-sunk);
+  }
+  .export-opt :global(svg) {
+    margin-top: 0.15rem;
+  }
+  .export-opt b {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+  }
+  .export-opt small {
+    display: block;
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+    line-height: 1.35;
+  }
+  @media (max-width: 720px) {
+    .hide-narrow {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+  }
+</style>
+
+<script>
+  const menu = document.getElementById('inbox-export') as (HTMLElement & { hidePopover?: () => void }) | null;
+  menu?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-export]');
+    if (!btn) return;
+    window.dispatchEvent(new CustomEvent('sendm8:export', { detail: btn.dataset.export }));
+    menu.hidePopover?.();
+  });
+  window.addEventListener('sendm8:inbox-view', (e) => {
+    const { note } = (e as CustomEvent<{ note: string }>).detail;
+    const scope = document.querySelector('[data-export-scope]');
+    if (scope) scope.textContent = note;
+  });
+</script>

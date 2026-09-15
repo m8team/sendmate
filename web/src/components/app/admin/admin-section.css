@@ -1,0 +1,42 @@
+/*
+ * Shared bits of the admin sections: the numbered bar, tables, empty states and form panels.
+ * Loaded as `<style scoped src>` by each section, so these rules stay scoped to it.
+ */
+.ad-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+}
+.ad-bar .bay {
+  font-weight: 500;
+}
+.ad-table {
+  margin-top: var(--s-4);
+}
+.ad-table caption {
+  padding: 0 0 var(--s-2);
+  text-align: left;
+  color: var(--fg-muted);
+}
+.num {
+  text-align: right;
+}
+.ad-empty {
+  padding: var(--s-4);
+  border: 2px dashed var(--line);
+  color: var(--fg-muted);
+}
+.ad-panel {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: var(--bw-strong) solid var(--line-strong);
+  background: var(--bg-raised);
+}
+.ad-value {
+  overflow-wrap: anywhere;
+  font-size: var(--fs-xs);
+}

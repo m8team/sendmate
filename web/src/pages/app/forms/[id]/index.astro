@@ -1,0 +1,38 @@
+---
+import App from '../../../../layouts/App.astro';
+import Icon from '../../../../components/ui/Icon.astro';
+import ExportMenu from '../../../../components/app/inbox/ExportMenu.astro';
+import InboxPage from '../../../../components/app/InboxPage.vue';
+
+/**
+ * One static shell for every form: the Worker serves this page for /app/forms/<id>,
+ * and the inbox reads the real id from location.pathname.
+ */
+export function getStaticPaths() {
+  return [{ params: { id: '_' } }];
+}
+---
+
+<App title="Inbox" active="form" crumbs={[{ label: 'Forms', href: '/app' }, { label: 'Loading…' }]} bleed>
+  <Fragment slot="actions">
+    <ExportMenu />
+    <a class="btn btn-ghost btn-sm" href="/app" data-form-href="/settings">
+      <Icon name="settings" size={16} /> <span class="hide-narrow">Settings</span>
+    </a>
+  </Fragment>
+
+  <InboxPage client:load />
+</App>
+
+<style>
+  @media (max-width: 720px) {
+    .hide-narrow {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+  }
+</style>

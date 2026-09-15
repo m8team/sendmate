@@ -1,0 +1,194 @@
+---
+import Focus from '../../layouts/Focus.astro';
+import MissedYouCard from '../../components/auth/MissedYouCard.astro';
+import TearOffStub from '../../components/auth/TearOffStub.astro';
+---
+
+<Focus title="Sign in" description="Sign in to sendm8 with GitHub or Google. No passwords.">
+  <div class="wrap signin">
+    <div class="si-poster">
+      <p class="label label-lg si-kicker"><span class="bay-no">✕</span> Delivery attempted · 15:42</p>
+      <h1 class="display si-title">Sorry we <span class="si-missed">missed you.</span></h1>
+      <p class="lede si-lede">We tried to deliver your submissions, but you weren’t signed in. They’re safe in the sorting office. Sign in to collect.</p>
+
+      <ol class="si-notes" role="list">
+        <li>
+          <span class="label si-note-no">01</span>
+          <div>
+            <h2 class="h4">No passwords. We don’t want them.</h2>
+            <p class="muted">You sign in with GitHub or Google. We never see a password, so there’s nothing of yours to leak or forget.</p>
+          </div>
+        </li>
+        <li>
+          <span class="label si-note-no">02</span>
+          <div>
+            <h2 class="h4">We only take the basics</h2>
+            <p class="muted">Your name and verified email. That’s it. No contacts, no repos, no posting on your behalf.</p>
+          </div>
+        </li>
+        <li>
+          <span class="label si-note-no">03</span>
+          <div>
+            <h2 class="h4">Used a form without an account?</h2>
+            <p class="muted">Sign in with the same email and any forms you set up at <code>/f/you@example.com</code> move into your dashboard, submissions and all.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="si-side">
+      <MissedYouCard />
+
+      <TearOffStub />
+    </div>
+  </div>
+</Focus>
+
+<script>
+  import { api } from '../../lib/api/endpoints';
+  import { friendlyError } from '../../lib/api/errors';
+
+  const errorEl = document.querySelector<HTMLElement>('[data-signin-error]')!;
+  const showError = (message: string) => {
+    errorEl.textContent = message;
+    errorEl.hidden = false;
+  };
+
+  // Already signed in? Straight to the dashboard.
+  api
+    .hasSession()
+    .then((signedIn) => signedIn && window.location.replace('/app'))
+    .catch(() => {
+      /* not signed in: stay here */
+    });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-provider]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const provider = btn.dataset.provider as 'github' | 'google';
+      const label = btn.querySelector<HTMLElement>('[data-provider-label]')!;
+      const original = label.textContent;
+      errorEl.hidden = true;
+      btn.setAttribute('aria-disabled', 'true');
+      label.textContent = `Off to ${provider === 'github' ? 'GitHub' : 'Google'}…`;
+      try {
+        const { url } = await api.signInSocial(provider, '/app');
+        if (!url) throw new Error('no url');
+        window.location.href = url;
+      } catch (err) {
+        label.textContent = original;
+        btn.removeAttribute('aria-disabled');
+        showError(`Couldn’t start signing in with ${provider === 'github' ? 'GitHub' : 'Google'}. ${friendlyError(err)}`);
+      }
+    });
+  });
+
+  // Dev sign-in: only offered when running locally (the Worker also refuses it anywhere else).
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    const box = document.querySelector<HTMLElement>('[data-dev-signin]')!;
+    const btn = box.querySelector<HTMLButtonElement>('[data-dev-button]')!;
+    const label = box.querySelector<HTMLElement>('[data-dev-label]')!;
+    box.hidden = false;
+    btn.addEventListener('click', async () => {
+      btn.setAttribute('aria-disabled', 'true');
+      label.textContent = 'Signing in…';
+      try {
+        await api.devLogin('dev@sendm8.local');
+        window.location.href = '/app';
+      } catch (err) {
+        btn.removeAttribute('aria-disabled');
+        label.textContent = 'Dev sign-in as dev@sendm8.local';
+        showError(`Dev sign-in didn’t work: ${friendlyError(err)} Is DEV_LOGIN=true in .dev.vars at the repo root?`);
+      }
+    });
+  }
+</script>
+
+<style>
+  .signin {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: start;
+    padding-block: clamp(2rem, 6vw, 5.5rem) var(--s-9);
+  }
+  .si-kicker {
+    color: var(--signal-text);
+  }
+  .si-kicker .bay-no {
+    color: var(--signal-text);
+  }
+  .si-title {
+    margin-top: var(--s-4);
+    font-size: clamp(3.4rem, 9.5vw, 9.5rem);
+  }
+  .si-missed {
+    display: block;
+    color: var(--signal);
+  }
+  .si-lede {
+    margin-top: var(--s-5);
+    max-width: 34ch;
+  }
+
+  .si-notes {
+    margin-top: clamp(2.5rem, 5vw, 4.5rem);
+    display: grid;
+    gap: 0;
+    max-width: 36rem;
+    border-top: var(--bw-strong) solid var(--line-strong);
+  }
+  .si-notes li {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    gap: var(--s-3);
+    padding-block: var(--s-4);
+    border-bottom: 1px solid var(--line);
+  }
+  .si-note-no {
+    padding-top: 0.3rem;
+    color: var(--fg-muted);
+  }
+  .si-notes p {
+    margin-top: 0.3rem;
+    font-size: var(--fs-sm);
+  }
+
+  /* ---- Card column ---- */
+  .si-side {
+    position: relative;
+    padding-top: var(--s-5);
+  }
+
+  @media (max-width: 960px) {
+    .signin {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--s-6);
+    }
+    .si-poster {
+      display: contents;
+    }
+    .si-poster > :not(.si-notes) {
+      grid-column: 1;
+    }
+    .si-kicker {
+      order: 1;
+    }
+    .si-title {
+      order: 2;
+      margin-top: calc(var(--s-6) * -1 + var(--s-3));
+    }
+    .si-lede {
+      order: 3;
+      margin-top: calc(var(--s-6) * -1 + var(--s-4));
+    }
+    .si-side {
+      order: 4;
+      padding-top: 0;
+      max-width: 34rem;
+    }
+    .si-notes {
+      order: 5;
+      margin-top: 0;
+    }
+  }
+</style>

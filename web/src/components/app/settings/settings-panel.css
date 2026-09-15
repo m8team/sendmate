@@ -1,0 +1,97 @@
+/*
+ * The settings tab panel: a raised card with a head and label/control rows.
+ * Loaded as `<style scoped src>` by each panel, so these rules stay scoped to it.
+ */
+.panel {
+  min-width: 0;
+  border: var(--bw-strong) solid var(--line-strong);
+  background: var(--bg-raised);
+}
+.panel:focus-visible {
+  outline-offset: 3px;
+}
+.panel-danger {
+  border-color: var(--signal);
+}
+.panel-head {
+  padding: var(--s-5) var(--s-5) var(--s-4);
+  border-bottom: 2px dashed var(--line);
+}
+.panel-head p {
+  margin-top: var(--s-2);
+  font-size: var(--fs-sm);
+  max-width: 62ch;
+}
+.panel-danger .panel-head .h3 {
+  color: var(--signal-text);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(12rem, 5fr) minmax(0, 7fr);
+  gap: var(--s-3) var(--s-6);
+  padding: var(--s-5);
+  border-bottom: 1px solid var(--line);
+  margin: 0;
+  min-width: 0;
+}
+.row:last-child {
+  border-bottom: 0;
+}
+.row-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  font-family: var(--font-display);
+  font-stretch: var(--stretch-semi);
+  font-weight: 750;
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+.row-desc {
+  margin-top: 0.35rem;
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+  max-width: 44ch;
+}
+.row-control {
+  min-width: 0;
+  display: grid;
+  gap: var(--s-2);
+  align-content: start;
+}
+.row-control-end {
+  justify-content: end;
+  align-content: center;
+}
+.row-control.cluster {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.hint-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-2);
+  font-size: var(--fs-sm);
+}
+
+@media (max-width: 1100px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .row-control-end {
+    justify-content: start;
+  }
+  .row-desc {
+    max-width: 60ch;
+  }
+}
+@media (max-width: 560px) {
+  .panel-head,
+  .row {
+    padding: var(--s-4);
+  }
+}

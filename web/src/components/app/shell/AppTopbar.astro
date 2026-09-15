@@ -1,0 +1,128 @@
+---
+/**
+ * The dashboard topbar: the menu button (narrow screens), a breadcrumb, and the page's actions.
+ * Islands rename crumbs at runtime by their `data-crumb` index (see lib/page.ts).
+ */
+import Icon from '../../ui/Icon.astro';
+
+export interface Crumb {
+  label: string;
+  href?: string;
+}
+interface Props {
+  crumbs: Crumb[];
+}
+const { crumbs } = Astro.props;
+---
+
+<header class="topbar">
+  <button type="button" class="icon-btn rail-open" aria-controls="app-rail" aria-expanded="false" data-rail-open>
+    <Icon name="menu" size={20} /><span class="sr-only">Open menu</span>
+  </button>
+  <nav aria-label="Breadcrumb" class="crumbs">
+    <ol role="list">
+      {
+        crumbs.map((c, i) => (
+          <li>
+            {c.href && i < crumbs.length - 1 ? (
+              <a href={c.href} data-crumb={i}>
+                {c.label}
+              </a>
+            ) : (
+              <span aria-current={i === crumbs.length - 1 ? 'page' : undefined} data-crumb={i}>
+                {c.label}
+              </span>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+  <div class="topbar-actions">
+    <slot name="actions" />
+  </div>
+</header>
+
+<style>
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-height: 3.75rem;
+    padding: 0.4rem clamp(1rem, 2.5vw, 2rem);
+    background: color-mix(in srgb, var(--bg) 94%, transparent);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+  }
+  .rail-open {
+    display: none;
+  }
+  .crumbs {
+    min-width: 0;
+    flex: 1;
+  }
+  .crumbs ol {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .crumbs li {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+  .crumbs li + li::before {
+    content: '/';
+    color: var(--fg-subtle);
+  }
+  .crumbs li:last-child {
+    flex-shrink: 0;
+    max-width: 60%;
+  }
+  .crumbs a,
+  .crumbs [aria-current='page'] {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .crumbs a {
+    color: var(--fg-muted);
+    text-decoration: none;
+  }
+  @media (max-width: 560px) {
+    /* on phones show only the last two crumbs: parent / current */
+    .crumbs li:not(:nth-last-child(-n + 2)) {
+      display: none;
+    }
+    .crumbs li:nth-last-child(2)::before {
+      display: none;
+    }
+  }
+  .crumbs a:hover {
+    color: var(--fg);
+    text-decoration: underline;
+  }
+  .crumbs [aria-current='page'] {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  @media (max-width: 960px) {
+    .rail-open {
+      display: inline-grid;
+    }
+  }
+</style>

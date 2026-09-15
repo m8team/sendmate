@@ -1,0 +1,121 @@
+---
+/**
+ * The rail's pigeonhole list: skeletons in the static build, filled in the browser by
+ * railPigeonholes.ts from the <template> below (so the clones keep this component's styles).
+ */
+---
+
+<ul role="list" class="holes" data-holes aria-busy="true">
+  {
+    [62, 48, 70].map((w) => (
+      <li data-hole-skel aria-hidden="true">
+        <span class="hole hole-skel">
+          <span class="hole-dot s-skel" />
+          <span class="skel" style={`width:${w}%;height:0.7rem`} />
+        </span>
+      </li>
+    ))
+  }
+  <li data-holes-empty hidden>
+    <p class="holes-note">No forms yet. Make your first one below.</p>
+  </li>
+  <li data-holes-error hidden>
+    <p class="holes-note">
+      Couldn’t load your forms. <button type="button" class="holes-retry" data-holes-retry>Try again</button>
+    </p>
+  </li>
+</ul>
+<template data-hole-tpl>
+  <li>
+    <a class="hole" href="/app">
+      <span class="hole-dot" aria-hidden="true"></span>
+      <span class="hole-name"></span>
+      <span class="hole-count mono" hidden></span>
+    </a>
+  </li>
+</template>
+
+<style>
+  /* each form is a pigeonhole: a little box with a slot */
+  .holes {
+    display: grid;
+    gap: 4px;
+  }
+  .hole {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: 0.55rem 0.6rem;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--line);
+    background: var(--bg);
+    font-size: var(--fs-sm);
+    text-decoration: none;
+    color: var(--fg);
+    min-width: 0;
+  }
+  .hole:hover {
+    border-color: var(--fg);
+  }
+  .hole[aria-current='page'] {
+    border-color: var(--fg);
+    border-top-color: var(--signal);
+    box-shadow: var(--shadow-label);
+  }
+  .hole-dot {
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--ok);
+  }
+  .hole-dot.s-paused {
+    background: transparent;
+    border: 1.5px solid var(--fg-muted);
+  }
+  .hole-dot.s-pending_confirmation {
+    background: var(--warn);
+  }
+  .hole-dot.s-disabled {
+    background: var(--signal);
+  }
+  .hole-name {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hole-count {
+    flex: none;
+    min-width: 1.4rem;
+    padding: 0 0.3rem;
+    background: var(--signal);
+    color: var(--on-signal);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.35rem;
+  }
+  .hole-skel {
+    pointer-events: none;
+  }
+  .hole-dot.s-skel {
+    background: var(--bg-deep);
+  }
+  .holes-note {
+    padding: 0.4rem 0.6rem;
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  .holes-retry {
+    border: 0;
+    padding: 0;
+    background: none;
+    color: var(--signal-text);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+</style>

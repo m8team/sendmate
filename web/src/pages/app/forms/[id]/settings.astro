@@ -1,0 +1,19 @@
+---
+import App from '../../../../layouts/App.astro';
+import Icon from '../../../../components/ui/Icon.astro';
+import SettingsPage from '../../../../components/app/SettingsPage.vue';
+
+/**
+ * One static shell for every form: the Worker serves this page for /app/forms/<id>/settings,
+ * and the settings read the real id from location.pathname.
+ */
+export function getStaticPaths() {
+  return [{ params: { id: '_' } }];
+}
+---
+
+<App title="Settings" active="form" crumbs={[{ label: 'Forms', href: '/app' }, { label: 'Loading…', href: '/app' }, { label: 'Settings' }]}>
+  <a slot="actions" class="btn btn-outline btn-sm" href="/app" data-form-href=""><Icon name="inbox" size={16} /> Inbox</a>
+
+  <SettingsPage client:load />
+</App>

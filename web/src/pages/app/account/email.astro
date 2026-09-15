@@ -1,0 +1,50 @@
+---
+import App from '../../../layouts/App.astro';
+import ResendKey from '../../../components/app/ResendKey.vue';
+---
+
+<App title="Email & BYOK" active="email" crumbs={[{ label: 'Account', href: '/app' }, { label: 'Email & BYOK' }]}>
+  <header class="em-head">
+    <p class="label em-kicker"><span class="bay-no">Account</span> · Postage</p>
+    <h1 class="h2 em-title">Email &amp; <span class="em-red">bring your own key</span></h1>
+    <p class="em-why">Your own key means no daily cap, and email from your own domain.</p>
+  </header>
+
+  <ResendKey client:load />
+</App>
+
+<style>
+  .em-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+    grid-template-areas: 'kick kick' 'title why';
+    gap: var(--s-2) var(--s-6);
+    align-items: end;
+    margin-bottom: clamp(1.25rem, 3vw, 2.25rem);
+    padding-bottom: var(--s-4);
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .em-kicker {
+    grid-area: kick;
+    color: var(--fg-muted);
+  }
+  .em-title {
+    grid-area: title;
+  }
+  .em-red {
+    color: var(--signal);
+  }
+  .em-why {
+    grid-area: why;
+    font-size: var(--fs-lg);
+    line-height: 1.35;
+    font-weight: 500;
+    padding-bottom: 0.2rem;
+  }
+  @media (max-width: 900px) {
+    .em-head {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'kick' 'title' 'why';
+    }
+  }
+</style>

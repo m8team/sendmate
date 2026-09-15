@@ -1,0 +1,41 @@
+/*
+ * Radio option cards (notify mode, Turnstile mode, email recipient).
+ * Loaded as `<style scoped src>` by each component that renders them.
+ */
+.options {
+  gap: var(--s-2);
+}
+.option {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-start;
+  padding: var(--s-3) var(--s-4);
+  border: 1.5px solid var(--line);
+  background: var(--bg);
+  cursor: pointer;
+}
+.option:hover {
+  border-color: var(--line-strong);
+}
+.option.on {
+  border-color: var(--line-strong);
+  box-shadow: inset 4px 0 0 var(--signal);
+}
+.option .check {
+  margin-top: 0.15rem;
+}
+.option-body {
+  display: grid;
+  gap: 0.2rem;
+}
+.option-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  font-weight: 700;
+}
+.option-desc {
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+}

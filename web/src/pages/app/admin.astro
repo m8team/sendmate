@@ -1,0 +1,8 @@
+---
+import App from '../../layouts/App.astro';
+import AdminPanel from '../../components/app/AdminPanel.vue';
+---
+
+<App title="Admin" active="admin" crumbs={[{ label: 'Forms', href: '/app' }, { label: 'Admin' }]}>
+  <AdminPanel client:load />
+</App>

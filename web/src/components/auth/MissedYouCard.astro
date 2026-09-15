@@ -1,0 +1,268 @@
+---
+/**
+ * The "Sorry we missed you" card: the sign-in buttons dressed as a postal delivery card.
+ * The buttons are wired up by the sign-in page's script (data-provider, data-dev-signin, data-signin-error).
+ */
+import Icon from '../ui/Icon.astro';
+import Barcode from '../brand/Barcode.astro';
+
+const cardNo = 'SM8 CARD 0001 KN';
+const reasons = [
+  { text: 'You weren’t signed in', ticked: true },
+  { text: 'Too big for the letterbox', ticked: false },
+  { text: 'Dog looked unfriendly', ticked: false },
+];
+---
+
+<article class="card" aria-labelledby="card-title">
+  <header class="card-band">
+    <p id="card-title" class="caps-wide card-band-title">Sorry we missed you</p>
+    <p class="label card-band-no">Card No. 0001</p>
+  </header>
+
+  <dl class="card-rows">
+    <div class="card-row">
+      <dt class="label">For</dt>
+      <dd class="card-hand">Whoever runs these forms</dd>
+    </div>
+    <div class="card-row">
+      <dt class="label">Item</dt>
+      <dd class="card-hand">Your submissions <span class="muted">(kept safe, nothing dropped)</span></dd>
+    </div>
+  </dl>
+
+  <fieldset class="card-reasons">
+    <legend class="label">We couldn’t deliver because</legend>
+    <ul role="list">
+      {
+        reasons.map((r) => (
+          <li class:list={['reason', r.ticked && 'is-ticked']}>
+            <span class="reason-box" aria-hidden="true">{r.ticked ? '✕' : ''}</span>
+            <span>
+              {r.text}
+              {r.ticked ? <span class="sr-only"> (ticked)</span> : <span class="sr-only"> (not ticked)</span>}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </fieldset>
+
+  <div class="card-collect">
+    <p class="label card-collect-label">To collect, sign in with</p>
+    <div class="card-btns">
+      <button type="button" class="btn btn-lg si-btn" data-provider="github">
+        <Icon name="github" size={22} /> <span data-provider-label>Continue with GitHub</span>
+      </button>
+      <button type="button" class="btn btn-outline btn-lg si-btn" data-provider="google">
+        <Icon name="google" size={22} /> <span data-provider-label>Continue with Google</span>
+      </button>
+    </div>
+    <p class="field-error si-error" data-signin-error role="alert" hidden></p>
+    <p class="card-fine">First time? Same buttons. We’ll make your account on the way in.</p>
+    <p class="card-fine card-legal">By signing in you agree to the <a href="/terms">Terms of service</a> and <a href="/privacy">Privacy policy</a>.</p>
+    <div class="si-dev" data-dev-signin hidden>
+      <p class="label">Local development only</p>
+      <button type="button" class="btn btn-ghost btn-sm" data-dev-button>
+        <Icon name="key" size={16} /> <span data-dev-label>Dev sign-in as dev@sendm8.local</span>
+      </button>
+    </div>
+  </div>
+
+  <footer class="card-foot">
+    <Barcode value={cardNo} height={34} class="card-barcode" />
+    <span class="stamp card-stamp" style="--stamp-rotate:-8deg" aria-hidden="true">Attempted</span>
+  </footer>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    background: var(--bg-raised);
+    border: var(--bw-strong) solid var(--line-strong);
+    box-shadow: var(--shadow-label-lg);
+    transform: rotate(1.4deg);
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+  .card:hover,
+  .card:focus-within {
+    transform: rotate(0deg);
+  }
+  .card-band {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+    padding: var(--s-4) var(--s-5);
+    background: var(--signal);
+    color: var(--on-signal);
+  }
+  .card-band-title {
+    font-size: clamp(1.05rem, 1.7vw, 1.35rem);
+    line-height: 1.1;
+  }
+  .card-band-no {
+    opacity: 0.9;
+  }
+  .card-rows {
+    padding: var(--s-2) var(--s-5) 0;
+  }
+  .card-row {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    gap: var(--s-3);
+    align-items: baseline;
+    padding-block: var(--s-3);
+    border-bottom: 1px dashed var(--line);
+  }
+  .card-row dt {
+    color: var(--fg-muted);
+  }
+  .card-hand {
+    font-size: var(--fs-md);
+    font-weight: 600;
+  }
+  .card-hand .muted {
+    font-weight: 400;
+  }
+  .card-reasons {
+    margin: var(--s-4) var(--s-5) 0;
+    padding: 0;
+    border: 0;
+  }
+  .card-reasons legend {
+    color: var(--fg-muted);
+    margin-bottom: var(--s-2);
+  }
+  .card-reasons ul {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .reason {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .reason.is-ticked {
+    color: var(--fg);
+    font-weight: 600;
+  }
+  .reason-box {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 1.5px solid var(--line-strong);
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--signal-text);
+  }
+  .card-collect {
+    margin: var(--s-5) var(--s-5) 0;
+    padding-top: var(--s-4);
+    border-top: var(--bw-strong) solid var(--line-strong);
+  }
+  .card-collect-label {
+    margin-bottom: var(--s-3);
+  }
+  .card-btns {
+    display: grid;
+    gap: var(--s-3);
+  }
+  .si-btn {
+    justify-content: flex-start;
+    width: 100%;
+  }
+  .card-fine {
+    margin-top: var(--s-3);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  .card-legal {
+    margin-top: var(--s-2);
+  }
+  .card-legal a {
+    color: var(--fg);
+    font-weight: 600;
+  }
+  .si-error:not([hidden]) {
+    display: flex;
+    margin-top: var(--s-3);
+  }
+  .si-dev {
+    display: grid;
+    justify-items: start;
+    gap: var(--s-2);
+    margin-top: var(--s-4);
+    padding: var(--s-3);
+    border: 1px dashed var(--line-strong);
+    background: var(--bg-sunk);
+  }
+  .si-dev[hidden] {
+    display: none;
+  }
+  .si-dev .label {
+    color: var(--warn);
+  }
+  .card-foot {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--s-4);
+    margin-top: var(--s-5);
+    padding: var(--s-4) var(--s-5) var(--s-4);
+    border-top: 1px solid var(--line);
+    background: var(--bg-sunk);
+  }
+  .card-foot :global(.card-barcode) {
+    width: 11rem;
+  }
+  .card-stamp {
+    margin-bottom: 0.4rem;
+    --stamp-color: var(--signal-mark);
+    box-shadow:
+      inset 0 0 0 1.5px var(--bg-sunk),
+      inset 0 0 0 3px var(--stamp-color);
+  }
+
+  @media (max-width: 960px) {
+    .card {
+      transform: none;
+      box-shadow: var(--shadow-label);
+    }
+  }
+  @media (max-width: 480px) {
+    .card-band,
+    .card-rows {
+      padding-inline: var(--s-4);
+    }
+    .card-reasons,
+    .card-collect {
+      margin-inline: var(--s-4);
+    }
+    .card-foot {
+      padding-inline: var(--s-4);
+    }
+    .card-foot :global(.card-barcode) {
+      width: 8.5rem;
+    }
+    .si-btn {
+      font-size: 1.05rem;
+      padding-inline: 1rem;
+    }
+  }
+  /* Phones: get the sign-in buttons near the fold; the reasons checklist is a joke, not a task */
+  @media (max-width: 560px) {
+    .card-reasons,
+    .card-rows {
+      display: none;
+    }
+  }
+</style>

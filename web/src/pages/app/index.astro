@@ -1,0 +1,13 @@
+---
+import App from '../../layouts/App.astro';
+import Icon from '../../components/ui/Icon.astro';
+import FormsRack from '../../components/app/FormsRack.vue';
+---
+
+<App title="Forms" active="forms" crumbs={[{ label: 'Forms' }]}>
+  <Fragment slot="actions">
+    <a class="btn btn-signal btn-sm" href="/app/onboarding"><Icon name="plus" size={16} /> New form</a>
+  </Fragment>
+
+  <FormsRack client:load />
+</App>

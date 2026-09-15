@@ -1,0 +1,61 @@
+---
+import Focus from '../../layouts/Focus.astro';
+import OnboardingFlow from '../../components/app/OnboardingFlow.vue';
+import { limits } from '../../config/site';
+---
+
+<Focus title="Create a form" aside={{ href: '/app', label: 'Skip to dashboard →' }}>
+  <div class="wrap onboard">
+    <header class="ob-intro">
+      <p class="label label-lg"><span class="bay-no">New form</span> · about a minute</p>
+      <h1 class="h1 ob-h">Let’s get you <span class="ob-h-red">an endpoint.</span></h1>
+      <p class="ob-lede">Three steps. Name it, say where submissions go, paste the snippet. The dispatch label fills in as you go.</p>
+    </header>
+
+    <OnboardingFlow client:load bodyKb={limits.bodyKb} />
+  </div>
+</Focus>
+
+<script>
+  import { setUnauthorizedHandler } from '../../lib/api/client';
+  import { SIGN_IN_PATH } from '../../lib/api/session';
+
+  setUnauthorizedHandler(() => window.location.replace(SIGN_IN_PATH));
+</script>
+
+<style>
+  .onboard {
+    padding-block: clamp(1.5rem, 4vw, 3.5rem) var(--s-9);
+  }
+  .ob-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+    grid-template-areas: 'kick kick' 'head lede';
+    column-gap: var(--s-6);
+    row-gap: var(--s-3);
+    align-items: end;
+    margin-bottom: clamp(1.5rem, 3.5vw, 3rem);
+  }
+  .ob-intro .label {
+    grid-area: kick;
+    color: var(--fg-muted);
+  }
+  .ob-h {
+    grid-area: head;
+  }
+  .ob-h-red {
+    color: var(--signal);
+  }
+  .ob-lede {
+    grid-area: lede;
+    color: var(--fg-muted);
+    font-size: var(--fs-sm);
+    padding-bottom: 0.4rem;
+  }
+  @media (max-width: 860px) {
+    .ob-intro {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'kick' 'head' 'lede';
+    }
+  }
+</style>
