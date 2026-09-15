@@ -1,0 +1,70 @@
+{
+  "name": "sendm8",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "workspaces": [
+    "worker",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm --prefix web install --no-audit --no-fund && npm --prefix web run build",
+    "build:web": "npm --prefix web run build",
+    "dev": "npm run build:web && npm run dev -w worker",
+    "dev:web": "npm --prefix web run dev",
+    "test": "npm test -w worker && npm --prefix web test",
+    "test:coverage": "npm run test:coverage -w worker",
+    "typecheck": "npm run typecheck -w worker",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "deploy": "wrangler deploy && wrangler d1 migrations apply DB --remote",
+    "deploy:sendm8": "npm run build && wrangler deploy --domain sendm8.com && wrangler d1 migrations apply DB --remote"
+  },
+  "cloudflare": {
+    "bindings": {
+      "DB": {
+        "description": "Stores forms, submissions and accounts. Created automatically; migrations run on deploy."
+      },
+      "BETTER_AUTH_SECRET": {
+        "description": "Signs sessions. Any long random string."
+      },
+      "IP_HASH_SECRET": {
+        "description": "Hashes submitter IPs, which are never stored raw. Any long random string."
+      },
+      "ENCRYPTION_KEY": {
+        "description": "Exactly 32 random bytes, **base64**. Encrypts stored API keys and webhook URLs. Keep a copy: losing it makes them unreadable."
+      },
+      "APP_URL": {
+        "description": "Your site URL, e.g. `https://forms.example.com`. Leave blank to use the first URL the Worker is visited on."
+      },
+      "EMAIL_FROM": {
+        "description": "Sender for notification emails, e.g. `Forms <notify@example.com>`. The domain must be verified in [Resend](https://resend.com/domains)."
+      },
+      "RESEND_API_KEY": {
+        "description": "[Resend](https://resend.com/api-keys) API key for notification emails. Leave blank to only log emails."
+      },
+      "GITHUB_CLIENT_ID": {
+        "description": "[GitHub OAuth app](https://github.com/settings/developers) for sign-in. Callback: `{APP_URL}/api/auth/callback/github`."
+      },
+      "GITHUB_CLIENT_SECRET": {
+        "description": "Secret for the GitHub OAuth app."
+      },
+      "GOOGLE_CLIENT_ID": {
+        "description": "Optional Google sign-in. Callback: `{APP_URL}/api/auth/callback/google`."
+      },
+      "GOOGLE_CLIENT_SECRET": {
+        "description": "Optional. Secret for Google sign-in."
+      },
+      "ADMIN_EMAILS": {
+        "description": "Optional. Comma-separated verified emails that can use `/app/admin`."
+      },
+      "TURNSTILE_SITE_KEY": {
+        "description": "Optional [Turnstile](https://dash.cloudflare.com/?to=/:account/turnstile) site key for the spam challenge page."
+      },
+      "TURNSTILE_SECRET_KEY": {
+        "description": "Optional. Turnstile secret key."
+      },
+      "ALERT_WEBHOOK_URL": {
+        "description": "Optional Discord or Slack webhook for free-tier usage alerts."
+      }
+    }
+  }
+}

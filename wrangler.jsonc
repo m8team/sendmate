@@ -1,0 +1,71 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // One Worker serves the API, the form endpoint and the Astro site (web/dist) as static assets.
+  // This file lives at the repo root so "Deploy to Cloudflare" works on a fresh fork.
+  "name": "sendm8",
+  "main": "worker/src/index.ts",
+  "compatibility_date": "2026-09-01",
+  // Better Auth relies on AsyncLocalStorage.
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "dev": { "port": 8787 },
+
+  // No routes here, so forks deploy to their workers.dev URL. sendm8.com attaches its custom domain
+  // at deploy time (`npm run deploy:sendm8`). Add your own the same way, or in the dashboard.
+
+  // Static assets are free and don't count against Worker requests. Only these paths reach the
+  // Worker before the asset handler.
+  "assets": {
+    "directory": "web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": [
+      "/api/*",
+      "/f/*",
+      "/c/*",
+      "/confirm/*",
+      "/verify/*",
+      "/files/*",
+      "/report",
+      "/health",
+      // Dashboard pages with a form id in the path share one static shell.
+      "/app/forms/*"
+    ]
+  },
+
+  // No database_id: Wrangler creates the database on first deploy and finds it by name after that.
+  // Wrangler may offer to write the id in here. Discard it: CI rejects a database_id so the Deploy button keeps working.
+  "d1_databases": [{ "binding": "DB", "database_name": "sendm8", "migrations_dir": "worker/migrations" }],
+
+  // File uploads (optional). R2 needs a payment method on the Cloudflare account, though the
+  // free tier covers 10 GB and hard caps in packages/shared/src/limits.ts keep usage under it.
+  // Uncomment to enable (the bucket is created on deploy):
+  // "r2_buckets": [{ "binding": "FILES", "bucket_name": "sendm8-files" }],
+
+  // AI spam scoring (optional, per form). Workers AI has a free daily allowance; sendm8 caps checks
+  // with aiSpamChecksPerDay. Local dev needs `wrangler login` for this binding. Uncomment to enable:
+  // "ai": { "binding": "AI" },
+
+  // Burst protection. Approximate and per-location; hard quotas live in D1.
+  "ratelimits": [
+    { "name": "RL_SUBMIT_IP", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } },
+    { "name": "RL_SUBMIT_FORM", "namespace_id": "1002", "simple": { "limit": 120, "period": 60 } },
+    // Channel create/test calls make outbound requests on the user's behalf.
+    { "name": "RL_CHANNEL_ACTIONS", "namespace_id": "1003", "simple": { "limit": 20, "period": 60 } },
+    // Abuse reports and challenge attempts, per IP.
+    { "name": "RL_PUBLIC_ACTIONS", "namespace_id": "1004", "simple": { "limit": 10, "period": 60 } }
+  ],
+
+  "triggers": {
+    // Every 5 min: delivery retries. Hourly: due digests (+ daily cleanup at 03:00 UTC).
+    "crons": ["*/5 * * * *", "0 * * * *"]
+  },
+
+  // Deployment-specific settings (APP_URL, EMAIL_FROM, ADMIN_EMAILS, TURNSTILE_SITE_KEY) are secrets,
+  // not vars, so they survive redeploys and the deploy button can ask for them. See .dev.vars.example.
+  "vars": {
+    // Optional JSON overrides for packages/shared/src/limits.ts, e.g. after upgrading to Resend Pro:
+    // "LIMITS_JSON": "{\"systemEmailsPerDay\": 1600}"
+    "LIMITS_JSON": ""
+  }
+}
