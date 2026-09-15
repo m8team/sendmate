@@ -6,7 +6,8 @@ import vue from '@astrojs/vue';
 export default defineConfig({
   site: 'https://sendm8.com',
   output: 'static',
-  integrations: [vue()],
+  // The app entrypoint reports Vue component errors to /api/errors.
+  integrations: [vue({ appEntrypoint: '/src/vue-app' })],
   trailingSlash: 'ignore',
   devToolbar: { enabled: false },
 });

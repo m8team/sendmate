@@ -58,7 +58,10 @@ const canonical = new URL(Astro.url.pathname, site.url);
     <slot />
     <div class="toast-region" aria-live="polite" role="status" data-toasts></div>
     <script>
+      import { installErrorReporter } from '../lib/error-reporter';
       import { toast } from '../lib/toast';
+
+      installErrorReporter();
 
       async function copyText(text: string) {
         try {
