@@ -56,7 +56,9 @@
 3. **Click confirm. Done.** That first submission is delivered, and so is every one after it. Sign in later for a private form ID, the dashboard inbox and more.
 
 > [!TIP]
-> **Moving from Formspree?** Change the `action` URL. `_replyto`, `_subject`, `_next`, `_gotcha` and `_cc` work the same.
+> **Moving from Formspree?** Change the `action` URL. `_replyto`, `_subject`, `_next`, `_gotcha` and `_cc` work the same. The [migration guide](https://sendm8.com/docs#formspree) covers `fetch`, React and AI-assisted migrations.
+>
+> **Using an AI assistant?** Point it at [sendm8.com/llms.txt](https://sendm8.com/llms.txt), the docs as Markdown.
 >
 > **Want JSON back instead of a redirect?** Send `Accept: application/json`. See the [AJAX guide](https://sendm8.com/docs#ajax).
 

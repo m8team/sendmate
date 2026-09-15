@@ -1,0 +1,193 @@
+---
+/**
+ * Bay 12, moving from Formspree: what changes, code for fetch and @formspree/react, and a prompt for AI assistants.
+ */
+import CodeBlock from '../../ui/CodeBlock.astro';
+import CodeTabs from '../../ui/CodeTabs.astro';
+import Callout from '../Callout.astro';
+import DocsSection from './DocsSection.astro';
+import { limits, site } from '../../../config/site';
+import { FORM } from './docsSections';
+
+const htmlBefore = `
+<form action="https://formspree.io/f/xyzabcde" method="POST">
+  <input name="email" type="email" required>
+  <textarea name="message"></textarea>
+  <input type="hidden" name="_subject" value="New enquiry">
+  <input type="text" name="_gotcha" style="display:none">
+  <button>Send</button>
+</form>`;
+
+const htmlAfter = `
+<form action="${FORM}" method="POST">
+  <input name="email" type="email" required>
+  <textarea name="message"></textarea>
+  <input type="hidden" name="_subject" value="New enquiry">
+  <input type="text" name="_gotcha" style="display:none">
+  <button>Send</button>
+</form>`;
+
+const fetchCode = `
+const res = await fetch("${FORM}", {
+  method: "POST",
+  body: new FormData(form),
+  headers: { Accept: "application/json" },
+});
+const result = await res.json();
+
+if (result.ok) {
+  showThanks();
+} else {
+  // Formspree: result.errors.map((e) => e.message)
+  showError(result.error.message);
+}`;
+
+const reactCode = `
+// Before: import { useForm, ValidationError } from "@formspree/react";
+import { useState } from "react";
+
+export function ContactForm() {
+  const [state, setState] = useState({ submitting: false, succeeded: false, error: null });
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setState({ submitting: true, succeeded: false, error: null });
+    const res = await fetch("${FORM}", {
+      method: "POST",
+      body: new FormData(event.currentTarget),
+      headers: { Accept: "application/json" },
+    });
+    const result = await res.json();
+    setState({ submitting: false, succeeded: result.ok, error: result.ok ? null : result.error.message });
+  }
+
+  if (state.succeeded) return <p>Thanks! It's on its way.</p>;
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="email" type="email" required />
+      <textarea name="message" required />
+      {state.error && <p role="alert">{state.error}</p>}
+      <button disabled={state.submitting}>Send</button>
+    </form>
+  );
+}`;
+
+const prompt = `
+Migrate this app's forms from Formspree to sendm8. Read ${site.url}/llms-full.txt first.
+
+Endpoint mapping (Formspree → sendm8):
+- https://formspree.io/f/xyzabcde → ${FORM}
+
+1. Find every Formspree usage: "formspree.io", "@formspree/react", "@formspree/ajax",
+   data-fs-* attributes, and environment variables holding Formspree form IDs.
+2. HTML forms: change only the action URL. Field names stay the same.
+3. JavaScript submissions: POST to the sendm8 URL with "Accept: application/json".
+   Success is { ok: true, id }. Failure is { ok: false, error: { code, message } }:
+   show error.message. Update any code that reads Formspree's errors array.
+4. Replace @formspree/react and @formspree/ajax with fetch (or the sendm8 helper script),
+   keeping the same loading, success and error states. Then remove the packages.
+5. Don't change styling, copy or field names.
+6. List every file you changed, and anything you couldn't migrate.`;
+---
+
+<DocsSection id="formspree" kicker="Bring your forms">
+  <div class="prose">
+    <p>
+      sendm8 reads the same field names as Formspree, so a plain HTML form moves with a one-line change: the <code>action</code> URL. Code that sends
+      forms with JavaScript needs a small change to how it reads errors.
+    </p>
+  </div>
+
+  <p class="label steps-lead">Moving a form</p>
+  <ol class="steps">
+    <li>
+      <strong>Get a sendm8 endpoint.</strong> Create a form in the <a href="/app">dashboard</a> and copy its URL, or skip signing up and use <code>{site.endpointBase}you@example.com</code>.
+    </li>
+    <li><strong>Swap the URL</strong> everywhere the form posts to <code>https://formspree.io/f/…</code>.</li>
+    <li><strong>Send a test submission</strong> and check it arrives where you expect. Then add Discord, Slack, Telegram or webhooks if you like.</li>
+  </ol>
+
+  <CodeTabs
+    class="wide"
+    name="Formspree form before and after"
+    tabs={[
+      { label: 'After', lang: 'html', filename: 'contact.html', code: htmlAfter, highlight: [1] },
+      { label: 'Before', lang: 'html', filename: 'contact.html', code: htmlBefore, highlight: [1] },
+    ]}
+  />
+
+  <h3 class="ds-h3" id="formspree-mapping">What maps to what</h3>
+  <div class="table-wrap wide">
+    <table class="table">
+      <caption class="sr-only">Formspree features and their sendm8 equivalents</caption>
+      <thead>
+        <tr>
+          <th scope="col">Formspree</th>
+          <th scope="col">sendm8</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>https://formspree.io/f/&lbrace;id&rbrace;</code></td>
+          <td><code>{site.endpointBase}&lbrace;id&rbrace;</code>, or <code>{site.endpointBase}&lbrace;your email&rbrace;</code> with no account</td>
+        </tr>
+        <tr>
+          <td><code>_replyto</code> or <code>email</code>, <code>_subject</code>, <code>_next</code>, <code>_gotcha</code>, <code>_cc</code></td>
+          <td>The same. <code>_next</code> must be on one of the form’s allowed domains, and <code>_cc</code> only copies addresses verified in your account.</td>
+        </tr>
+        <tr>
+          <td>Other underscore fields</td>
+          <td>Ignored and not stored.</td>
+        </tr>
+        <tr>
+          <td>JSON success: <code>&lbrace; ok: true &rbrace;</code></td>
+          <td><code>&lbrace; ok: true, id &rbrace;</code></td>
+        </tr>
+        <tr>
+          <td>JSON errors: an <code>errors</code> array</td>
+          <td><code>&lbrace; ok: false, error: &lbrace; code, message &rbrace; &rbrace;</code> with a matching HTTP status. <a href="#ajax">AJAX / fetch</a>.</td>
+        </tr>
+        <tr>
+          <td><code>@formspree/react</code> (<code>useForm</code>)</td>
+          <td>A few lines of <code>fetch</code>, below. The package only talks to Formspree.</td>
+        </tr>
+        <tr>
+          <td><code>@formspree/ajax</code> and <code>data-fs-*</code> attributes</td>
+          <td>The helper script and <code>data-sendm8</code> attributes. <a href="#ajax-helper">AJAX without writing JavaScript</a>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="ds-h3" id="formspree-code">JavaScript and React</h3>
+  <CodeTabs
+    class="wide"
+    name="Migrating JavaScript submissions"
+    tabs={[
+      { label: 'fetch', lang: 'js', filename: 'contact.js', code: fetchCode, highlight: [12] },
+      { label: 'React', lang: 'jsx', filename: 'ContactForm.jsx', code: reactCode, highlight: [2, 10, 16] },
+    ]}
+  />
+
+  <h3 class="ds-h3" id="formspree-ai">Migrating with an AI assistant</h3>
+  <div class="prose">
+    <p>
+      These docs are also published as Markdown for AI assistants: <a href="/llms.txt">/llms.txt</a> lists every section, and <a href="/llms-full.txt">/llms-full.txt</a> has all of them in one file. Create your sendm8 forms first (an assistant can’t do that for you), then
+      give it a prompt like this in the app you’re migrating.
+    </p>
+  </div>
+  <CodeBlock code={prompt} lang="text" filename="prompt.txt" class="wide" />
+
+  <Callout title="Worth knowing" kind="info">
+    <p>
+      Uploads are capped at {limits.fileUploadMb} MB a file. If your Formspree forms only accept submissions from certain sites, add those domains under <strong>Form settings → General → Allowed domains</strong>.
+    </p>
+  </Callout>
+</DocsSection>
+
+<style>
+  .wide {
+    max-width: 100%;
+  }
+</style>

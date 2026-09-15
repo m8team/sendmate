@@ -14,6 +14,7 @@ import FileUploads from '../../components/docs/sections/FileUploads.astro';
 import ConnectDiscord from '../../components/docs/sections/ConnectDiscord.astro';
 import ConnectResend from '../../components/docs/sections/ConnectResend.astro';
 import Webhooks from '../../components/docs/sections/Webhooks.astro';
+import Formspree from '../../components/docs/sections/Formspree.astro';
 import { docsSections } from '../../components/docs/sections/docsSections';
 import { site } from '../../config/site';
 
@@ -21,7 +22,8 @@ import { site } from '../../config/site';
 const editUrl = `${site.repo}/tree/main/web/src/components/docs/sections`;
 ---
 
-<Marketing title="Docs: quickstart" description="Everything you need to point a form at sendm8: the basic form, zero-signup, AJAX, redirects, spam protection, file uploads, Discord, your own Resend key and webhooks.">
+<Marketing title="Docs: quickstart" description="Everything you need to point a form at sendm8: the basic form, zero-signup, AJAX, redirects, spam protection, file uploads, Discord, your own Resend key, webhooks and moving from Formspree.">
+  <link slot="head" rel="alternate" type="text/markdown" href="/llms-full.txt" title="sendm8 docs as Markdown, for AI assistants" />
   <div class="wrap docs">
     <DocsHero />
 
@@ -40,6 +42,7 @@ const editUrl = `${site.repo}/tree/main/web/src/components/docs/sections`;
         <ConnectDiscord />
         <ConnectResend />
         <Webhooks />
+        <Formspree />
 
         <DocsFooter editUrl={editUrl} />
       </article>
