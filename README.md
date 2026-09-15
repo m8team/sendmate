@@ -2,7 +2,7 @@
 
 Free, open-source form backend. Point any HTML form at sendm8 and get your submissions: no server, no paywall.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/m8team/sendm8)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/m8team/sendmate)
 
 ```html
 <form action="https://sendm8.com/f/you@example.com" method="POST">

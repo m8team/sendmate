@@ -16,7 +16,7 @@ jobs:
           cache: npm
       # The Deploy to Cloudflare button needs wrangler.jsonc without a database id. Forks can keep theirs.
       - name: wrangler.jsonc has no database_id
-        if: github.repository == 'm8team/sendm8'
+        if: github.repository == 'm8team/sendmate'
         run: "! grep -q '\"database_id\"' wrangler.jsonc"
       - run: npm ci
       - run: npm run typecheck

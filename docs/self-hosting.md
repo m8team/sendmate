@@ -4,7 +4,7 @@ sendm8 runs on a single Cloudflare Worker with D1 (database), plus optionally R2
 
 ## One click
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/m8team/sendm8)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/m8team/sendmate)
 
 Cloudflare forks the repo into your GitHub account, creates the D1 database, asks for the settings below, builds the site, deploys, and runs the database migrations. Your instance comes up at `https://sendm8.<your-subdomain>.workers.dev`.
 
@@ -21,7 +21,7 @@ Cloudflare forks the repo into your GitHub account, creates the D1 database, ask
 You'll need a Cloudflare account, Node 22+, a Resend account and a GitHub OAuth app.
 
 ```sh
-git clone https://github.com/m8team/sendm8 && cd sendm8
+git clone https://github.com/m8team/sendmate && cd sendmate
 npm install
 npx wrangler login
 ```

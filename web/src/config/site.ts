@@ -13,9 +13,9 @@ export const site = {
   tagline: "Your form's got mail.",
   description:
     'sendm8 is a free, open-source form backend. Point any HTML form at a URL and get the submissions by email, Discord, Slack, Telegram or webhook. No server, no signup required.',
-  repo: 'https://github.com/m8team/sendm8',
-  repoShort: 'github.com/m8team/sendm8',
-  deployUrl: 'https://deploy.workers.cloudflare.com/?url=https://github.com/m8team/sendm8',
+  repo: 'https://github.com/m8team/sendmate',
+  repoShort: 'github.com/m8team/sendmate',
+  deployUrl: 'https://deploy.workers.cloudflare.com/?url=https://github.com/m8team/sendmate',
   license: 'AGPL-3.0',
   sponsorUrl: 'https://github.com/sponsors/m8team',
   abuseEmail: 'abuse@sendm8.com',
