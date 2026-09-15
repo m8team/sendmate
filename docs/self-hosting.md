@@ -1,6 +1,6 @@
 # Self-hosting sendm8
 
-sendm8 runs on a single Cloudflare Worker with D1 (database), plus optionally R2 (file uploads) and Workers AI (spam scoring). Everything fits the **Cloudflare free plan**. The only paid thing you might want is Resend Pro, if you outgrow Resend's free 100 emails a day.
+sendm8 runs on a single Cloudflare Worker with D1 (database), R2 (file uploads) and Workers AI (spam scoring). Everything fits the **Cloudflare free plan**, though R2 asks for a card on file (see [File uploads](#file-uploads-r2)). The only paid thing you might want is Resend Pro, if you outgrow Resend's free 100 emails a day.
 
 ## One click
 
@@ -56,15 +56,15 @@ You don't need the database id in `wrangler.jsonc`. Later deploys reuse the data
 
 sendm8.com itself deploys with `npm run deploy:sendm8`, which does the same thing with `--domain sendm8.com`.
 
-## Optional: file uploads (R2)
+## File uploads (R2)
 
-R2 needs a payment method on your Cloudflare account, although the free tier covers 10 GB. sendm8 enforces caps below that (`packages/shared/src/limits.ts`).
+File uploads are on in [`wrangler.jsonc`](../wrangler.jsonc), and the `sendm8-files` bucket is created on the first deploy. R2 needs a payment method on your Cloudflare account, although the free tier covers 10 GB and sendm8 enforces caps below that (`packages/shared/src/limits.ts`).
 
-Uncomment the `r2_buckets` block in [`wrangler.jsonc`](../wrangler.jsonc) and redeploy; the bucket is created for you. Without it, file inputs are ignored and submissions still come through.
+**No card on your account?** The deploy fails until R2 is enabled. Delete the `r2_buckets` block instead: file inputs are then ignored and submissions still come through.
 
-## Optional: AI spam scoring (Workers AI)
+## AI spam scoring (Workers AI)
 
-Uncomment the `ai` block in `wrangler.jsonc` and redeploy. Form owners can then switch on AI spam scoring per form. Checks are capped by `aiSpamChecksPerDay`, which fits Workers AI's free allowance.
+The `ai` binding is on in `wrangler.jsonc` and needs no payment method. Form owners switch on AI spam scoring per form. Checks are capped by `aiSpamChecksPerDay`, which fits Workers AI's free allowance. Delete the `ai` block to remove the option.
 
 ## Tuning limits
 
