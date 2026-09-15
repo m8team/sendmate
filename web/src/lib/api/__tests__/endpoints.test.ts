@@ -69,6 +69,10 @@ const cases: Case[] = [
   ['putResend', () => api.putResend(' re_key ', ' Me <me@x.com> '), 'PUT', '/api/settings/resend', { apiKey: 're_key', from: 'Me <me@x.com>' }],
   ['deleteResend', () => api.deleteResend(), 'DELETE', '/api/settings/resend'],
   ['adminUsage', () => api.adminUsage(), 'GET', '/api/admin/usage'],
+  ['adminErrors', () => api.adminErrors(), 'GET', '/api/admin/errors'],
+  ['adminErrors resolved', () => api.adminErrors('resolved'), 'GET', '/api/admin/errors?status=resolved'],
+  ['resolveError', () => api.resolveError('e1'), 'POST', '/api/admin/errors/e1/resolve'],
+  ['reopenError', () => api.reopenError('e1'), 'POST', '/api/admin/errors/e1/reopen'],
   ['exportPage', () => api.exportPage('abc1234567', 'csv', 'all', 'c2'), 'GET', '/api/forms/abc1234567/export?format=csv&filter=all&cursor=c2'],
 ];
 

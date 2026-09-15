@@ -53,7 +53,7 @@ defineExpose({ load });
 <template>
   <section class="ad-section" aria-labelledby="ad-block">
     <div class="ad-bar">
-      <h2 id="ad-block" class="bay label label-lg"><span class="bay-no">03</span> Blocklist</h2>
+      <h2 id="ad-block" class="bay label label-lg"><span class="bay-no">04</span> Blocklist</h2>
     </div>
 
     <form class="ad-panel ad-blockform" novalidate @submit.prevent="addBlock">

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * /app/admin: the sorting office's back room. Plain on purpose: usage against the free tiers,
- * abuse reports, the blocklist and user suspensions. Every endpoint 404s for non-admins.
+ * abuse reports, errors, the blocklist and user suspensions. Every endpoint 404s for non-admins.
  */
 import { onMounted, ref } from 'vue';
 import type { MeDto } from '@sendm8/shared';
@@ -11,6 +11,7 @@ import { guardSession } from '../../lib/api/session';
 import { loadIsAdmin } from '../../lib/api/store';
 import AdminUsage from './admin/AdminUsage.vue';
 import AdminReports from './admin/AdminReports.vue';
+import AdminErrors from './admin/AdminErrors.vue';
 import AdminBlocklist from './admin/AdminBlocklist.vue';
 import AdminSuspendUser from './admin/AdminSuspendUser.vue';
 
@@ -40,7 +41,7 @@ onMounted(async () => {
     <header class="ad-head">
       <p class="label ad-kicker"><span class="bay-no">Back room</span> · Admins only</p>
       <h1 class="h2">Sorting office admin</h1>
-      <p class="ad-lede">Free-tier headroom, abuse reports and the blocklist. Everything here acts on every account, so read twice.</p>
+      <p class="ad-lede">Free-tier headroom, abuse reports, errors and the blocklist. Everything here acts on every account, so read twice.</p>
     </header>
 
     <div v-if="state === 'loading'" class="ad-grid" aria-busy="true">
@@ -64,6 +65,7 @@ onMounted(async () => {
     <template v-else>
       <AdminUsage />
       <AdminReports />
+      <AdminErrors />
 
       <div class="ad-two">
         <AdminBlocklist ref="blocklist" />

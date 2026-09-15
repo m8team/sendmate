@@ -10,6 +10,7 @@ import type {
   DailyStat,
   EmailAddressDto,
   EmailSettingsDto,
+  ErrorGroupDto,
   FormDto,
   FormSettings,
   FormStatus,
@@ -145,6 +146,9 @@ export const api = {
 
   // ── Admin (404 for non-admins) ─────────────────────────────────────────
   adminUsage: () => request<AdminUsageDto>('/api/admin/usage'),
+  adminErrors: (status: 'open' | 'resolved' | 'all' = 'open') => request<ErrorGroupDto[]>('/api/admin/errors', { query: { status: status === 'open' ? undefined : status } }),
+  resolveError: (id: string) => request<{ ok: true }>(`/api/admin/errors/${enc(id)}/resolve`, { method: 'POST' }),
+  reopenError: (id: string) => request<{ ok: true }>(`/api/admin/errors/${enc(id)}/reopen`, { method: 'POST' }),
   adminReports: (status: 'open' | 'all' = 'open') => request<AdminReportDto[]>('/api/admin/reports', { query: { status: status === 'all' ? 'all' : undefined } }),
   resolveReport: (id: string) => request<{ ok: true }>(`/api/admin/reports/${enc(id)}/resolve`, { method: 'POST' }),
   disableForm: (id: string, reason: string) => request<{ ok: true }>(`/api/admin/forms/${enc(id)}/disable`, { method: 'POST', body: { reason: reason.trim() } }),

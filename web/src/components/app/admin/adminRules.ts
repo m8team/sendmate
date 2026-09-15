@@ -1,5 +1,5 @@
 /** Pure rules for the admin back room: usage tiles, report tags and blocklist checks. */
-import type { AdminReportDto, AdminUsageDto, BlocklistEntryDto } from '@sendm8/shared';
+import type { AdminReportDto, AdminUsageDto, BlocklistEntryDto, ErrorGroupDto } from '@sendm8/shared';
 import { formatBytes, percent } from '../../../lib/api/adapters';
 
 /** Cloudflare D1 free plan: rows written per day. */
@@ -55,6 +55,21 @@ export function usageTiles(u: AdminUsageDto): UsageTile[] {
     },
   ];
 }
+
+export const errorSourceLabel: Record<ErrorGroupDto['source'], string> = { worker: 'Worker', browser: 'Browser' };
+
+/** Context worth reading first, in this order. Anything else follows alphabetically. */
+const CONTEXT_ORDER = ['where', 'route', 'page', 'path', 'method', 'component', 'info', 'browser', 'kind'];
+
+export function errorContext(context: ErrorGroupDto['context']): [string, string][] {
+  const rank = (key: string) => (CONTEXT_ORDER.includes(key) ? CONTEXT_ORDER.indexOf(key) : CONTEXT_ORDER.length);
+  return Object.entries(context)
+    .filter(([, value]) => value)
+    .sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b));
+}
+
+/** "Seen 1,204 times" / "Seen once". */
+export const occurrences = (count: number) => (count === 1 ? 'Seen once' : `Seen ${count.toLocaleString('en-GB')} times`);
 
 /** Meter fill: anything above zero shows at least a sliver. */
 export const meterPct = (pct: number) => Math.max(pct, pct > 0 ? 2 : 0);

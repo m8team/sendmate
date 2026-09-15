@@ -35,7 +35,7 @@ async function unsuspend() {
 <template>
   <section class="ad-section" aria-labelledby="ad-users">
     <div class="ad-bar">
-      <h2 id="ad-users" class="bay label label-lg"><span class="bay-no">04</span> Suspend a user</h2>
+      <h2 id="ad-users" class="bay label label-lg"><span class="bay-no">05</span> Suspend a user</h2>
     </div>
     <form class="ad-panel" novalidate @submit.prevent="suspend">
       <div class="field">

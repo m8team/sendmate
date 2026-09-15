@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AdminUsageDto } from '@sendm8/shared';
-import { blockTypes, disableReasonFor, meterPct, usageTiles, validateBlock, validateSuspension } from './adminRules';
+import { blockTypes, disableReasonFor, errorContext, errorSourceLabel, meterPct, occurrences, usageTiles, validateBlock, validateSuspension } from './adminRules';
 
 const usage: AdminUsageDto = {
   day: '2026-09-15',
@@ -40,6 +40,24 @@ describe('usageTiles', () => {
     const storage = usageTiles(usage)[3];
     expect(storage.pct).toBe(0);
     expect(storage.of).toMatch(/^\//);
+  });
+});
+
+describe('errors', () => {
+  it('orders context with the most useful keys first and drops blanks', () => {
+    expect(errorContext({ browser: 'Chrome 140 on Windows', zeta: 'z', where: 'request', alpha: 'a', route: '/api/forms', info: '' })).toEqual([
+      ['where', 'request'],
+      ['route', '/api/forms'],
+      ['browser', 'Chrome 140 on Windows'],
+      ['alpha', 'a'],
+      ['zeta', 'z'],
+    ]);
+  });
+
+  it('labels sources and counts', () => {
+    expect(errorSourceLabel.browser).toBe('Browser');
+    expect(occurrences(1)).toBe('Seen once');
+    expect(occurrences(1204)).toBe('Seen 1,204 times');
   });
 });
 
