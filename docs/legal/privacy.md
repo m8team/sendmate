@@ -36,6 +36,10 @@ If a form posts to `sendm8.com/f/<your email>`, we store that address and email 
 
 If you report a form, we store your reason, any details you add, a hash of your IP address (to count distinct reporters), and your email address if you choose to give it.
 
+### Error reports
+
+If something breaks, in our servers or in your browser while you're on sendm8.com, we record the error message and technical details (where in the code it failed), the page path without any query string, and your browser name and version (for example "Firefox 130 on Linux"). Email addresses and tokens are removed first. We use this only to fix bugs.
+
 ## Who processes data for us
 
 | Provider | What for |
@@ -44,6 +48,7 @@ If you report a form, we store your reason, any details you add, a hash of your 
 | Resend | Sending notification, digest and verification emails |
 | GitHub / Google | Signing in |
 | Discord, Slack, Telegram, or any webhook URL | Only where a form owner connected them. Submissions are sent there on the owner's instruction. |
+| Discord | Private alerts to m8team about the service: new sign-ups and forms (names, with email addresses partly hidden), forms flagged for abuse, and errors. Never the contents of submissions. |
 
 If a form owner uses their own Resend key, emails for their forms are sent through their Resend account.
 
@@ -53,6 +58,7 @@ If a form owner uses their own Resend key, emails for their forms are sent throu
 - **Submissions marked as spam:** deleted automatically after 30 days.
 - **Unfinished bot checks:** deleted after 1 day.
 - **Usage counters:** about 100 days.
+- **Error reports:** deleted 30 days after the error was last seen.
 - **Links in notification emails and webhooks** to download files expire after 7 days.
 
 ## Your rights

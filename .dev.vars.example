@@ -29,7 +29,7 @@ ADMIN_EMAILS=
 # Optional: Turnstile widget for the spam challenge and report pages. Both blank = challenges off.
 TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
-# Optional: Discord or Slack webhook that receives free-tier usage alerts.
+# Optional: Discord or Slack webhook for admin alerts: usage, errors, abuse flags, sign-ups and new forms.
 ALERT_WEBHOOK_URL=
 
 # ── Local development only (never set these in production) ──

@@ -101,7 +101,24 @@ The platform ceilings live there too, set for the free plan. If you move to Work
 
 ## Admin
 
-Admins (`ADMIN_EMAILS`, signed in with a verified email) get `/app/admin`, which covers usage, abuse reports, disabling and restoring forms, suspending users, and the blocklist. The same actions are available at `/api/admin/*`.
+Admins (`ADMIN_EMAILS`, signed in with a verified email) get `/app/admin`, which covers usage, abuse reports, errors, disabling and restoring forms, suspending users, and the blocklist. The same actions are available at `/api/admin/*`.
+
+## Alerts and error tracking
+
+Set `ALERT_WEBHOOK_URL` to a Discord or Slack incoming webhook and sendm8 posts there when:
+
+| Alert | When |
+|---|---|
+| Usage | D1 writes, system emails, file storage or database size pass 70% or 90% of their limit (once each per day) |
+| Error | A new error appears in the Worker or a visitor's browser, a resolved one comes back, or one reaches 10, 100 or 1,000 occurrences |
+| Resend key rejected | Resend refuses `RESEND_API_KEY` or the sending domain (at most hourly) |
+| Form flagged | Enough abuse reports flag a form and its submissions are held |
+| Submission held | The phishing guard holds a submission (once per form per day) |
+| New sign-up / new form | Someone creates an account or a form. Email addresses are partly hidden. |
+
+Each kind is capped at `opsAlertsPerTypePerDay` (50) a day, so a spam wave can't flood the channel. Mentions are disabled, so a form called "@everyone" can't ping anyone.
+
+Errors work like Sentry issues: occurrences are grouped by fingerprint, with a count, first and last seen, the latest stack trace and context (route, page, browser). Browser errors come from the site and dashboard through `POST /api/errors`. Emails and tokens are scrubbed before anything is stored or posted. Review and resolve them under **Errors** on `/app/admin`. Up to `errorEventsPerDay` (500) are recorded a day, and groups are deleted `errorRetentionDays` (30) after they were last seen.
 
 ## Privacy policy and terms
 

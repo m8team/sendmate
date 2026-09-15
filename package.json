@@ -63,7 +63,7 @@
         "description": "Optional. Turnstile secret key."
       },
       "ALERT_WEBHOOK_URL": {
-        "description": "Optional Discord or Slack webhook for free-tier usage alerts."
+        "description": "Optional Discord or Slack webhook for admin alerts: usage, errors, abuse flags, sign-ups and new forms."
       }
     }
   }
