@@ -225,3 +225,24 @@ export const instanceSettings = sqliteTable("instance_settings", {
   value: text("value").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });
+
+/** Grouped errors from the Worker and browsers, like issues in Sentry. One row per fingerprint. */
+export const errorGroups = sqliteTable(
+  "error_groups",
+  {
+    /** Hash of source, error name, normalised message and top stack frames. */
+    id: text("id").primaryKey(),
+    /** "worker" | "browser" */
+    source: text("source").notNull(),
+    name: text("name").notNull(),
+    message: text("message").notNull(),
+    stack: text("stack"),
+    /** Context of the latest occurrence (route, page, job, browser). */
+    context: text("context", { mode: "json" }).$type<Record<string, string>>().notNull(),
+    count: integer("count").notNull().default(1),
+    firstSeenAt: integer("first_seen_at").notNull(),
+    lastSeenAt: integer("last_seen_at").notNull(),
+    resolvedAt: integer("resolved_at"),
+  },
+  (t) => [index("error_groups_last_seen_idx").on(t.lastSeenAt)],
+);

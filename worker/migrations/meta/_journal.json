@@ -43,6 +43,13 @@
       "when": 1789467768763,
       "tag": "0005_instance_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1789503335307,
+      "tag": "0006_ops_errors",
+      "breakpoints": true
     }
   ]
 }
