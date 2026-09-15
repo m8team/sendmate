@@ -26,6 +26,7 @@ import { site } from '../../config/site';
         <CopyButton text={`<form action="${site.endpointBase}you@example.com" method="POST">`} label="Copy" variant="outline" size="sm" />
       </div>
       <p class="short-hint">Swap in your email, submit once, click the link we send you. Done.</p>
+      <p class="short-hint">Using an AI assistant? Give it <a href="/llms.txt">sendm8.com/llms.txt</a>: these docs as Markdown.</p>
     </div>
   </div>
 </header>
@@ -82,6 +83,10 @@ import { site } from '../../config/site';
     margin-top: var(--s-2);
     font-size: var(--fs-xs);
     color: var(--fg-muted);
+  }
+  .short-hint a {
+    color: var(--signal-text);
+    font-weight: 600;
   }
 
   @media (max-width: 1000px) {
