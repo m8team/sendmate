@@ -29,6 +29,9 @@ export type Limits = {
   databaseMaxBytes: number;
   queriesPerInvocation: number;
   submissionRetentionDays: number;
+  opsAlertsPerTypePerDay: number;
+  errorEventsPerDay: number;
+  errorRetentionDays: number;
 };
 
 /**
@@ -103,4 +106,12 @@ export const LIMITS: Limits = {
   queriesPerInvocation: 50,
   /** Delete submissions (and their files) older than this many days. 0 keeps them until the owner deletes them. */
   submissionRetentionDays: 0,
+
+  // ── Operator alerts and error tracking (ALERT_WEBHOOK_URL, /app/admin) ──
+  /** Alerts of one kind (sign-ups, new forms, held submissions…) posted per day. The rest are muted until tomorrow (UTC). */
+  opsAlertsPerTypePerDay: 50,
+  /** Error events recorded per day across the Worker and browsers. Beyond this they're only logged, to protect D1 writes. */
+  errorEventsPerDay: 500,
+  /** Error groups not seen for this many days are deleted. */
+  errorRetentionDays: 30,
 };

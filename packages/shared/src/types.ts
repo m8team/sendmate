@@ -257,6 +257,24 @@ export interface AdminReportDto {
   form: { id: string; name: string; status: FormStatus; flaggedReason: string | null; ownerEmail: string | null } | null;
 }
 
+export type ErrorSource = "worker" | "browser";
+
+/** One grouped error, like an issue in Sentry: every occurrence with the same fingerprint counts here. */
+export interface ErrorGroupDto {
+  id: string;
+  source: ErrorSource;
+  name: string;
+  message: string;
+  /** Stack from the latest occurrence, with emails and tokens scrubbed. */
+  stack: string | null;
+  /** Where the latest occurrence happened: route, page path, job, browser. */
+  context: Record<string, string>;
+  count: number;
+  firstSeenAt: number;
+  lastSeenAt: number;
+  resolvedAt: number | null;
+}
+
 export interface BlocklistEntryDto {
   type: BlocklistType;
   value: string;
