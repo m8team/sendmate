@@ -139,7 +139,7 @@ describe("database size", () => {
     const result = await checkUsage(nearlyFull);
     expect(result.shed).toBe(true);
     expect(result.alerts.some((a) => a.startsWith("Database size at"))).toBe(true);
-    expect(http.to("alerts.example.com").at(-1)!.body.content).toContain("Database filling up");
+    expect(http.to("alerts.example.com").at(-1)!.body.embeds[0].description).toContain("Database filling up");
     expect(await db().select().from(usageDaily).where(eq(usageDaily.scope, LOAD_SHED_SCOPE)).get()).toMatchObject({ day });
 
     await db().delete(usageDaily).where(eq(usageDaily.scope, LOAD_SHED_SCOPE));

@@ -10,6 +10,7 @@ import { dayKey } from "./lib/time";
 import { checkUsage } from "./lib/usage";
 import { deliverSubmission } from "./pipeline/deliver";
 import { QUERIES_PER_DELIVERY } from "./pipeline/deliver-many";
+import { purgeOldErrors } from "./ops/errors";
 import { sendDueDigests } from "./pipeline/digest";
 
 export const RETRY_CRON = "*/5 * * * *";
@@ -67,6 +68,7 @@ export async function cleanup(env: Env, now: number, budget: QueryBudget = budge
   }
 
   if (budget.has(1)) await db.delete(usageDaily).where(lt(usageDaily.day, dayKey(now - USAGE_RETENTION_DAYS * 86_400_000)));
+  if (budget.has(1)) await purgeOldErrors(budget.env, now);
 }
 
 export async function handleScheduled(controller: ScheduledController, env: Env) {

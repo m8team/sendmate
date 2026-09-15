@@ -32,8 +32,8 @@ describe("free-tier usage guard", () => {
     expect(warm.alerts[0]).toContain("D1 writes (estimated) at 75%");
     expect(warm.shed).toBe(false);
     const [alert] = http.to("alerts.example.com");
-    expect(alert!.body.content).toContain("sendm8 usage");
-    expect(alert!.body.text).toBe(alert!.body.content);
+    expect(alert!.body.embeds[0].title).toContain("Usage alert for");
+    expect(alert!.body.embeds[0].description).toContain("D1 writes (estimated) at 75%");
 
     // Running again the same day doesn't repeat the alert.
     expect((await checkUsage(env, now)).alerts).toEqual([]);
@@ -44,7 +44,7 @@ describe("free-tier usage guard", () => {
     const hot = await checkUsage(env, now);
     expect(hot.shed).toBe(true);
     expect(hot.alerts[0]).toContain("at 95%");
-    expect(http.to("alerts.example.com").at(-1)!.body.content).toContain("Load shedding is on");
+    expect(http.to("alerts.example.com").at(-1)!.body.embeds[0].description).toContain("Load shedding is on");
     const shedRow = await db().select().from(usageDaily).where(eq(usageDaily.scope, LOAD_SHED_SCOPE)).get();
     expect(shedRow?.day).toBe(day);
 

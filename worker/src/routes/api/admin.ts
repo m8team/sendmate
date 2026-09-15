@@ -1,16 +1,43 @@
-import type { AdminReportDto, AdminUsageDto, BlocklistEntryDto } from "@sendm8/shared";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import type { AdminReportDto, AdminUsageDto, BlocklistEntryDto, ErrorGroupDto } from "@sendm8/shared";
+import { and, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { createRouter, requireAdmin } from "../../app";
 import { getDb } from "../../db/client";
-import { abuseReports, blocklist, forms, session, submissions, user } from "../../db/schema";
+import { abuseReports, blocklist, errorGroups, forms, session, submissions, user } from "../../db/schema";
 import { ApiError, notFound, readJson } from "../../lib/api-error";
 import { hashIp } from "../../lib/crypto";
 import { computeUsage } from "../../lib/usage";
+import { toErrorGroupDto } from "../../ops/errors";
 
 export const adminRoutes = createRouter();
 
 adminRoutes.use("*", requireAdmin);
+
+// ── Errors ─────────────────────────────────────────────────────────────────
+
+adminRoutes.get("/errors", async (c) => {
+  const status = c.req.query("status");
+  const where = status === "all" ? undefined : status === "resolved" ? isNotNull(errorGroups.resolvedAt) : isNull(errorGroups.resolvedAt);
+  const rows = await getDb(c.env).select().from(errorGroups).where(where).orderBy(desc(errorGroups.lastSeenAt)).limit(100).all();
+  const data: ErrorGroupDto[] = rows.map(toErrorGroupDto);
+  return c.json({ data });
+});
+
+for (const [action, resolvedAt] of [
+  ["resolve", () => Date.now()],
+  ["reopen", () => null],
+] as const) {
+  adminRoutes.post(`/errors/:id/${action}`, async (c) => {
+    const updated = await getDb(c.env)
+      .update(errorGroups)
+      .set({ resolvedAt: resolvedAt() })
+      .where(eq(errorGroups.id, c.req.param("id")))
+      .returning({ id: errorGroups.id })
+      .get();
+    if (!updated) throw notFound("Error");
+    return c.json({ ok: true });
+  });
+}
 
 // ── Reports ────────────────────────────────────────────────────────────────
 

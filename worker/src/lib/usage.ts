@@ -1,10 +1,10 @@
 import type { AdminUsageDto } from "@sendm8/shared";
 import { and, desc, eq, sql } from "drizzle-orm";
-import { postJson } from "../channels/http";
 import { getLimits } from "../config";
 import { getDb } from "../db/client";
 import { storageUsage, usageDaily } from "../db/schema";
 import { claimCounter } from "../email/budget";
+import { notifyOps } from "../ops/alerts";
 import { dayKey } from "./time";
 
 export const LOAD_SHED_SCOPE = "load_shed";
@@ -103,9 +103,13 @@ export async function checkUsage(env: Env, now = Date.now()) {
     }
   }
 
-  if (alerts.length && env.ALERT_WEBHOOK_URL) {
-    const text = `⚠️ sendm8 usage (${usage.day})\n${alerts.map((a) => `• ${a}`).join("\n")}${shed ? "\nLoad shedding is on: spam isn't stored and new email endpoints are paused." : ""}${databaseRatio >= ALERT_THRESHOLDS[0] ? "\nDatabase filling up: set submissionRetentionDays in LIMITS_JSON, or move to Workers Paid (10 GB)." : ""}`;
-    await postJson(env.ALERT_WEBHOOK_URL, JSON.stringify({ content: text, text }));
+  if (alerts.length) {
+    const notes = [
+      shed && "Load shedding is on: spam isn't stored and new email endpoints are paused.",
+      databaseRatio >= ALERT_THRESHOLDS[0] && "Database filling up: set submissionRetentionDays in LIMITS_JSON, or move to Workers Paid (10 GB).",
+    ].filter(Boolean);
+    const description = [...alerts.map((a) => `• ${a}`), ...notes].join("\n");
+    await notifyOps(env, { kind: "usage", title: `Usage alert for ${usage.day}`, description, path: "/app/admin" }, now);
   }
   return { usage, alerts, shed };
 }
