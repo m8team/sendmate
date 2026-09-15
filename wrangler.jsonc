@@ -37,14 +37,14 @@
   // Wrangler may offer to write the id in here. Discard it: CI rejects a database_id so the Deploy button keeps working.
   "d1_databases": [{ "binding": "DB", "database_name": "sendm8", "migrations_dir": "worker/migrations" }],
 
-  // File uploads (optional). R2 needs a payment method on the Cloudflare account, though the
-  // free tier covers 10 GB and hard caps in packages/shared/src/limits.ts keep usage under it.
-  // Uncomment to enable (the bucket is created on deploy):
-  // "r2_buckets": [{ "binding": "FILES", "bucket_name": "sendm8-files" }],
+  // File uploads. R2 needs a payment method on the Cloudflare account, though the free tier covers
+  // 10 GB and hard caps in packages/shared/src/limits.ts keep usage under it. The bucket is created on
+  // deploy. No card? Remove this block: file inputs are then ignored and submissions still come through.
+  "r2_buckets": [{ "binding": "FILES", "bucket_name": "sendm8-files" }],
 
-  // AI spam scoring (optional, per form). Workers AI has a free daily allowance; sendm8 caps checks
-  // with aiSpamChecksPerDay. Local dev needs `wrangler login` for this binding. Uncomment to enable:
-  // "ai": { "binding": "AI" },
+  // AI spam scoring (per form, owners opt in). Workers AI has a free daily allowance; sendm8 caps checks
+  // with aiSpamChecksPerDay. Local dev needs `wrangler login` for this binding.
+  "ai": { "binding": "AI", "remote": true },
 
   // Burst protection. Approximate and per-location; hard quotas live in D1.
   "ratelimits": [
