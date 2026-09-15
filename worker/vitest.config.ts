@@ -6,6 +6,8 @@ export default defineConfig({
   plugins: [
     cloudflareTest(async () => ({
       wrangler: { configPath: "../wrangler.jsonc" },
+      // Tests never reach Cloudflare: Workers AI is faked per test, so CI needs no login.
+      remoteBindings: false,
       miniflare: {
         r2Buckets: ["FILES"],
         bindings: {

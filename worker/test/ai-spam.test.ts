@@ -42,7 +42,8 @@ describe("AI spam scoring", () => {
     expect(await aiSpamScore(aiEnv, { data: { message: "Hi, can I book a table?" } })).toBe(12);
     expect(run).toHaveBeenCalledWith(AI_SPAM_MODEL, expect.objectContaining({ max_tokens: 4, temperature: 0 }));
 
-    expect(await aiSpamScore(env, { data: {} })).toBeNull();
+    // No AI binding (wrangler.jsonc binds one, so remove it for this case).
+    expect(await aiSpamScore({ ...env, AI: undefined } as Env, { data: {} })).toBeNull();
 
     const failing = { ...env, AI: { run: vi.fn(async () => Promise.reject(new Error("model down"))) } } as unknown as Env;
     vi.spyOn(console, "error").mockImplementation(() => {});
