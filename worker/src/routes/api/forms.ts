@@ -14,6 +14,7 @@ import { newFormId } from "../../lib/ids";
 import { encryptSecret } from "../../lib/secrets";
 import { checkTurnstileSecret } from "../../lib/turnstile";
 import { dayKey, monthStartKey } from "../../lib/time";
+import { alertFormCreated } from "../../ops/events";
 
 export const formRoutes = createRouter();
 
@@ -137,6 +138,7 @@ formRoutes.post("/", async (c) => {
     })
     .returning()
     .get();
+  alertFormCreated(c.env, form, { ownerEmail: c.get("user").email, endpoint: "dashboard" });
 
   return c.json(
     { data: toFormDto(form, c.env.APP_URL, { submissionsThisMonth: 0, monthlyLimit: limits.submissionsPerFormPerMonth, lastSubmissionAt: null }) },

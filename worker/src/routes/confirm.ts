@@ -5,6 +5,7 @@ import { escapeHtml } from "../lib/http";
 import { urls } from "../lib/urls";
 import { renderPage, stamp } from "../pages/layout";
 import { confirmZeroSignup, declineZeroSignup, deliverBacklog } from "../pipeline/zero-signup";
+import { captureError } from "../ops/errors";
 
 export const confirmRoutes = createRouter();
 
@@ -54,7 +55,7 @@ confirmRoutes.post("/:token", async (c) => {
 
   const confirmed = await confirmZeroSignup(c.env, token);
   if (!confirmed) return expired();
-  c.executionCtx.waitUntil(deliverBacklog(c.env, confirmed.formIds).catch((error) => console.error("backlog delivery failed", error)));
+  c.executionCtx.waitUntil(deliverBacklog(c.env, confirmed.formIds).catch((error) => captureError(c.env, error, { where: "backlog delivery" })));
   return renderPage({
     title: "Confirmed",
     heading: "Sorted. Mail's on its way.",

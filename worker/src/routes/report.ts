@@ -8,6 +8,7 @@ import { hashIp } from "../lib/crypto";
 import { clientIp, escapeHtml } from "../lib/http";
 import { FORM_ID_PATTERN, newId } from "../lib/ids";
 import { REPORT_ACTION, TURNSTILE_SCRIPT, turnstileEnabled, verifyTurnstile } from "../lib/turnstile";
+import { alertFormFlagged } from "../ops/events";
 import { renderPage, stamp } from "../pages/layout";
 import { isEmail } from "../pipeline/deliver";
 
@@ -105,6 +106,7 @@ reportRoutes.post("/", async (c) => {
       .get();
     if ((reporters?.n ?? 0) >= getLimits(env).reportsToAutoFlag) {
       await db.update(forms).set({ flaggedReason: "reported" }).where(eq(forms.id, formId));
+      alertFormFlagged(env, form, reporters?.n ?? 0, values.reason);
     }
   }
 

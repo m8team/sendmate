@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { getDb } from "./db/client";
 import { account, session, user, verification } from "./db/schema";
+import { captureError } from "./ops/errors";
+import { alertSignup } from "./ops/events";
 import { claimFormsForUser } from "./pipeline/zero-signup";
 
 export const SESSION_COOKIE_PREFIX = "sendm8";
@@ -33,6 +35,11 @@ function createAuth(env: Env) {
       cookieCache: { enabled: true, maxAge: 5 * 60 },
     },
     databaseHooks: {
+      user: {
+        create: {
+          after: async (created) => alertSignup(env, created),
+        },
+      },
       session: {
         create: {
           // Signing in claims zero-signup forms sent to the user's verified email. Never block sign-in on it.
@@ -41,7 +48,7 @@ function createAuth(env: Env) {
               const owner = await getDb(env).select().from(user).where(eq(user.id, created.userId)).get();
               if (owner) await claimFormsForUser(env, owner);
             } catch (error) {
-              console.error("claiming forms on sign-in failed", error);
+              await captureError(env, error, { where: "claiming forms on sign-in" });
             }
           },
         },

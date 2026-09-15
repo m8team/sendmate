@@ -13,6 +13,8 @@ import { newId } from "../lib/ids";
 import { decryptSecret } from "../lib/secrets";
 import { dayKey, monthStartKey } from "../lib/time";
 import { turnstileEnabled, verifyTurnstile } from "../lib/turnstile";
+import { captureError } from "../ops/errors";
+import { alertFormCreated, alertSubmissionHeld } from "../ops/events";
 import { renderPage, stamp } from "../pages/layout";
 import { isEmail } from "../pipeline/deliver";
 import { SubmitError } from "../pipeline/errors";
@@ -240,15 +242,17 @@ submitRoutes.post("/:formId", async (c) => {
       }
 
       if (status === "ok") {
-        c.executionCtx.waitUntil(dispatchStored(env, form, id, c.req.header("referer") ?? null).catch((error) => console.error("dispatch failed", id, error)));
+        c.executionCtx.waitUntil(dispatchStored(env, form, id, c.req.header("referer") ?? null).catch((error) => captureError(env, error, { where: "dispatch", formId, submissionId: id })));
       }
+      if (newZeroSignup) alertFormCreated(env, newZeroSignup, { ownerEmail: newZeroSignup.ownerEmail, endpoint: "email", site: submittingHost });
+      if (status === "held") alertSubmissionHeld(env, form, reasons);
     }
 
     if (challenge) return c.redirect(new URL(`/c/${id}`, env.APP_URL).toString(), 303);
     return success(c, form, id, next);
   } catch (error) {
     if (error instanceof SubmitError) return failure(c, json, form, error);
-    console.error("submission failed", error);
+    c.executionCtx.waitUntil(captureError(c.env, error, { where: "submit", formId: form?.id }));
     return failure(c, json, form, new SubmitError(500, "internal_error", "Something went wrong on our end. Please try again."));
   }
 });

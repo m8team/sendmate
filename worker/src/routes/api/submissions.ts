@@ -9,6 +9,7 @@ import { deliverMany } from "../../pipeline/deliver-many";
 import { ApiError, notFound, readJson } from "../../lib/api-error";
 import { toSubmissionDto } from "../../lib/dto";
 import { loadOwnedForm } from "./forms";
+import { captureError } from "../../ops/errors";
 
 export const submissionRoutes = createRouter();
 
@@ -65,7 +66,7 @@ submissionRoutes.patch("/submissions/:id", async (c) => {
 
   // Rescued from spam: deliver it now, as it would have been.
   if (input.status === "ok" && row.status !== "ok" && row.deliveries.length === 0) {
-    c.executionCtx.waitUntil(deliverSubmission(c.env, updated.id).catch((error) => console.error("rescue delivery failed", updated.id, error)));
+    c.executionCtx.waitUntil(deliverSubmission(c.env, updated.id).catch((error) => captureError(c.env, error, { where: "rescue delivery", submissionId: updated.id })));
   }
   return c.json({ data: toSubmissionDto(updated) });
 });
@@ -133,7 +134,7 @@ submissionRoutes.post("/forms/:formId/submissions/bulk", async (c) => {
     // Deliver rescued submissions that never went out. What doesn't fit this request's query budget is
     // queued for the retry cron, so nothing is dropped.
     const rescued = result.filter((r) => r.deliveries.length === 0).map((r) => r.id);
-    c.executionCtx.waitUntil(deliverMany(c.env, rescued, { alreadyUsed: 10 }).catch((error) => console.error("bulk rescue delivery failed", error)));
+    c.executionCtx.waitUntil(deliverMany(c.env, rescued, { alreadyUsed: 10 }).catch((error) => captureError(c.env, error, { where: "bulk rescue delivery" })));
   }
   return c.json({ data: { affected: result.length } });
 });

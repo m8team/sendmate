@@ -5,6 +5,7 @@ import type { Db, FormRow, SubmissionRow } from "../db/client";
 import { submissions } from "../db/schema";
 import { hmacHex } from "../lib/crypto";
 import { newId } from "../lib/ids";
+import { captureError } from "../ops/errors";
 
 export interface IncomingFile {
   field: string;
@@ -82,7 +83,7 @@ export async function storeUploads(env: Env, form: Pick<FormRow, "id" | "userId"
       });
       files.push({ id, field, name, size: file.size, type, key });
     } catch (error) {
-      console.error("file upload failed", key, error);
+      await captureError(env, error, { where: "file upload", formId: form.id });
       dropped.push(field);
       failedBytes += file.size;
     }

@@ -12,6 +12,7 @@ import { byokUsable, sendByokEmail, sendSystemEmail, type OutgoingEmail } from "
 import { notificationEmail } from "../email/templates";
 import { decryptJson } from "../lib/secrets";
 import { urls } from "../lib/urls";
+import { captureError } from "../ops/errors";
 
 export type ChannelRow = typeof channels.$inferSelect;
 type AddressRow = typeof emailAddresses.$inferSelect;
@@ -135,7 +136,7 @@ async function deliverToChannel(input: DeliveryInput, channel: ChannelRow, attem
       }
     }
   } catch (error) {
-    console.error("delivery error", channel.id, error);
+    await captureError(input.env, error, { where: "delivery", channelType: channel.type, submissionId: input.submission.id });
     const exhausted = attempts >= input.limits.maxDeliveryAttempts;
     return { channelId: channel.id, status: exhausted ? "skipped" : "failed", attempts, error: `internal: ${String(error).slice(0, 200)}`, at: input.now };
   }

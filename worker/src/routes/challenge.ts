@@ -8,6 +8,7 @@ import { CHALLENGE_ACTION, TURNSTILE_SCRIPT, turnstileEnabled, verifyTurnstile }
 import { renderPage, stamp } from "../pages/layout";
 import { dispatchStored } from "../pipeline/zero-signup";
 import { thanksUrl } from "./submit";
+import { captureError } from "../ops/errors";
 
 export const challengeRoutes = createRouter();
 
@@ -89,7 +90,7 @@ challengeRoutes.post("/:id", async (c) => {
     .get();
 
   if (released) {
-    c.executionCtx.waitUntil(dispatchStored(env, row.form, released.id, meta.referrer).catch((error) => console.error("dispatch failed", released.id, error)));
+    c.executionCtx.waitUntil(dispatchStored(env, row.form, released.id, meta.referrer).catch((error) => captureError(env, error, { where: "dispatch after challenge", submissionId: released.id })));
   }
   return c.redirect(next ?? thanksUrl(env.APP_URL, meta.referrer ?? undefined), 303);
 });

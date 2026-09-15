@@ -4,6 +4,7 @@ import { getDb, type SubmissionRow } from "../db/client";
 import { submissions } from "../db/schema";
 import { claimCounter } from "../email/budget";
 import { dayKey } from "../lib/time";
+import { captureError } from "../ops/errors";
 
 /** A small, fast instruct model keeps each check to a few neurons of the free daily allowance. */
 export const AI_SPAM_MODEL = "@cf/meta/llama-3.2-3b-instruct";
@@ -50,7 +51,7 @@ export async function aiSpamScore(env: Env, submission: Pick<SubmissionRow, "dat
     } as never);
     return parseScore(output);
   } catch (error) {
-    console.error("AI spam check failed", error);
+    await captureError(env, error, { where: "AI spam check" });
     return null;
   }
 }
