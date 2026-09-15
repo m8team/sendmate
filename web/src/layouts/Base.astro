@@ -1,0 +1,95 @@
+---
+import '../styles/base.css';
+import { site } from '../config/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+  bodyClass?: string;
+}
+const { title, description = site.description, noindex = false, bodyClass } = Astro.props;
+const fullTitle = title ? `${title} · sendm8` : `sendm8 — ${site.tagline} Free, open-source form backend`;
+const canonical = new URL(Astro.url.pathname, site.url);
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta name="theme-color" content="#f2ede2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16140f" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        var mq = window.matchMedia('(prefers-color-scheme: dark)');
+        function stored() {
+          try {
+            return localStorage.getItem('sendm8-theme');
+          } catch (e) {
+            return null;
+          }
+        }
+        function apply() {
+          var t = stored();
+          root.dataset.theme = t === 'dark' || (t !== 'light' && mq.matches) ? 'dark' : 'light';
+        }
+        apply();
+        mq.addEventListener('change', function () {
+          if (!stored()) apply();
+        });
+        window.__sendm8Theme = apply;
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body class={bodyClass}>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <slot />
+    <div class="toast-region" aria-live="polite" role="status" data-toasts></div>
+    <script>
+      import { toast } from '../lib/toast';
+
+      async function copyText(text: string) {
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+        }
+      }
+
+      document.addEventListener('click', async (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-copy], [data-copy-target]');
+        if (!btn) return;
+        let text = btn.dataset.copy;
+        if (!text && btn.dataset.copyTarget) {
+          const el = document.querySelector<HTMLElement>(btn.dataset.copyTarget);
+          text = el?.innerText.replace(/\n$/, '');
+        }
+        if (!text) return;
+        await copyText(text);
+        btn.classList.add('is-copied');
+        toast(btn.dataset.copyToast ?? 'Copied to clipboard');
+        window.setTimeout(() => btn.classList.remove('is-copied'), 1800);
+      });
+    </script>
+  </body>
+</html>

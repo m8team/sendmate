@@ -1,0 +1,80 @@
+---
+/**
+ * Circular postmark with ring text and optional cancellation waves.
+ */
+interface Props {
+  top?: string;
+  bottom?: string;
+  center?: string;
+  sub?: string;
+  waves?: boolean;
+  size?: number;
+  class?: string;
+  tone?: 'ink' | 'signal';
+}
+const {
+  top = 'SENDM8.COM',
+  bottom = 'POSTAGE PAID',
+  center = '14 SEP',
+  sub = '2026',
+  waves = true,
+  size = 132,
+  class: className,
+  tone = 'ink',
+} = Astro.props;
+const id = `pm-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<svg
+  class:list={['postmark', `postmark-${tone}`, className]}
+  viewBox={waves ? '0 0 300 120' : '0 0 120 120'}
+  width={waves ? size * 2.5 : size}
+  height={size}
+  aria-hidden="true"
+>
+  <defs>
+    <path id={`${id}-t`} d="M 22 60 A 38 38 0 0 1 98 60"></path>
+    <path id={`${id}-b`} d="M 14 60 A 46 46 0 0 0 106 60"></path>
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="2.5"></circle>
+  <circle cx="60" cy="60" r="31" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+  <text class="pm-ring" font-size="10.5"><textPath href={`#${id}-t`} startOffset="50%" text-anchor="middle">{top}</textPath></text>
+  <text class="pm-ring" font-size="10.5"><textPath href={`#${id}-b`} startOffset="50%" text-anchor="middle">{bottom}</textPath></text>
+  <text x="60" y="60" text-anchor="middle" class="pm-center" font-size="15">{center}</text>
+  <text x="60" y="75" text-anchor="middle" class="pm-sub" font-size="10">{sub}</text>
+  {
+    waves && (
+      <g fill="none" stroke="currentColor" stroke-width="2.5">
+        {[28, 44, 60, 76, 92].map((y) => (
+          <path d={`M122 ${y} q 11 -9 22 0 t 22 0 t 22 0 t 22 0 t 22 0 t 22 0 t 22 0 t 22 0`} />
+        ))}
+      </g>
+    )
+  }
+</svg>
+
+<style>
+  .postmark {
+    color: var(--fg);
+    opacity: 0.8;
+    max-width: 100%;
+    height: auto;
+  }
+  .postmark-signal {
+    color: var(--signal-mark);
+    opacity: 0.9;
+  }
+  .pm-ring,
+  .pm-sub {
+    fill: currentColor;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+  }
+  .pm-center {
+    fill: currentColor;
+    font-family: var(--font-display);
+    font-stretch: 80%;
+    font-weight: 900;
+  }
+</style>

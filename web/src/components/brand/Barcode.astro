@@ -1,0 +1,64 @@
+---
+/**
+ * Decorative barcode derived deterministically from a string.
+ * Not scannable, and it doesn't pretend to be.
+ */
+interface Props {
+  value: string;
+  height?: number;
+  class?: string;
+  showValue?: boolean;
+}
+const { value, height = 44, class: className, showValue = true } = Astro.props;
+
+let seed = 0;
+for (const ch of value) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+const rand = () => {
+  seed = (seed * 1664525 + 1013904223) >>> 0;
+  return seed / 2 ** 32;
+};
+const bars: { x: number; w: number }[] = [];
+let x = 0;
+const guard = [1, 1, 1];
+for (const w of guard) {
+  bars.push({ x, w });
+  x += w * 2;
+}
+while (x < 150) {
+  const w = rand() < 0.62 ? 1 : rand() < 0.7 ? 2 : 3;
+  bars.push({ x, w });
+  x += w + (rand() < 0.6 ? 1 : 2);
+}
+for (const w of guard) {
+  bars.push({ x, w });
+  x += w * 2;
+}
+const width = x;
+---
+
+<figure class:list={['barcode', className]} aria-hidden="true">
+  <svg viewBox={`0 0 ${width} 40`} preserveAspectRatio="none" style={`height:${height}px`}>
+    {bars.map((b) => <rect x={b.x} y="0" width={b.w} height="40" />)}
+  </svg>
+  {showValue && <figcaption class="mono">{value}</figcaption>}
+</figure>
+
+<style>
+  .barcode {
+    display: inline-grid;
+    gap: 3px;
+    color: var(--fg);
+  }
+  svg {
+    width: 100%;
+    min-width: 7rem;
+  }
+  rect {
+    fill: currentColor;
+  }
+  figcaption {
+    font-size: 0.625rem;
+    letter-spacing: 0.24em;
+    text-align: center;
+  }
+</style>

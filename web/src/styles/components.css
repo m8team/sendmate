@@ -1,0 +1,342 @@
+/* ==========================================================================
+   Shared component styles (used from Astro and Vue alike)
+   ========================================================================== */
+
+/* ---- Copy button ------------------------------------------------------- */
+.copy-btn .copy-idle,
+.copy-btn .copy-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+}
+.copy-btn .copy-done {
+  display: none;
+}
+.copy-btn.is-copied .copy-idle {
+  display: none;
+}
+.copy-btn.is-copied .copy-done {
+  display: inline-flex;
+  animation: copy-thunk var(--dur-3) var(--ease-thunk);
+  color: var(--ok);
+}
+.copy-btn.btn-signal.is-copied .copy-done,
+.copy-btn.btn:not(.btn-outline):not(.btn-ghost):not(.btn-danger).is-copied .copy-done {
+  color: inherit;
+}
+.copy-icon-only {
+  padding-inline: 0.5rem;
+}
+@keyframes copy-thunk {
+  0% {
+    transform: scale(1.5) rotate(-8deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.94) rotate(-2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* ---- Code blocks ------------------------------------------------------- */
+.codeblock {
+  position: relative;
+  min-width: 0;
+  border: var(--bw-strong) solid var(--line-strong);
+  border-radius: var(--r-1);
+  background: var(--bg-raised);
+  color: var(--fg);
+}
+.cb-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  min-height: 2.75rem;
+  padding: 0.3rem 0.35rem 0.3rem 0.9rem;
+  border-bottom: 2px dashed var(--line);
+}
+.cb-head-tabs {
+  padding-left: 0.35rem;
+}
+.cb-name {
+  color: var(--fg-muted);
+}
+.cb-tablist {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  min-width: 0;
+}
+.cb-tablist::-webkit-scrollbar {
+  display: none;
+}
+.cb-tab {
+  flex: none;
+  padding: 0.45rem 0.7rem;
+  border: 0;
+  border-radius: var(--r-1);
+  background: transparent;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.cb-tab:hover {
+  color: var(--fg);
+  background: var(--bg-sunk);
+}
+.cb-tab[aria-selected='true'] {
+  color: var(--bg);
+  background: var(--fg);
+}
+.cb-file {
+  padding: 0.7rem 1rem 0;
+  color: var(--fg-subtle);
+}
+.cb-panel:focus-visible {
+  outline-offset: -4px;
+  box-shadow: none;
+}
+.cb-body {
+  min-width: 0;
+}
+.cb-body pre.astro-code,
+.cb-body pre {
+  margin: 0;
+  padding: 1rem 1.1rem 1.15rem;
+  overflow-x: auto;
+  background: transparent !important;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  tab-size: 2;
+  scrollbar-width: thin;
+}
+.cb-body pre code {
+  display: block;
+  min-width: max-content;
+  font-family: inherit;
+}
+.cb-body .line {
+  display: inline-block;
+  min-width: 100%;
+}
+.cb-body .hl-line {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  box-shadow: inset 3px 0 0 var(--accent);
+  margin-inline: -1.1rem;
+  padding-inline: 1.1rem;
+  min-width: calc(100% + 2.2rem);
+}
+.codeblock-compact .cb-body pre {
+  padding: 0.75rem 0.9rem;
+  font-size: 0.8125rem;
+}
+
+/* ---- Endpoint pill: the one-line URL with copy -------------------------- */
+.endpoint {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
+  border: var(--bw-strong) solid var(--line-strong);
+  border-radius: var(--r-1);
+  background: var(--bg-raised);
+}
+.endpoint-url {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0.55rem 0.8rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  scrollbar-width: none;
+}
+.endpoint-url::-webkit-scrollbar {
+  display: none;
+}
+.endpoint-url .ep-base {
+  color: var(--fg-muted);
+}
+.endpoint-url .ep-id {
+  color: var(--signal-text);
+  font-weight: 600;
+}
+.endpoint .copy-btn {
+  border: 0;
+  border-left: var(--bw-strong) solid var(--line-strong);
+  border-radius: 0;
+  min-height: 100%;
+}
+.endpoint .copy-btn:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* ---- Toast ------------------------------------------------------------- */
+.toast-region {
+  position: fixed;
+  bottom: var(--s-5);
+  left: 50%;
+  z-index: var(--z-toast);
+  transform: translateX(-50%);
+  display: grid;
+  gap: var(--s-2);
+  pointer-events: none;
+}
+.toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.95rem;
+  border: 2px solid var(--line-strong);
+  background: var(--fg);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-label);
+  animation: toast-in var(--dur-3) var(--ease-thunk);
+}
+@keyframes toast-in {
+  from {
+    transform: translateY(12px) rotate(-2deg);
+    opacity: 0;
+  }
+}
+
+/* ---- Callouts: postal notices ------------------------------------------ */
+.notice {
+  --notice-color: var(--fg);
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 0.9rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--notice-color);
+  background: var(--bg-raised);
+}
+.notice-title {
+  grid-column: 2;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--notice-color);
+}
+.notice-icon {
+  grid-row: span 2;
+  color: var(--notice-color);
+  padding-top: 0.1rem;
+}
+.notice-body {
+  grid-column: 2;
+  font-size: var(--fs-sm);
+}
+.notice-body > * + * {
+  margin-top: 0.5rem;
+}
+.notice-signal {
+  --notice-color: var(--signal-text);
+}
+.notice-warn {
+  --notice-color: var(--warn);
+}
+.notice-ok {
+  --notice-color: var(--ok);
+}
+.notice-accent {
+  border-left-color: var(--accent);
+}
+
+/* ---- Tables ------------------------------------------------------------ */
+.table-wrap {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  padding: 0.65rem 0.75rem;
+  border-bottom: var(--bw-strong) solid var(--line-strong);
+  white-space: nowrap;
+}
+.table td {
+  padding: 0.8rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+/* ---- Meter: usage against a limit -------------------------------------- */
+.meter {
+  --pct: 0%;
+  position: relative;
+  height: 14px;
+  border: 1.5px solid var(--line-strong);
+  background: repeating-linear-gradient(90deg, transparent 0 9px, var(--line) 9px 10px);
+}
+.meter::before {
+  content: '';
+  position: absolute;
+  inset: 2px auto 2px 2px;
+  width: calc(var(--pct) - 4px);
+  max-width: calc(100% - 4px);
+  background: var(--fg);
+  transition: width var(--dur-4) var(--ease-out);
+}
+.meter.is-high::before {
+  background: var(--signal);
+}
+
+/* ---- Skeleton: placeholder while dashboard data loads ------------------ */
+/* Hatched like an empty pigeonhole slot, so loading reads as "post not in yet", not as broken. */
+.skel {
+  display: block;
+  min-height: 0.9em;
+  border-radius: var(--r-0);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--fg) 5%, transparent) 6px 7px),
+    var(--bg-sunk);
+  animation: skel-pulse 1.4s var(--ease-out) infinite alternate;
+}
+.skel-ink {
+  background:
+    repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--fg) 7%, transparent) 6px 7px),
+    var(--bg-deep);
+}
+@keyframes skel-pulse {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skel {
+    animation: none;
+  }
+}

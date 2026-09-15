@@ -1,0 +1,78 @@
+---
+/**
+ * System pages: confirmation, thank-you, rate-limited, challenge.
+ * No marketing nav or footer. A small logo sits top-left (or nowhere, for pages
+ * seen by other people's visitors), with an optional theme toggle.
+ */
+import Base from './Base.astro';
+import Logo from '../components/brand/Logo.astro';
+import ThemeToggle from '../components/ui/ThemeToggle.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Show the sendm8 logo in the top bar. Off for the brandable thank-you page. */
+  brand?: boolean;
+  showThemeToggle?: boolean;
+  /** Short mono note on the right of the top bar, e.g. "Sorting office notice". */
+  note?: string;
+  /** Vertically centre the content in the viewport. */
+  centre?: boolean;
+}
+const { title, description, brand = true, showThemeToggle = false, note, centre = false } = Astro.props;
+---
+
+<Base title={title} description={description} noindex bodyClass="system-body">
+  {
+    (brand || showThemeToggle || note) && (
+      <header class="sys-bar">
+        <div class="wrap sys-bar-inner">
+          {brand ? <Logo size="sm" /> : <span />}
+          <div class="sys-bar-end">
+            {note && <p class="label muted sys-note">{note}</p>}
+            {showThemeToggle && <ThemeToggle />}
+          </div>
+        </div>
+      </header>
+    )
+  }
+  <main id="main" tabindex="-1" class:list={['sys-main', centre && 'is-centred']}>
+    <slot />
+  </main>
+  <slot name="foot" />
+</Base>
+
+<style>
+  :global(.system-body) {
+    display: flex;
+    flex-direction: column;
+  }
+  .sys-bar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    min-height: 4rem;
+  }
+  .sys-bar-end {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+  }
+  .sys-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .sys-main.is-centred {
+    justify-content: center;
+  }
+  .sys-main:focus {
+    outline: none;
+  }
+  @media (max-width: 520px) {
+    .sys-note {
+      display: none;
+    }
+  }
+</style>

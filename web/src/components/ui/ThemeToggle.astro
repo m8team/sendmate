@@ -1,0 +1,67 @@
+---
+import Icon from './Icon.astro';
+interface Props {
+  class?: string;
+  withLabel?: boolean;
+}
+const { class: className, withLabel = false } = Astro.props;
+---
+
+<button type="button" class:list={['theme-toggle', withLabel ? 'with-label' : 'icon-btn', className]} data-theme-toggle>
+  <span class="tt-icon tt-sun"><Icon name="sun" size={18} /></span>
+  <span class="tt-icon tt-moon"><Icon name="moon" size={18} /></span>
+  <span class:list={[withLabel ? 'tt-text label label-lg' : 'sr-only']} data-theme-label>Switch to night shift</span>
+</button>
+
+<style>
+  .theme-toggle {
+    position: relative;
+  }
+  .with-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-1);
+    background: transparent;
+  }
+  .with-label:hover {
+    border-color: var(--fg);
+  }
+  .tt-icon {
+    display: inline-grid;
+  }
+  .tt-sun {
+    display: none;
+  }
+  :global([data-theme='dark']) .tt-sun {
+    display: inline-grid;
+  }
+  :global([data-theme='dark']) .tt-moon {
+    display: none;
+  }
+</style>
+
+<script>
+  function sync() {
+    const dark = document.documentElement.dataset.theme === 'dark';
+    document.querySelectorAll<HTMLElement>('[data-theme-label]').forEach((el) => {
+      el.textContent = dark ? 'Switch to day shift' : 'Switch to night shift';
+    });
+    document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((b) => {
+      b.title = dark ? 'Day shift (light mode)' : 'Night shift (dark mode)';
+    });
+  }
+  document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      try {
+        localStorage.setItem('sendm8-theme', next);
+      } catch {}
+      sync();
+    });
+  });
+  sync();
+</script>

@@ -1,0 +1,31 @@
+{
+  "name": "@sendm8/web",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "astro": "astro",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@astrojs/vue": "^7.0.2",
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@sendm8/shared": "file:../packages/shared",
+    "astro": "^7.3.2",
+    "vue": "^3.5.42"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@vitest/coverage-v8": "^4.1.11",
+    "jsdom": "^26.1.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.11"
+  }
+}

@@ -1,0 +1,41 @@
+---
+/** Cancellation wave lines: a divider that looks like a franking machine went over it. */
+interface Props {
+  lines?: number;
+  class?: string;
+  tone?: 'ink' | 'signal' | 'muted';
+}
+const { lines = 3, class: className, tone = 'muted' } = Astro.props;
+const h = lines * 8 + 4;
+---
+
+<div class:list={['waves', `waves-${tone}`, className]} style={`--h:${h}px`} aria-hidden="true">
+  <svg width="100%" height={h} preserveAspectRatio="none">
+    <defs>
+      <pattern id={`wv-${lines}-${tone}`} width="40" height={h} patternUnits="userSpaceOnUse">
+        {
+          Array.from({ length: lines }, (_, i) => (
+            <path d={`M0 ${6 + i * 8} q 10 -5 20 0 t 20 0`} fill="none" stroke="currentColor" stroke-width="1.6" />
+          ))
+        }
+      </pattern>
+    </defs>
+    <rect width="100%" height={h} fill={`url(#wv-${lines}-${tone})`}></rect>
+  </svg>
+</div>
+
+<style>
+  .waves {
+    height: var(--h);
+    color: var(--line);
+  }
+  .waves-ink {
+    color: var(--fg);
+  }
+  .waves-signal {
+    color: var(--signal-mark);
+  }
+  svg {
+    display: block;
+  }
+</style>

@@ -1,0 +1,225 @@
+---
+import Logo from './Logo.astro';
+import Icon from '../ui/Icon.astro';
+import ThemeToggle from '../ui/ThemeToggle.astro';
+import { nav } from '../../config/site';
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => !href.startsWith('http') && !href.includes('#') && (path === href || path.startsWith(href + '/'));
+---
+
+<header class="site-header">
+  <div class="wrap sh-inner">
+    <Logo />
+    <nav class="sh-nav" aria-label="Main">
+      <ul role="list">
+        {
+          nav.marketing.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                {...('external' in item && item.external ? { rel: 'noopener', target: '_blank' } : {})}
+              >
+                {item.label}
+                {'external' in item && item.external && <Icon name="arrow-up-right" size={13} strokeWidth={2} />}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <div class="sh-actions">
+      <ThemeToggle />
+      <a class="btn btn-ghost btn-sm sh-signin" href="/app/sign-in">Sign in</a>
+      <a class="btn btn-signal btn-sm sh-cta" href="/app/onboarding">Get an endpoint</a>
+      <button type="button" class="icon-btn sh-menu-btn" aria-haspopup="dialog" aria-controls="mobile-menu" data-menu-open>
+        <Icon name="menu" size={20} />
+        <span class="sr-only">Open menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<dialog class="mobile-menu" id="mobile-menu" aria-label="Menu">
+  <div class="mm-top">
+    <Logo />
+    <button type="button" class="icon-btn" data-menu-close autofocus>
+      <Icon name="x" size={20} />
+      <span class="sr-only">Close menu</span>
+    </button>
+  </div>
+  <nav aria-label="Mobile">
+    <ol class="mm-list" role="list">
+      <li><a href="/"><span class="label">01</span>Home</a></li>
+      {
+        nav.marketing.map((item, i) => (
+          <li>
+            <a href={item.href} data-menu-close>
+              <span class="label">{String(i + 2).padStart(2, '0')}</span>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+  <div class="mm-foot">
+    <a class="btn btn-signal btn-lg" href="/app/onboarding">Get an endpoint <Icon name="arrow-right" /></a>
+    <a class="btn btn-outline btn-lg" href="/app/sign-in">Sign in</a>
+    <ThemeToggle withLabel />
+  </div>
+  <div class="airmail" aria-hidden="true"></div>
+</dialog>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: saturate(1.2) blur(6px);
+    -webkit-backdrop-filter: saturate(1.2) blur(6px);
+    border-bottom: 1px solid var(--line);
+  }
+  .sh-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--s-5);
+    height: 4.25rem;
+  }
+  .sh-nav {
+    margin-right: auto;
+    margin-left: var(--s-4);
+  }
+  .sh-nav ul {
+    display: flex;
+    gap: var(--s-1);
+  }
+  .sh-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.45rem 0.7rem;
+    border-radius: var(--r-1);
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+  }
+  .sh-nav a:hover {
+    color: var(--fg);
+    background: var(--bg-sunk);
+  }
+  .sh-nav a[aria-current='page'] {
+    color: var(--fg);
+    box-shadow: inset 0 -2px 0 var(--signal);
+    border-radius: 0;
+  }
+  .sh-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  .sh-menu-btn {
+    display: none;
+  }
+  @media (max-width: 860px) {
+    .sh-nav,
+    .sh-signin {
+      display: none;
+    }
+    .sh-actions {
+      margin-left: auto;
+    }
+    .sh-menu-btn {
+      display: inline-grid;
+    }
+  }
+  @media (max-width: 520px) {
+    .sh-actions :global(.theme-toggle),
+    .sh-cta {
+      display: none;
+    }
+  }
+
+  /* Mobile menu: a full-height sorting board, designed rather than dropped down */
+  .mobile-menu {
+    width: 100%;
+    max-width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--bg);
+    color: var(--fg);
+    display: none;
+    flex-direction: column;
+  }
+  .mobile-menu[open] {
+    display: flex;
+    animation: mm-in var(--dur-3) var(--ease-out);
+  }
+  .mobile-menu::backdrop {
+    background: transparent;
+  }
+  @keyframes mm-in {
+    from {
+      clip-path: inset(0 0 100% 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  .mm-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 4.25rem;
+    padding-inline: var(--gutter);
+    border-bottom: 1px solid var(--line);
+  }
+  .mm-list {
+    padding: var(--s-4) var(--gutter);
+  }
+  .mm-list li {
+    border-bottom: 1px solid var(--line);
+  }
+  .mm-list a {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-4);
+    padding-block: 0.6rem;
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: clamp(2.6rem, 13vw, 4rem);
+    line-height: 1;
+    text-decoration: none;
+  }
+  .mm-list a .label {
+    color: var(--signal-text);
+    min-width: 1.5rem;
+  }
+  .mm-foot {
+    display: grid;
+    gap: var(--s-3);
+    margin-top: auto;
+    padding: var(--s-5) var(--gutter) var(--s-6);
+  }
+  .mm-foot :global(.theme-toggle) {
+    justify-self: start;
+  }
+</style>
+
+<script>
+  const dlg = document.getElementById('mobile-menu') as HTMLDialogElement | null;
+  document.querySelector('[data-menu-open]')?.addEventListener('click', () => dlg?.showModal());
+  dlg?.querySelectorAll('[data-menu-close]').forEach((el) => el.addEventListener('click', () => dlg.close()));
+  window.matchMedia('(min-width: 861px)').addEventListener('change', (e) => {
+    if (e.matches) dlg?.close();
+  });
+</script>

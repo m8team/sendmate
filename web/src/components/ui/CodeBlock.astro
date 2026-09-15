@@ -1,0 +1,36 @@
+---
+import { Code } from 'astro:components';
+import type { ShikiTransformer } from 'shiki';
+import CopyButton from './CopyButton.astro';
+
+interface Props {
+  code: string;
+  lang?: string;
+  filename?: string;
+  class?: string;
+  /** Highlight lines (1-based), marked with a yellow gutter */
+  highlight?: number[];
+  compact?: boolean;
+}
+const { code, lang = 'html', filename, class: className, highlight = [], compact = false } = Astro.props;
+const id = `cb-${Math.random().toString(36).slice(2, 9)}`;
+const transformers: ShikiTransformer[] = highlight.length
+  ? [
+      {
+        line(node, line) {
+          if (highlight.includes(line)) this.addClassToHast(node, 'hl-line');
+        },
+      },
+    ]
+  : [];
+---
+
+<figure class:list={['codeblock', compact && 'codeblock-compact', className]}>
+  <figcaption class="cb-head">
+    <span class="cb-name label label-lg">{filename ?? lang.toUpperCase()}</span>
+    <CopyButton target={`#${id}`} size="xs" variant="ghost" label="Copy code" />
+  </figcaption>
+  <div class="cb-body" id={id}>
+    <Code code={code.trim()} lang={lang as any} theme="css-variables" transformers={transformers} />
+  </div>
+</figure>

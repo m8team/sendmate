@@ -1,0 +1,29 @@
+---
+import Icon from './Icon.astro';
+/**
+ * One-click copy. Behaviour is delegated globally (see layouts/Base.astro),
+ * so any element with [data-copy] or [data-copy-target] works, including Vue-rendered ones.
+ */
+interface Props {
+  text?: string;
+  target?: string;
+  label?: string;
+  class?: string;
+  variant?: 'outline' | 'ghost' | 'signal' | 'solid';
+  size?: 'xs' | 'sm' | 'md';
+  iconOnly?: boolean;
+}
+const { text, target, label = 'Copy', class: className, variant = 'outline', size = 'sm', iconOnly = false } = Astro.props;
+const variantClass = variant === 'solid' ? '' : `btn-${variant}`;
+---
+
+<button
+  type="button"
+  class:list={['btn', variantClass, size !== 'md' && `btn-${size}`, 'copy-btn', iconOnly && 'copy-icon-only', className]}
+  data-copy={text}
+  data-copy-target={target}
+  aria-label={iconOnly ? label : undefined}
+>
+  <span class="copy-idle"><Icon name="copy" size={16} />{!iconOnly && <span>{label}</span>}</span>
+  <span class="copy-done" aria-hidden="true"><Icon name="check" size={16} />{!iconOnly && <span>Copied</span>}</span>
+</button>

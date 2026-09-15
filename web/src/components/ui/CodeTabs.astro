@@ -1,0 +1,93 @@
+---
+import { Code } from 'astro:components';
+import type { ShikiTransformer } from 'shiki';
+import CopyButton from './CopyButton.astro';
+
+interface Tab {
+  label: string;
+  code: string;
+  lang: string;
+  filename?: string;
+  highlight?: number[];
+}
+interface Props {
+  tabs: Tab[];
+  class?: string;
+  name?: string;
+}
+const { tabs, class: className, name = 'Code examples' } = Astro.props;
+const uid = `ct-${Math.random().toString(36).slice(2, 9)}`;
+const hl = (lines: number[] = []): ShikiTransformer[] =>
+  lines.length
+    ? [
+        {
+          line(node, line) {
+            if (lines.includes(line)) this.addClassToHast(node, 'hl-line');
+          },
+        },
+      ]
+    : [];
+---
+
+<div class:list={['codeblock', 'codetabs', className]} data-tabs>
+  <div class="cb-head cb-head-tabs">
+    <div class="cb-tablist" role="tablist" aria-label={name}>
+      {
+        tabs.map((t, i) => (
+          <button
+            type="button"
+            role="tab"
+            id={`${uid}-tab-${i}`}
+            aria-controls={`${uid}-panel-${i}`}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            tabindex={i === 0 ? 0 : -1}
+            class="cb-tab"
+          >
+            {t.label}
+          </button>
+        ))
+      }
+    </div>
+    <CopyButton size="xs" variant="ghost" label="Copy code" class="cb-copy" target={`#${uid}-panel-0 .cb-body`} />
+  </div>
+  {
+    tabs.map((t, i) => (
+      <div role="tabpanel" id={`${uid}-panel-${i}`} aria-labelledby={`${uid}-tab-${i}`} hidden={i !== 0} tabindex="0" class="cb-panel">
+        {t.filename && <div class="cb-file label">{t.filename}</div>}
+        <div class="cb-body">
+          <Code code={t.code.trim()} lang={t.lang as any} theme="css-variables" transformers={hl(t.highlight)} />
+        </div>
+      </div>
+    ))
+  }
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-tabs]').forEach((root) => {
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const copy = root.querySelector<HTMLButtonElement>('.cb-copy');
+    const select = (i: number, focus = false) => {
+      tabs.forEach((t, j) => {
+        const on = i === j;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        const panel = document.getElementById(t.getAttribute('aria-controls')!);
+        if (panel) panel.hidden = !on;
+      });
+      if (copy) copy.dataset.copyTarget = `#${tabs[i].getAttribute('aria-controls')} .cb-body`;
+      if (focus) tabs[i].focus();
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(i));
+      t.addEventListener('keydown', (e) => {
+        const k = e.key;
+        if (k === 'ArrowRight' || k === 'ArrowLeft' || k === 'Home' || k === 'End') {
+          e.preventDefault();
+          const n = tabs.length;
+          const next = k === 'Home' ? 0 : k === 'End' ? n - 1 : (i + (k === 'ArrowRight' ? 1 : -1) + n) % n;
+          select(next, true);
+        }
+      });
+    });
+  });
+</script>

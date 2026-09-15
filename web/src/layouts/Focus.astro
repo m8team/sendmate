@@ -1,0 +1,62 @@
+---
+/**
+ * Focus: one job on the page (sign in, create a form). Small logo header, theme toggle,
+ * no marketing nav or footer, so nothing competes with the task.
+ */
+import Base from './Base.astro';
+import Logo from '../components/brand/Logo.astro';
+import ThemeToggle from '../components/ui/ThemeToggle.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Optional small link on the right, e.g. back to the dashboard */
+  aside?: { href: string; label: string };
+}
+const { title, description, aside } = Astro.props;
+---
+
+<Base title={title} description={description} noindex bodyClass="focus-body">
+  <header class="focus-head">
+    <Logo href="/" size="sm" />
+    <div class="focus-actions">
+      {aside && <a class="focus-aside mono" href={aside.href}>{aside.label}</a>}
+      <ThemeToggle />
+    </div>
+  </header>
+  <main id="main" tabindex="-1" class="focus-main">
+    <slot />
+  </main>
+</Base>
+
+<style>
+  .focus-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    min-height: 3.75rem;
+    padding: 0.4rem var(--gutter);
+    border-bottom: 1px solid var(--line);
+  }
+  .focus-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+  }
+  .focus-aside {
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+    text-decoration: none;
+  }
+  .focus-aside:hover {
+    color: var(--fg);
+    text-decoration: underline;
+  }
+  .focus-main {
+    display: block;
+  }
+  .focus-main:focus {
+    outline: none;
+  }
+</style>

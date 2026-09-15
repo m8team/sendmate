@@ -1,0 +1,89 @@
+---
+/**
+ * The sendm8 mark: a perforated postage stamp carrying "m8", beside the wordmark.
+ * As a link it's named "sendm8, home" with visually hidden text rather than aria-label, so the name always
+ * contains the visible wordmark (label-content-name-mismatch) and voice control users can say what they see.
+ */
+interface Props {
+  href?: string | null;
+  size?: 'sm' | 'md' | 'lg';
+  class?: string;
+  wordmark?: boolean;
+}
+const { href = '/', size = 'md', class: className, wordmark = true } = Astro.props;
+const Tag = href ? 'a' : 'span';
+const perfs: [number, number][] = [];
+for (let i = 4; i <= 36; i += 4) {
+  perfs.push([i, 0], [i, 40], [0, i], [40, i]);
+}
+const uid = `lm-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<Tag class:list={['logo', `logo-${size}`, className]} href={href ?? undefined}>
+  <svg class="logo-stamp" viewBox="-1 -1 42 42" aria-hidden="true">
+    <defs>
+      <mask id={uid}>
+        <rect x="-1" y="-1" width="42" height="42" fill="#fff"></rect>
+        {perfs.map(([cx, cy]) => <circle cx={cx} cy={cy} r="1.7" fill="#000" />)}
+      </mask>
+    </defs>
+    <g mask={`url(#${uid})`}>
+      <rect x="0" y="0" width="40" height="40" class="logo-stamp-bg"></rect>
+      <rect x="4.5" y="4.5" width="31" height="31" class="logo-stamp-frame" fill="none" stroke-width="1.2"></rect>
+      <text x="20" y="27.4" text-anchor="middle" class="logo-stamp-text">m8</text>
+    </g>
+  </svg>
+  {wordmark && <span class="logo-word">sendm8</span>}
+  {href && <span class="sr-only">{wordmark ? ', home' : 'sendm8 home'}</span>}
+</Tag>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--fg);
+    text-decoration: none;
+    line-height: 1;
+  }
+  .logo-stamp {
+    width: var(--logo-size, 2rem);
+    height: var(--logo-size, 2rem);
+    transform: rotate(-6deg);
+    transition: transform var(--dur-2) var(--ease-thunk);
+  }
+  a.logo:hover .logo-stamp {
+    transform: rotate(0deg) scale(1.06);
+  }
+  .logo-stamp-bg {
+    fill: var(--signal-mark);
+  }
+  .logo-stamp-frame {
+    stroke: var(--on-signal);
+    opacity: 0.55;
+  }
+  .logo-stamp-text {
+    fill: var(--on-signal);
+    font-family: var(--font-display);
+    font-stretch: 75%;
+    font-weight: 900;
+    font-size: 17px;
+    letter-spacing: -0.5px;
+  }
+  .logo-word {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-condensed);
+    font-weight: 900;
+    font-size: var(--logo-text, 1.7rem);
+    letter-spacing: -0.01em;
+    transform: translateY(-0.04em);
+  }
+  .logo-sm {
+    --logo-size: 1.55rem;
+    --logo-text: 1.35rem;
+  }
+  .logo-lg {
+    --logo-size: 3rem;
+    --logo-text: 2.6rem;
+  }
+</style>

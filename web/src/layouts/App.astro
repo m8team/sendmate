@@ -1,0 +1,73 @@
+---
+/**
+ * Dashboard shell: a pigeonhole rail on the left, a working area on the right.
+ * Calmer than marketing: same tokens, fewer theatrics, more tabular density.
+ *
+ * Everything user-specific (account, forms, unread counts, email usage) is fetched in the
+ * browser from the API; the static build ships skeletons in its place.
+ * The rail and topbar live in components/app/shell.
+ */
+import Base from './Base.astro';
+import AppRail from '../components/app/shell/AppRail.astro';
+import AppTopbar, { type Crumb } from '../components/app/shell/AppTopbar.astro';
+
+interface Props {
+  title: string;
+  /** 'forms' | 'email' | 'admin' | 'form' (the form is read from the URL) */
+  active?: string;
+  crumbs?: Crumb[];
+  /** Full-bleed main area (no max width / padding), e.g. inbox split view */
+  bleed?: boolean;
+}
+const { title, active = 'forms', crumbs = [], bleed = false } = Astro.props;
+---
+
+<Base title={title} noindex bodyClass="app-body">
+  <div class="app">
+    <AppRail active={active} />
+
+    <div class="work">
+      <AppTopbar crumbs={crumbs}>
+        <slot name="actions" slot="actions" />
+      </AppTopbar>
+      <main id="main" tabindex="-1" class:list={['work-main', bleed && 'is-bleed']}>
+        <slot />
+      </main>
+    </div>
+  </div>
+</Base>
+
+<style>
+  :global(.app-body) {
+    background: var(--bg);
+  }
+  .app {
+    display: grid;
+    grid-template-columns: 16.5rem minmax(0, 1fr);
+    min-height: 100dvh;
+  }
+  .work {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .work-main {
+    flex: 1;
+    width: 100%;
+    max-width: 82rem;
+    padding: clamp(1.25rem, 3vw, 2.5rem) clamp(1rem, 2.5vw, 2rem) var(--s-9);
+  }
+  .work-main.is-bleed {
+    max-width: none;
+    padding: 0;
+  }
+  .work-main:focus {
+    outline: none;
+  }
+
+  @media (max-width: 960px) {
+    .app {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
