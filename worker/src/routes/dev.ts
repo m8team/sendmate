@@ -41,13 +41,16 @@ devRoutes.post("/login", async (c) => {
   const db = getDb(c.env);
   const email = input.email.toLowerCase();
   const now = new Date();
+  const image = `https://i.pravatar.cc/150?u=${email}`;
   let account = await db.select().from(user).where(eq(user.email, email)).get();
   if (!account) {
     account = await db
       .insert(user)
-      .values({ id: crypto.randomUUID(), name: input.name, email, emailVerified: true, createdAt: now, updatedAt: now })
+      .values({ id: crypto.randomUUID(), name: input.name, email, image, emailVerified: true, createdAt: now, updatedAt: now })
       .returning()
       .get();
+  } else if (!account.image) {
+    account = await db.update(user).set({ image, updatedAt: now }).where(eq(user.id, account.id)).returning().get();
   }
 
   const token = randomToken(24);
