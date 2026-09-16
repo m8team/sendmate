@@ -10,9 +10,24 @@ import Compare from '../components/home/Compare.astro';
 import CopyButton from '../components/ui/CopyButton.astro';
 import Icon from '../components/ui/Icon.astro';
 import { site } from '../config/site';
+
+const softwareLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'sendm8',
+  url: site.url,
+  description: site.description,
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  license: 'https://www.gnu.org/licenses/agpl-3.0.html',
+  isAccessibleForFree: true,
+};
 ---
 
 <Marketing>
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(softwareLd)} />
+
   <LiveDemo client:load>
     <div slot="headline">
       <p class="hero-kicker">
