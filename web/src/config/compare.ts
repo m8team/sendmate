@@ -14,8 +14,8 @@ export type Source = { label: string; url: string };
 
 export interface Competitor {
   name: string;
-  /** URL slug for its /vs/<slug> page. */
-  slug: string;
+  /** URL slug for its /vs/<slug> page. Only set on actual competitors — `us` has no such page. */
+  slug?: string;
   note?: string;
   cells: Cell[];
   sources?: Source[];
