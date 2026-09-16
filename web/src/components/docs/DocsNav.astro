@@ -11,9 +11,17 @@ interface Props {
   editUrl: string;
   /** Small label above the rack, e.g. "Quickstart". */
   heading?: string;
+  /**
+   * The section shown on THIS page, when each section is its own route (/docs/[id]).
+   * Links become real page hrefs and point away from `#id` anchors, and the current
+   * item is marked statically instead of by the scroll-spy script below.
+   */
+  currentId?: string;
 }
-const { sections, editUrl, heading = 'Quickstart' } = Astro.props;
+const { sections, editUrl, heading = 'Quickstart', currentId } = Astro.props;
 const num = (i: number) => String(i + 1).padStart(2, '0');
+const hrefFor = (id: string) => (currentId ? `/docs/${id}` : `#${id}`);
+const initial = Math.max(0, currentId ? sections.findIndex((s) => s.id === currentId) : 0);
 ---
 
 <aside class="dn" data-docs-nav>
@@ -22,8 +30,8 @@ const num = (i: number) => String(i + 1).padStart(2, '0');
     <summary>
       <span class="label dn-jump-label">Jump to</span>
       <span class="dn-jump-current">
-        <span class="mono dn-jump-no" data-docs-current-no>{num(0)}</span>
-        <span data-docs-current>{sections[0].title}</span>
+        <span class="mono dn-jump-no" data-docs-current-no>{num(initial)}</span>
+        <span data-docs-current>{sections[initial].title}</span>
       </span>
       <span class="dn-chev" aria-hidden="true"><Icon name="arrow-down" size={16} strokeWidth={2} /></span>
     </summary>
@@ -32,7 +40,7 @@ const num = (i: number) => String(i + 1).padStart(2, '0');
         {
           sections.map((s, i) => (
             <li>
-              <a href={`#${s.id}`} data-docs-link={s.id} data-title={s.title}>
+              <a href={hrefFor(s.id)} data-docs-link={s.id} data-title={s.title} aria-current={s.id === currentId ? 'location' : undefined}>
                 <span class="mono">{num(i)}</span>
                 {s.title}
               </a>
@@ -44,13 +52,13 @@ const num = (i: number) => String(i + 1).padStart(2, '0');
   </details>
 
   <!-- Desktop -->
-  <nav class="dn-rack" aria-label="On this page">
-    <p class="label dn-head">{heading} · On this page</p>
+  <nav class="dn-rack" aria-label={currentId ? 'Docs sections' : 'On this page'}>
+    <p class="label dn-head">{heading} · {currentId ? 'All sections' : 'On this page'}</p>
     <ol class="dn-list" role="list">
       {
         sections.map((s, i) => (
           <li>
-            <a href={`#${s.id}`} data-docs-link={s.id} data-title={s.title}>
+            <a href={hrefFor(s.id)} data-docs-link={s.id} data-title={s.title} aria-current={s.id === currentId ? 'location' : undefined}>
               <span class="mono dn-no">{num(i)}</span>
               <span>{s.title}</span>
             </a>
@@ -272,6 +280,9 @@ const num = (i: number) => String(i + 1).padStart(2, '0');
     const jump = nav.querySelector<HTMLDetailsElement>('[data-docs-jump]');
     const currentText = nav.querySelector<HTMLElement>('[data-docs-current]');
     const currentNo = nav.querySelector<HTMLElement>('[data-docs-current-no]');
+    // Standalone /docs/[id] page: only one section lives in the DOM, so its nav
+    // links point at other pages and the current item is already marked server-side.
+    const standalone = sections.length < 2;
     let active = '';
 
     const setActive = (id: string) => {
@@ -300,10 +311,12 @@ const num = (i: number) => String(i + 1).padStart(2, '0');
       setActive(current);
     };
 
-    const io = new IntersectionObserver(update, { rootMargin: '0px 0px -70% 0px', threshold: [0, 1] });
-    sections.forEach((s) => io.observe(s));
-    window.addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
-    update();
+    if (!standalone) {
+      const io = new IntersectionObserver(update, { rootMargin: '0px 0px -70% 0px', threshold: [0, 1] });
+      sections.forEach((s) => io.observe(s));
+      window.addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
+      update();
+    }
 
     links.forEach((a) =>
       a.addEventListener('click', () => {

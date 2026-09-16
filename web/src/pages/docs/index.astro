@@ -20,10 +20,20 @@ import { site } from '../../config/site';
 
 // Docs content lives in one component per section.
 const editUrl = `${site.repo}/tree/main/web/src/components/docs/sections`;
+
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'sendm8', item: site.url },
+    { '@type': 'ListItem', position: 2, name: 'Docs', item: `${site.url}/docs` },
+  ],
+};
 ---
 
 <Marketing title="Docs: quickstart" description="Everything you need to point a form at sendm8: the basic form, zero-signup, AJAX, redirects, spam protection, file uploads, Discord, your own Resend key, webhooks and moving from Formspree.">
   <link slot="head" rel="alternate" type="text/markdown" href="/llms-full.txt" title="sendm8 docs as Markdown, for AI assistants" />
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} />
   <div class="wrap docs">
     <DocsHero />
 

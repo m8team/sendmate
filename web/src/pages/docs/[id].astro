@@ -1,0 +1,199 @@
+---
+/**
+ * Each quickstart section as its own indexable page (/docs/basic-form, /docs/webhooks, ...),
+ * so a search for one topic lands on a page titled and described for that topic, not buried
+ * as an anchor inside the combined /docs page. The combined page (src/pages/docs/index.astro)
+ * still exists for people who want to read the whole thing at once; content lives in one place
+ * (components/docs/sections/*), both routes just mount it differently.
+ */
+import Marketing from '../../layouts/Marketing.astro';
+import DocsNav from '../../components/docs/DocsNav.astro';
+import DocsFooter from '../../components/docs/DocsFooter.astro';
+import Icon from '../../components/ui/Icon.astro';
+import BasicForm from '../../components/docs/sections/BasicForm.astro';
+import ZeroSignup from '../../components/docs/sections/ZeroSignup.astro';
+import SpecialFields from '../../components/docs/sections/SpecialFields.astro';
+import Ajax from '../../components/docs/sections/Ajax.astro';
+import AjaxHelper from '../../components/docs/sections/AjaxHelper.astro';
+import Redirects from '../../components/docs/sections/Redirects.astro';
+import SpamProtection from '../../components/docs/sections/SpamProtection.astro';
+import FileUploads from '../../components/docs/sections/FileUploads.astro';
+import ConnectDiscord from '../../components/docs/sections/ConnectDiscord.astro';
+import ConnectResend from '../../components/docs/sections/ConnectResend.astro';
+import Webhooks from '../../components/docs/sections/Webhooks.astro';
+import Formspree from '../../components/docs/sections/Formspree.astro';
+import { docsSections, type DocsSectionId } from '../../components/docs/sections/docsSections';
+import { site } from '../../config/site';
+
+const components = {
+  'basic-form': BasicForm,
+  'zero-signup': ZeroSignup,
+  fields: SpecialFields,
+  ajax: Ajax,
+  'ajax-helper': AjaxHelper,
+  redirects: Redirects,
+  spam: SpamProtection,
+  uploads: FileUploads,
+  discord: ConnectDiscord,
+  byok: ConnectResend,
+  webhooks: Webhooks,
+  formspree: Formspree,
+};
+
+export function getStaticPaths() {
+  return docsSections.map((s) => ({ params: { id: s.id } }));
+}
+
+const { id } = Astro.params as { id: DocsSectionId };
+const i = docsSections.findIndex((s) => s.id === id);
+const current = docsSections[i];
+const prev = docsSections[i - 1];
+const next = docsSections[i + 1];
+const Section = components[id];
+const editUrl = `${site.repo}/tree/main/web/src/components/docs/sections`;
+
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'sendm8', item: site.url },
+    { '@type': 'ListItem', position: 2, name: 'Docs', item: `${site.url}/docs` },
+    { '@type': 'ListItem', position: 3, name: current.title, item: `${site.url}/docs/${id}` },
+  ],
+};
+---
+
+<Marketing title={`Docs: ${current.title}`} description={current.summary}>
+  <link slot="head" rel="alternate" type="text/markdown" href={`/docs/${id}.md`} title={`${current.title}, as Markdown`} />
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} />
+
+  <div class="wrap docs">
+    <p class="crumb label muted">
+      <a href="/docs">Docs</a> <span aria-hidden="true">/</span> {current.title}
+    </p>
+
+    <div class="docs-grid">
+      <DocsNav sections={[...docsSections]} editUrl={editUrl} currentId={id} />
+
+      <article class="docs-body">
+        <Section />
+
+        <nav class="pager" aria-label="Section">
+          {
+            prev ? (
+              <a class="pager-link pager-prev" href={`/docs/${prev.id}`}>
+                <Icon name="arrow-right" size={18} class="pager-arrow" />
+                <span>
+                  <span class="label muted">Previous</span>
+                  <span class="pager-title">{prev.title}</span>
+                </span>
+              </a>
+            ) : (
+              <span />
+            )
+          }
+          {
+            next && (
+              <a class="pager-link pager-next" href={`/docs/${next.id}`}>
+                <span>
+                  <span class="label muted">Next</span>
+                  <span class="pager-title">{next.title}</span>
+                </span>
+                <Icon name="arrow-right" size={18} class="pager-arrow" />
+              </a>
+            )
+          }
+        </nav>
+
+        <DocsFooter editUrl={editUrl} />
+      </article>
+    </div>
+  </div>
+</Marketing>
+
+<style>
+  .docs {
+    padding-top: var(--s-6);
+    padding-bottom: var(--section);
+  }
+  .crumb {
+    display: flex;
+    gap: var(--s-2);
+  }
+  .crumb a {
+    color: var(--fg-muted);
+  }
+  .crumb a:hover {
+    color: var(--fg);
+  }
+
+  .docs-grid {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 5.5rem);
+    align-items: start;
+  }
+  .docs-body {
+    min-width: 0;
+    padding-top: var(--s-6);
+    max-width: 56rem;
+  }
+
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-3);
+    margin-top: clamp(3rem, 6vw, 4.5rem);
+  }
+  .pager-link {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-4);
+    border: 2px solid var(--line-strong);
+    text-decoration: none;
+    min-width: 0;
+  }
+  .pager-link:hover {
+    box-shadow: var(--shadow-label);
+    transform: translate(-2px, -2px);
+  }
+  .pager-title {
+    display: block;
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: 1.05rem;
+  }
+  .pager-next {
+    grid-column: 2;
+    justify-self: end;
+    text-align: right;
+    flex-direction: row-reverse;
+  }
+  .pager-link :global(.pager-arrow) {
+    flex: none;
+    color: var(--fg-muted);
+  }
+  .pager-prev :global(.pager-arrow) {
+    transform: scaleX(-1);
+  }
+
+  @media (max-width: 1000px) {
+    .docs-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+    .docs-body {
+      padding-top: var(--s-5);
+    }
+  }
+  @media (max-width: 640px) {
+    .pager {
+      grid-template-columns: 1fr;
+    }
+    .pager-next {
+      grid-column: 1;
+    }
+  }
+</style>
