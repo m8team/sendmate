@@ -1,0 +1,249 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import Icon from '../components/ui/Icon.astro';
+import { changelog, type ChangelogTag } from '../config/changelog';
+import { site } from '../config/site';
+
+const entries = [...changelog].sort((a, b) => b.date.localeCompare(a.date));
+
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const formatDate = (iso: string) => {
+  const d = new Date(`${iso}T00:00:00Z`);
+  return { day: String(d.getUTCDate()).padStart(2, '0'), month: MONTHS[d.getUTCMonth()], year: String(d.getUTCFullYear()) };
+};
+
+const tagTone: Record<ChangelogTag, string> = {
+  Feature: 'signal',
+  Fix: 'warn',
+  Security: 'signal',
+  Docs: 'muted',
+  Perf: 'ok',
+};
+
+const description = 'What shipped on sendm8, in one place: features, fixes and the odd bit of housekeeping, newest first.';
+---
+
+<Marketing title="Changelog" description={description}>
+  <link slot="head" rel="alternate" type="application/rss+xml" title="sendm8 changelog" href="/changelog.xml" />
+
+  <section class="wrap cl" aria-labelledby="cl-title">
+    <p class="bay label label-lg"><span class="bay-no">Log</span> What shipped</p>
+
+    <div class="cl-head">
+      <h1 id="cl-title" class="h1">The changelog.</h1>
+      <div class="cl-intro">
+        <p class="lede">{description}</p>
+        <a class="rss" href="/changelog.xml">
+          <Icon name="rss" size={16} strokeWidth={2} />
+          Subscribe via RSS
+        </a>
+      </div>
+    </div>
+
+    <ol class="cl-list" role="list">
+      {
+        entries.map((entry) => {
+          const d = formatDate(entry.date);
+          return (
+            <li class="cl-entry" id={entry.slug}>
+              <div class="cl-date mono" aria-hidden="true">
+                <span class="cl-day">{d.day}</span>
+                <span class="cl-month">{d.month}</span>
+                <span class="cl-year">{d.year}</span>
+              </div>
+              <div class="cl-body">
+                <p class="cl-tags">
+                  {entry.tags.map((t) => (
+                    <span class={`label cl-tag t-${tagTone[t]}`}>{t}</span>
+                  ))}
+                  <a class="cl-perma label muted" href={`#${entry.slug}`}>
+                    <time datetime={entry.date}>
+                      {d.day} {d.month} {d.year}
+                    </time>
+                  </a>
+                </p>
+                <h2 class="cl-title">{entry.title}</h2>
+                <div class="prose">
+                  {entry.body.map((p) => (
+                    <p set:html={p} />
+                  ))}
+                </div>
+              </div>
+            </li>
+          );
+        })
+      }
+    </ol>
+
+    <p class="cl-foot label muted">
+      That’s everything so far. Something missing or wrong? <a class="link-signal" href={`${site.repo}/issues`}>Tell us on GitHub</a>.
+    </p>
+  </section>
+</Marketing>
+
+<style>
+  .cl {
+    padding-block: clamp(2.5rem, 6vw, 5rem) var(--section);
+  }
+  .cl-head {
+    margin-top: var(--s-5);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--s-5);
+    padding-bottom: clamp(2rem, 4vw, 3rem);
+    border-bottom: var(--bw-heavy) solid var(--line-strong);
+  }
+  .h1 {
+    font-family: var(--font-display);
+    font-stretch: 64%;
+    font-weight: 900;
+    font-size: clamp(3.4rem, 8vw, 6.5rem);
+    line-height: 0.86;
+    letter-spacing: -0.01em;
+  }
+  .cl-intro {
+    display: grid;
+    gap: var(--s-3);
+    max-width: 34ch;
+  }
+  .lede {
+    font-size: var(--fs-lg);
+    line-height: 1.45;
+    color: var(--fg-muted);
+  }
+  .rss {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-self: start;
+    padding: 0.5rem 0.9rem;
+    border: 2px solid var(--line-strong);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+  }
+  .rss:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  .cl-list {
+    list-style: none;
+    padding: 0;
+    margin-top: clamp(2rem, 4vw, 3rem);
+  }
+  .cl-entry {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: clamp(1.25rem, 3vw, 3rem);
+    padding-block: clamp(2rem, 4vw, 3rem);
+    border-bottom: 1px dashed var(--line);
+    scroll-margin-top: 5rem;
+  }
+  .cl-entry:first-of-type {
+    padding-top: 0;
+  }
+  .cl-date {
+    display: grid;
+    align-content: start;
+    gap: 0.1rem;
+    padding-top: 0.3rem;
+    color: var(--fg-muted);
+  }
+  .cl-day {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--fg);
+  }
+  .cl-month,
+  .cl-year {
+    font-size: var(--fs-xs);
+    letter-spacing: var(--track-wide);
+  }
+  .cl-body {
+    min-width: 0;
+  }
+  .cl-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  .cl-tag {
+    padding: 0.2em 0.55em 0.15em;
+    border: 1.5px solid currentColor;
+  }
+  .cl-tag.t-signal {
+    color: var(--signal-text);
+  }
+  .cl-tag.t-warn {
+    color: var(--warn);
+  }
+  .cl-tag.t-ok {
+    color: var(--ok);
+  }
+  .cl-tag.t-muted {
+    color: var(--fg-muted);
+  }
+  .cl-perma {
+    margin-left: auto;
+  }
+  .cl-perma:hover {
+    color: var(--fg);
+  }
+  .cl-title {
+    margin-top: var(--s-3);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+    line-height: 1.15;
+  }
+  .cl-body .prose {
+    margin-top: var(--s-4);
+    max-width: 68ch;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg-muted);
+  }
+  .cl-body .prose > * + * {
+    margin-top: 1em;
+  }
+  .cl-body .prose :global(a) {
+    color: var(--signal-text);
+    font-weight: 600;
+  }
+  .cl-body .prose :global(code) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .cl-foot {
+    margin-top: clamp(2rem, 4vw, 3rem);
+  }
+  .cl-foot a {
+    color: var(--signal-text);
+    font-weight: 600;
+  }
+
+  @media (max-width: 640px) {
+    .cl-entry {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--s-2);
+    }
+    .cl-date {
+      flex-direction: row;
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+    .cl-perma {
+      display: none;
+    }
+  }
+</style>

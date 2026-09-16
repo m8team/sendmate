@@ -49,6 +49,7 @@ export const icons = {
   play: { d: 'M7 4l13 8-13 8z' },
   dots: { d: 'M5 12h.01M12 12h.01M19 12h.01' },
   send: { d: 'M21 3L10 14M21 3l-7 18-4-7-7-4z' },
+  rss: { d: 'M4 4a16 16 0 0 1 16 16M4 11a9 9 0 0 1 9 9M5.5 17.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z' },
   logout: { d: 'M15 4h5v16h-5M10 8l-4 4 4 4M6 12h11' },
   grid: { d: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z' },
   list: { d: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01' },

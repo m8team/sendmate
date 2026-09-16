@@ -72,6 +72,7 @@ export const nav = {
   marketing: [
     { href: '/docs', label: 'Docs' },
     { href: '/pricing', label: 'Pricing' },
+    { href: '/changelog', label: 'Changelog' },
     { href: '/#compare', label: 'Compare' },
     { href: site.repo, label: 'GitHub', external: true },
   ],
