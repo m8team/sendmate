@@ -14,6 +14,8 @@ export type Source = { label: string; url: string };
 
 export interface Competitor {
   name: string;
+  /** URL slug for its /vs/<slug> page. */
+  slug: string;
   note?: string;
   cells: Cell[];
   sources?: Source[];
@@ -57,6 +59,7 @@ export const us: Competitor = {
 export const competitors: Competitor[] = [
   {
     name: 'Formspree',
+    slug: 'formspree',
     sources: [
       { label: 'plans', url: 'https://formspree.io/plans' },
       {
@@ -79,6 +82,7 @@ export const competitors: Competitor[] = [
   },
   {
     name: 'Web3Forms',
+    slug: 'web3forms',
     sources: [
       { label: 'pricing', url: 'https://web3forms.com/pricing' },
       { label: 'install docs', url: 'https://docs.web3forms.com/getting-started/installation' },
@@ -97,6 +101,7 @@ export const competitors: Competitor[] = [
   },
   {
     name: 'FormSubmit',
+    slug: 'formsubmit',
     sources: [
       { label: 'home', url: 'https://formsubmit.co/' },
       { label: 'docs', url: 'https://formsubmit.co/documentation' },

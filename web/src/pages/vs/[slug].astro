@@ -1,0 +1,222 @@
+---
+/**
+ * One page per competitor in config/compare.ts: /vs/formspree, /vs/web3forms, /vs/formsubmit.
+ * The facts (rows/cells) are shared with the homepage's Compare section so the two can't drift;
+ * config/vs.ts holds the prose that's specific to each page.
+ */
+import Marketing from '../../layouts/Marketing.astro';
+import Compare from '../../components/home/Compare.astro';
+import Callout from '../../components/docs/Callout.astro';
+import Icon from '../../components/ui/Icon.astro';
+import { competitors, fairPoints } from '../../config/compare';
+import { vsFor } from '../../config/vs';
+import { site } from '../../config/site';
+
+export function getStaticPaths() {
+  return competitors.map((c) => ({ params: { slug: c.slug } }));
+}
+
+const { slug } = Astro.params as { slug: string };
+const competitor = competitors.find((c) => c.slug === slug)!;
+const content = vsFor(slug)!;
+const others = competitors.filter((c) => c.slug !== slug);
+
+const title = `sendm8 vs ${competitor.name}`;
+const description = content.intro;
+
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'sendm8', item: site.url },
+    { '@type': 'ListItem', position: 2, name: 'Compare', item: `${site.url}/#compare` },
+    { '@type': 'ListItem', position: 3, name: title, item: `${site.url}/vs/${slug}` },
+  ],
+};
+const faqLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: content.faq.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+
+<Marketing title={title} description={description}>
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} />
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(faqLd)} />
+
+  <section class="wrap vs-hero" aria-labelledby="vs-title">
+    <p class="crumb label muted">
+      <a href="/#compare">Compare</a> <span aria-hidden="true">/</span> {competitor.name}
+    </p>
+    <p class="bay label label-lg"><span class="bay-no">vs</span> {competitor.name}</p>
+
+    <h1 id="vs-title" class="h1">sendm8 vs <span class="muted">{competitor.name}</span></h1>
+    <p class="lede">{content.intro}</p>
+
+    <div class="vs-cta">
+      <a class="btn btn-signal btn-lg" href="/app/onboarding">Get your endpoint <Icon name="arrow-right" /></a>
+      <a class="btn btn-ghost btn-lg" href="#table">See the full table</a>
+    </div>
+
+    <ul class="vs-hl" role="list">
+      {
+        content.highlights.map((h) => (
+          <li>
+            <Icon name="check" size={18} class="vs-hl-icon" />
+            <span>{h}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <Compare
+    id="table"
+    bayNo="01"
+    kicker={`sendm8 vs ${competitor.name}`}
+    titleMain="Side by side,"
+    titleSub="free plan only."
+    competitors={[competitor]}
+    fairPoints={fairPoints.filter((p) => p.who === competitor.name)}
+  />
+
+  <section class="wrap vs-migrate">
+    <Callout kind="accent" icon="arrow-right" title={content.migration.title}>
+      <p>{content.migration.body}</p>
+      <p><a class="link-signal" href={content.migration.cta.href}>{content.migration.cta.label} →</a></p>
+    </Callout>
+  </section>
+
+  <section class="wrap vs-faq" aria-labelledby="vs-faq-title">
+    <p class="bay label label-lg"><span class="bay-no">02</span> Questions people actually ask</p>
+    <h2 id="vs-faq-title" class="h2">Before you switch.</h2>
+    <dl class="faq">
+      {
+        content.faq.map((f) => (
+          <div class="faq-item">
+            <dt class="faq-q">{f.q}</dt>
+            <dd class="faq-a">{f.a}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="wrap vs-other">
+    <p class="label muted">
+      Comparing another service?{' '}
+      {others.map((c, i) => (
+        <>
+          {i > 0 && ' · '}
+          <a class="link-signal" href={`/vs/${c.slug}`}>sendm8 vs {c.name}</a>
+        </>
+      ))}
+    </p>
+  </section>
+</Marketing>
+
+<style>
+  .vs-hero {
+    padding-top: clamp(2.5rem, 6vw, 5rem);
+  }
+  .crumb {
+    display: flex;
+    gap: var(--s-2);
+    margin-bottom: var(--s-4);
+  }
+  .crumb a {
+    color: var(--fg-muted);
+  }
+  .crumb a:hover {
+    color: var(--fg);
+  }
+  .bay {
+    margin-top: var(--s-3);
+  }
+  .h1 {
+    margin-top: var(--s-4);
+    font-family: var(--font-display);
+    font-stretch: 64%;
+    font-weight: 900;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    line-height: 0.9;
+    letter-spacing: -0.01em;
+  }
+  .lede {
+    margin-top: var(--s-5);
+    max-width: 62ch;
+    font-size: var(--fs-lg);
+    line-height: 1.5;
+    color: var(--fg-muted);
+  }
+  .vs-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-5);
+  }
+  .vs-hl {
+    display: grid;
+    gap: var(--s-3);
+    max-width: 62ch;
+    margin-top: clamp(2rem, 4vw, 3rem);
+    padding-top: var(--s-5);
+    border-top: var(--bw-heavy) solid var(--line-strong);
+  }
+  .vs-hl li {
+    display: flex;
+    align-items: start;
+    gap: var(--s-3);
+    font-size: var(--fs-md);
+  }
+  .vs-hl :global(.vs-hl-icon) {
+    flex: none;
+    margin-top: 0.15em;
+    color: var(--ok);
+  }
+
+  .vs-migrate {
+    padding-top: clamp(1rem, 3vw, 2rem);
+  }
+
+  .vs-faq {
+    padding-block: clamp(3rem, 6vw, 5rem);
+  }
+  .h2 {
+    margin-top: var(--s-3);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 850;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+  }
+  .faq {
+    margin-top: clamp(1.5rem, 3vw, 2.5rem);
+    display: grid;
+    gap: 0;
+    max-width: 70ch;
+    border-top: 1px solid var(--line);
+  }
+  .faq-item {
+    padding-block: var(--s-5);
+    border-bottom: 1px dashed var(--line);
+  }
+  .faq-q {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: 1.1rem;
+  }
+  .faq-a {
+    margin-top: var(--s-2);
+    color: var(--fg-muted);
+    line-height: 1.6;
+  }
+
+  .vs-other {
+    padding-bottom: clamp(3rem, 6vw, 5rem);
+  }
+</style>

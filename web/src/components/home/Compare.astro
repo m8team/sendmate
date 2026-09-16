@@ -1,19 +1,44 @@
 ---
-import { rows, us, competitors, checkedOn, checkedOnLabel, fairPoints } from '../../config/compare';
+import { rows, us, competitors as allCompetitors, checkedOn, checkedOnLabel, fairPoints as allFairPoints, type Competitor } from '../../config/compare';
 import { site } from '../../config/site';
+
+interface Props {
+  /** Defaults to every competitor (the homepage grid). A /vs/* page passes just one. */
+  competitors?: Competitor[];
+  fairPoints?: typeof allFairPoints;
+  id?: string;
+  bayNo?: string;
+  kicker?: string;
+  titleMain?: string;
+  titleSub?: string;
+}
+const {
+  competitors = allCompetitors,
+  fairPoints = allFairPoints,
+  id = 'compare',
+  bayNo = '07',
+  kicker = 'Honest comparison',
+  titleMain = 'How we stack up.',
+  titleSub = 'No trash talk.',
+} = Astro.props;
 const cols = [us, ...competitors];
+const headingId = `${id}-title`;
 ---
 
-<section class="section compare" id="compare" aria-labelledby="compare-title">
+<section class="section compare" id={id} aria-labelledby={headingId}>
   <div class="wrap">
-    <p class="bay label label-lg"><span class="bay-no">07</span> Honest comparison</p>
+    <p class="bay label label-lg"><span class="bay-no">{bayNo}</span> {kicker}</p>
 
     <div class="cmp-head">
-      <h2 id="compare-title" class="h1">How we stack up. <br /><span class="muted">No trash talk.</span></h2>
-      <p class="cmp-note">Free plans only, taken from each service’s own pricing page and docs. Plans change, so if something’s out of date, <a class="link-signal" href={`${site.repo}/issues`}>tell us</a> and we’ll fix it.</p>
+      <h2 id={headingId} class="h1">{titleMain} <br /><span class="muted">{titleSub}</span></h2>
+      <p class="cmp-note">
+        <slot name="note">
+          Free plans only, taken from each service’s own pricing page and docs. Plans change, so if something’s out of date, <a class="link-signal" href={`${site.repo}/issues`}>tell us</a> and we’ll fix it.
+        </slot>
+      </p>
     </div>
 
-    <div class="cmp-scroll" tabindex="0" role="region" aria-labelledby="compare-title">
+    <div class="cmp-scroll" tabindex="0" role="region" aria-labelledby={headingId}>
       <table class="cmp">
         <caption class="sr-only">Free plan comparison of sendm8 with other form backends</caption>
         <thead>
@@ -85,6 +110,20 @@ const cols = [us, ...competitors];
         }
       </ul>
     </div>
+
+    {
+      competitors.length > 1 && (
+        <p class="cmp-deep label muted">
+          Full write-up:{' '}
+          {competitors.map((c, i) => (
+            <>
+              {i > 0 && ' · '}
+              <a class="link-signal" href={`/vs/${c.slug}`}>sendm8 vs {c.name}</a>
+            </>
+          ))}
+        </p>
+      )
+    }
   </div>
 </section>
 
@@ -275,6 +314,9 @@ const cols = [us, ...competitors];
   }
   .fair strong {
     color: var(--fg);
+  }
+  .cmp-deep {
+    margin-top: var(--s-6);
   }
   @media (max-width: 900px) {
     .cmp-head,
