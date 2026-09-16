@@ -1,0 +1,13 @@
+{
+  "name": "sendm8",
+  "short_name": "sendm8",
+  "description": "The free, open-source form backend. Point any HTML form at sendm8 and the submissions land in your inbox, Discord, Slack or wherever you like.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f2ede2",
+  "theme_color": "#f2ede2",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
