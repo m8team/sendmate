@@ -1,0 +1,39 @@
+# You've reached the sorting office. Come in, look around.
+#
+#        .-""""""""""""""""""""""-.
+#        |  .------------------.  |
+#        |  |                  |  |
+#        |  |       m8         |  |
+#        |  |                  |  |
+#        |  '------------------'  |
+#        '-......................-'
+#          POSTAGE PAID  ·  0.00
+#
+# Human reading this instead of a crawler: hi. The source is at
+# https://github.com/m8team/sendmate (AGPL-3.0) if you want to see how any of this works.
+#
+# Building an agent or an LLM integration? Skip the HTML: https://sendm8.com/llms.txt
+# has these docs as clean Markdown, and every /docs/<section> page has its own .md twin.
+
+User-agent: *
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://sendm8.com/sitemap-index.xml
