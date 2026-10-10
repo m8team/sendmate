@@ -7,11 +7,11 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm --prefix web install --no-audit --no-fund && npm --prefix web run build",
-    "build:web": "npm --prefix web run build",
+    "build": "cd web && npm install --no-audit --no-fund && npm run build",
+    "build:web": "cd web && npm run build",
     "dev": "npm run build:web && npm run dev -w worker",
-    "dev:web": "npm --prefix web run dev",
-    "test": "npm test -w worker && npm --prefix web test",
+    "dev:web": "cd web && npm run dev",
+    "test": "npm test -w worker && cd web && npm test",
     "test:coverage": "npm run test:coverage -w worker",
     "typecheck": "npm run typecheck -w worker",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",

@@ -32,8 +32,13 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - run: npm ci --prefix web
-      - run: npm --prefix web run check
+      # Run inside web/: with --prefix, npm installs the repo root into web/node_modules.
+      - run: npm ci
+        working-directory: web
+      - run: npm run check
+        working-directory: web
       # Fails if data-layer coverage drops below 70% (thresholds in web/vitest.config.ts).
-      - run: npm --prefix web run test:coverage
-      - run: npm --prefix web run build
+      - run: npm run test:coverage
+        working-directory: web
+      - run: npm run build
+        working-directory: web
