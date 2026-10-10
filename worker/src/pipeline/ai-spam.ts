@@ -6,8 +6,12 @@ import { claimCounter } from "../email/budget";
 import { dayKey } from "../lib/time";
 import { captureError } from "../ops/errors";
 
-/** A small, fast instruct model keeps each check to a few neurons of the free daily allowance. */
-export const AI_SPAM_MODEL = "@cf/meta/llama-3.2-3b-instruct";
+/**
+ * Small enough to stay inside the free allowance (~0.8 neurons a check, so the daily cap of
+ * aiSpamChecksPerDay costs under a tenth of it), big enough to tell a complaint from a sales pitch.
+ * The 3B model it replaced answered "83" to almost everything, genuine messages included.
+ */
+export const AI_SPAM_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8";
 export const AI_SPAM_THRESHOLD = 80;
 const MAX_INPUT_CHARS = 2_000;
 
@@ -24,13 +28,16 @@ export function submissionText(data: SubmissionRow["data"]): string {
     .slice(0, MAX_INPUT_CHARS);
 }
 
+/**
+ * Workers AI answers in more than one shape: `response` can be a string or already a number, and
+ * newer models also return an OpenAI-style `choices[0].message.content`. Accept all of them.
+ */
 export function parseScore(output: unknown): number | null {
-  const text = typeof output === "string" ? output : (output as { response?: unknown } | null)?.response;
-  if (typeof text !== "string") return null;
-  const match = text.match(/\b(\d{1,3})\b/);
-  if (!match) return null;
-  const score = Number(match[1]);
-  return score >= 0 && score <= 100 ? score : null;
+  const body = output as { response?: unknown; choices?: { message?: { content?: unknown } }[] } | null;
+  const candidate = typeof output === "string" || typeof output === "number" ? output : (body?.response ?? body?.choices?.[0]?.message?.content);
+
+  const score = typeof candidate === "number" ? candidate : typeof candidate === "string" ? Number(candidate.match(/\b(\d{1,3})\b/)?.[1]) : NaN;
+  return Number.isInteger(score) && score >= 0 && score <= 100 ? score : null;
 }
 
 /**
@@ -56,17 +63,22 @@ export async function aiSpamScore(env: Env, submission: Pick<SubmissionRow, "dat
   }
 }
 
-/** Runs the AI check and moves the submission to spam if it's confident. Returns true if it did. */
+/**
+ * Runs the AI check and records what the model thought, so the inbox can show "a bit suspicious"
+ * instead of a bare zero. Only a confident score moves the submission to spam.
+ * Returns true when it did, which stops delivery.
+ */
 export async function applyAiSpamCheck(env: Env, submission: Pick<SubmissionRow, "id" | "data" | "meta" | "spamScore">): Promise<boolean> {
   const score = await aiSpamScore(env, submission);
-  if (score === null || score < AI_SPAM_THRESHOLD) return false;
+  if (score === null) return false;
+  const spam = score >= AI_SPAM_THRESHOLD;
   await getDb(env)
     .update(submissions)
     .set({
-      status: "spam",
+      ...(spam && { status: "spam" }),
       spamScore: Math.max(submission.spamScore, score / 100),
       meta: { ...submission.meta, spamReasons: [...submission.meta.spamReasons, `ai:${score}`] },
     })
     .where(eq(submissions.id, submission.id));
-  return true;
+  return spam;
 }

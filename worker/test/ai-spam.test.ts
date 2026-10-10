@@ -20,6 +20,12 @@ const withAi = (reply: unknown) => {
 describe("parsing model output", () => {
   it.each([
     [{ response: "92" }, 92],
+    // Workers AI returns the number itself for some models, and OpenAI-style choices for others.
+    [{ response: 83 }, 83],
+    [{ choices: [{ message: { content: "7" } }] }, 7],
+    [{ choices: [{ message: { content: 0 } }] }, 0],
+    [{ response: 101 }, null],
+    [{ response: 12.5 }, null],
     [{ response: "Spam probability: 7" }, 7],
     ["100", 100],
     [{ response: "definitely spam" }, null],
@@ -71,6 +77,22 @@ describe("AI spam scoring", () => {
     expect(row?.spamScore).toBe(0.97);
     expect(row?.meta.spamReasons).toContain("ai:97");
     expect(http.to("discord.com")).toHaveLength(0);
+  });
+
+  it("records what the model thought, even when it isn't spam", async () => {
+    mockFetch();
+    const owner = await createUser();
+    const form = await createForm({ userId: owner.id, settings: { notifyMode: "off" } });
+    const res = await postJson(form.id, { message: "Can you quote for a five page site?" });
+    const { id } = await res.json<{ id: string }>();
+
+    const { env: aiEnv } = withAi({ response: "35" });
+    await dispatchStored(aiEnv, { ...form, status: "active", settings: { aiSpamScoring: true } }, id, null);
+
+    const row = await getSubmission(id);
+    // Scored and kept in the inbox: the dashboard shows "a bit suspicious" rather than a bare zero.
+    expect(row).toMatchObject({ status: "ok", spamScore: 0.35 });
+    expect(row?.meta.spamReasons).toContain("ai:35");
   });
 
   it("delivers normally when the model thinks it's fine", async () => {
