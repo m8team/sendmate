@@ -116,6 +116,9 @@ describe('formatters', () => {
     expect(spamReasonLabel('ai:97')).toBe('AI double-check: 97% sure it’s spam');
     expect(spamReasonLabel('ai')).toBe('AI double-check thought it looked like spam');
     expect(spamReasonLabel('Honeypot filled')).toBe('Honeypot filled');
+    expect(spamReasonLabel('disposable_email:mailinator.com')).toBe('Sent from a throwaway email provider (mailinator.com)');
+    expect(spamReasonLabel('gibberish')).toBe('The message reads like keyboard mash');
+    expect(spamReasonLabel('no_browser')).toBe('Posted by a script: no browser and no page it came from');
   });
 
   it('spamReasonLabel explains the heuristics codes', () => {

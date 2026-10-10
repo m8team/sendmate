@@ -73,6 +73,12 @@ export function spamReasonLabel(reason: string) {
       return 'Links written as HTML or BBCode, a favourite of spam bots';
     case 'url_only_message':
       return 'The message is just a link';
+    case 'disposable_email':
+      return arg ? `Sent from a throwaway email provider (${arg})` : 'Sent from a throwaway email provider';
+    case 'gibberish':
+      return 'The message reads like keyboard mash';
+    case 'no_browser':
+      return 'Posted by a script: no browser and no page it came from';
     case 'honeypot':
       return 'The hidden honeypot field was filled in';
     case 'sensitive_field':

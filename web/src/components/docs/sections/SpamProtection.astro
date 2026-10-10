@@ -54,7 +54,12 @@ const turnstileCode = `
     </p>
     <p>
       Then come the quick checks: a message stuffed with links, well-known spam phrases, throwaway email domains, a message that’s only a URL, and
-      keyboard-mash gibberish.
+      keyboard-mash gibberish. A post with no browser and no page behind it (a script, in other words) counts a little against it too, though never
+      enough on its own to be spam: plenty of honest server-to-server posts look exactly like that.
+    </p>
+    <p>
+      Each check adds to a score out of 1. At <strong>0.8</strong> the submission goes to the spam folder instead of being delivered; below that it
+      arrives as normal, with the score and the reasons shown next to it.
     </p>
   </div>
 
@@ -103,9 +108,9 @@ const turnstileCode = `
   <h3 class="ds-h3" id="spam-ai"><span class="mono ds-h3-no">{n}.4</span> AI spam score</h3>
   <div class="prose">
     <p>
-      Optional, and off until you switch it on in <strong>Form settings → Spam</strong>. A small model scores each message after it’s been stored, so it
-      never slows your visitor down. Anything it’s confident about moves to spam before it’s delivered. You’ll see the score and the reasons on every
-      submission.
+      On for new forms, and switchable in <strong>Form settings → Spam</strong>. A small model scores each message after it’s been stored, so it never
+      slows your visitor down. Its score is kept on every submission it looks at, so you can see what it made of the quiet ones too, and anything it’s
+      confident about moves to spam before it’s delivered.
     </p>
   </div>
 
