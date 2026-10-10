@@ -37,7 +37,7 @@ export function newZeroSignupForm(email: string, now: number): FormRow {
     status: "pending_confirmation",
     allowedOrigins: [],
     redirectUrl: null,
-    settings: {},
+    settings: { aiSpamScoring: true },
     ownerEmail: email,
     turnstileSecretEnc: null,
     flaggedReason: null,

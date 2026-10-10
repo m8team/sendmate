@@ -18,7 +18,7 @@ export interface FormSettings {
    * Defaults to "suspicious". Ignored when the form uses its own Turnstile secret.
    */
   challenge?: "off" | "suspicious" | "always";
-  /** Ask Workers AI to double-check submissions that passed the heuristics. Off by default. */
+  /** Ask Workers AI to double-check submissions that passed the heuristics. On for forms created from now on. */
   aiSpamScoring?: boolean;
 }
 

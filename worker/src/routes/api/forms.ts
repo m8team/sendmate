@@ -133,7 +133,8 @@ formRoutes.post("/", async (c) => {
       name: input.name,
       allowedOrigins: input.allowedOrigins ?? [],
       redirectUrl: input.redirectUrl ?? null,
-      settings: mergeSettings({}, input.settings ?? {}),
+      // AI scoring is on for new forms; owners can switch it off in Form settings → Spam.
+      settings: mergeSettings({ aiSpamScoring: true }, input.settings ?? {}),
       createdAt: Date.now(),
     })
     .returning()
