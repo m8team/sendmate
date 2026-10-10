@@ -142,6 +142,23 @@ describe("POST /f/:formId", () => {
     expect(row?.spamScore).toBeGreaterThanOrEqual(0.8);
   });
 
+  it("passes the browser signals through, so a scripted post is nudged and a real one isn't", async () => {
+    const form = await createForm();
+    const browser = {
+      referer: "https://yourstudio.com/contact",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Safari/605.1.15",
+    };
+    await postJson(form.id, { email: "alex@moreno.dev", message: "Are you free in October?" }, browser);
+    await postJson(form.id, { email: "alex@moreno.dev", message: "Are you free in October?" }, { "user-agent": "WindowsPowerShell/5.1.26100.9444" });
+
+    // Insertion order: the browser post, then the scripted one.
+    const [real, scripted] = await listSubmissions(form.id);
+    expect(real).toMatchObject({ status: "ok", spamScore: 0 });
+    expect(real?.meta.spamReasons).toEqual([]);
+    expect(scripted).toMatchObject({ status: "ok", spamScore: 0.15 });
+    expect(scripted?.meta.spamReasons).toEqual(["no_browser"]);
+  });
+
   it("does not flag an ordinary message with a link", async () => {
     const form = await createForm();
     await postJson(form.id, { message: "Hey! Loved your post at https://blog.site/post. Want to collaborate?" });

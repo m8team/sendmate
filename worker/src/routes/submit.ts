@@ -19,7 +19,7 @@ import { renderPage, stamp } from "../pages/layout";
 import { isEmail } from "../pipeline/deliver";
 import { SubmitError } from "../pipeline/errors";
 import { parseSubmission, type ParsedSubmission } from "../pipeline/parse";
-import { assessSpam, SUSPICIOUS_SCORE } from "../pipeline/spam";
+import { assessSpam, submitterEmail, SUSPICIOUS_SCORE } from "../pipeline/spam";
 import { claimZeroSignupSlot, dispatchStored, newZeroSignupForm, zeroSignupInserts } from "../pipeline/zero-signup";
 
 export const submitRoutes = createRouter();
@@ -70,11 +70,6 @@ function safeDecode(value: string): string {
 }
 
 /** The submitter's email, from `_replyto` or an `email` field, for blocklist checks. */
-function submitterEmail(parsed: ParsedSubmission): string | null {
-  const candidate = parsed.special._replyto ?? parsed.fields.email;
-  return typeof candidate === "string" && isEmail(candidate.trim()) ? candidate.trim().toLowerCase() : null;
-}
-
 function needsChallenge(env: Env, form: FormRow, json: boolean, status: SubmissionStatus, score: number): boolean {
   // AJAX callers can't follow a redirect to a challenge page; they should use their own Turnstile widget.
   if (json || status !== "ok" || form.turnstileSecretEnc || !turnstileEnabled(env)) return false;
@@ -173,7 +168,11 @@ submitRoutes.post("/:formId", async (c) => {
       }
     }
 
-    const verdict = assessSpam(parsed, form.settings, { reviewed: form.reviewedAt !== null });
+    const verdict = assessSpam(parsed, form.settings, {
+      reviewed: form.reviewedAt !== null,
+      referrer: c.req.header("referer") ?? null,
+      userAgent: c.req.header("user-agent") ?? null,
+    });
     let status = verdict.status;
     const reasons = [...verdict.reasons];
     if (status === "ok" && form.flaggedReason) {
