@@ -1,0 +1,38 @@
+version: 2
+
+# One weekly batch per package tree, grouped so a handful of bumps arrives as one PR.
+# Security updates still open their own PRs as soon as an advisory lands.
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      cloudflare:
+        patterns: ["wrangler", "@cloudflare/*"]
+      dev-dependencies:
+        dependency-type: development
+      production-dependencies:
+        dependency-type: production
+
+  # web/ has its own lockfile and isn't an npm workspace.
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      astro:
+        patterns: ["astro", "@astrojs/*"]
+      dev-dependencies:
+        dependency-type: development
+      production-dependencies:
+        dependency-type: production
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
