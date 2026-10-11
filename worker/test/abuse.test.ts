@@ -159,7 +159,8 @@ describe("challenge page", () => {
     const form = await createForm();
     const id = challengeId(await postForm(form.id, SUSPICIOUS));
     let limited = false;
-    for (let i = 0; i < 12 && !limited; i++) {
+    // The limit is 10 a minute, but Cloudflare's limiter is approximate, so allow plenty of room.
+    for (let i = 0; i < 40 && !limited; i++) {
       limited = (await (await passChallenge(id, "bad", "198.51.100.99")).text()).includes("Too many attempts");
     }
     expect(limited).toBe(true);
