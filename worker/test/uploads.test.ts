@@ -62,7 +62,8 @@ describe("uploading", () => {
     const list = await api<Page<SubmissionDto>>(`/forms/${form.id}/submissions`, { headers: session.headers });
     const files = list.body.data[0]!.files;
     expect(files.map((f) => f.name)).toEqual(["cv.pdf", "me.png"]);
-    expect(JSON.stringify(files)).not.toContain("f/");
+    // File links go through the API, never the public form endpoint. ("f/" alone also matches any id ending in f.)
+    expect(JSON.stringify(files)).not.toContain("/f/");
 
     const pdf = await SELF.fetch(`https://sendm8.test${files[0]!.url}`, { headers: session.headers });
     expect(pdf.headers.get("content-type")).toBe("application/octet-stream");
