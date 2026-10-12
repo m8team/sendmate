@@ -1,4 +1,4 @@
-import type { EmailSettingsDto } from "@sendm8/shared";
+import { HEARD_FROM_SOURCES, type EmailSettingsDto } from "@sendm8/shared";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { createRouter } from "../../app";
@@ -9,9 +9,29 @@ import { instantEmailsUsedToday } from "../../email/budget";
 import { listResendDomains, validateResendKey } from "../../email/resend";
 import { ApiError, readJson } from "../../lib/api-error";
 import { decryptSecret, encryptSecret } from "../../lib/secrets";
+import { alertHeardFrom } from "../../ops/events";
 import { isEmail } from "../../pipeline/deliver";
 
 export const settingsRoutes = createRouter();
+
+const heardFromSchema = z.object({
+  source: z.enum([...HEARD_FROM_SOURCES, "skipped"]),
+  detail: z.string().trim().max(200).optional(),
+});
+
+/** Saves the answer to "How did you hear about sendm8?" (or that they skipped it), so it's asked once. */
+settingsRoutes.put("/heard-from", async (c) => {
+  const input = await readJson(c.req.raw, heardFromSchema);
+  const user = c.get("user");
+  const answered = input.source !== "skipped";
+  const values = { heardFrom: input.source, heardFromDetail: answered ? input.detail || null : null, heardFromAt: Date.now() };
+  await getDb(c.env)
+    .insert(userSettings)
+    .values({ userId: user.id, ...values })
+    .onConflictDoUpdate({ target: userSettings.userId, set: values });
+  if (input.source !== "skipped") alertHeardFrom(c.env, user, input.source, values.heardFromDetail);
+  return c.json({ data: { heardFrom: input.source } });
+});
 
 settingsRoutes.get("/email", async (c) => {
   const db = getDb(c.env);

@@ -1,5 +1,6 @@
 import { waitUntil } from "cloudflare:workers";
 import { count } from "drizzle-orm";
+import type { HeardFrom } from "@sendm8/shared";
 import type { FormRow } from "../db/client";
 import { getDb } from "../db/client";
 import { user } from "../db/schema";
@@ -28,6 +29,26 @@ export async function signupAlert(env: AlertEnv, created: { name: string; email:
       ...(total ? [{ name: "Accounts", value: total.n.toLocaleString("en-GB") }] : []),
     ],
     path: "/app/admin",
+  });
+}
+
+const HEARD_FROM_LABELS: Record<HeardFrom, string> = {
+  search: "Search engine",
+  ai_assistant: "AI assistant",
+  github: "GitHub",
+  social: "Social media",
+  friend: "A friend or colleague",
+  article: "A blog post or article",
+  other: "Something else",
+};
+
+/** "How did you hear about sendm8?" answered: the most useful thing to learn about a new user. */
+export function alertHeardFrom(env: AlertEnv, user: { name: string }, source: HeardFrom, detail: string | null) {
+  notifyOpsLater(env, {
+    kind: "heard_from",
+    title: `${plain(user.name || "Someone", 60)} found sendm8 via ${HEARD_FROM_LABELS[source].toLowerCase()}`,
+    ...(detail && { description: `“${plain(detail, 200)}”` }),
+    path: "/app/admin#ad-growth",
   });
 }
 

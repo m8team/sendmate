@@ -161,10 +161,16 @@ export interface DailyStat {
   submissions: number;
 }
 
+/** Answers to "How did you hear about sendm8?", asked once in the dashboard. */
+export const HEARD_FROM_SOURCES = ["search", "ai_assistant", "github", "social", "friend", "article", "other"] as const;
+export type HeardFrom = (typeof HEARD_FROM_SOURCES)[number];
+
 export interface MeDto {
   user: { id: string; name: string; email: string; image: string | null };
   /** Effective limits for this deployment (defaults plus any LIMITS_JSON overrides). */
   limits: Limits;
+  /** Their answer, "skipped", or null when they haven't been asked yet. */
+  heardFrom: HeardFrom | "skipped" | null;
 }
 
 export type ChannelType = "email" | "discord" | "slack" | "telegram" | "webhook";
@@ -257,6 +263,21 @@ export interface AdminReportDto {
   createdAt: number;
   resolvedAt: number | null;
   form: { id: string; name: string; status: FormStatus; flaggedReason: string | null; ownerEmail: string | null } | null;
+}
+
+/** Who's using the instance, and whether their forms receive real traffic. */
+export interface AdminGrowthDto {
+  users: number;
+  usersLast7d: number;
+  forms: number;
+  formsLast7d: number;
+  /** Forms with a submission from a public website, not from the owner's own address, in the window. */
+  liveForms30d: number;
+  liveForms7d: number;
+  /** Answers to "How did you hear about sendm8?", most common first. "skipped" counts people who declined. */
+  sources: { source: HeardFrom | "skipped"; count: number }[];
+  /** Public sites sending real submissions in the last 30 days. */
+  topSites: { host: string; forms: number; submissions: number }[];
 }
 
 export type ErrorSource = "worker" | "browser";

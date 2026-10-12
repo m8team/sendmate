@@ -177,6 +177,11 @@ export const userSettings = sqliteTable("user_settings", {
   /** Set when the key last validated or sent successfully; cleared when Resend rejects it. */
   resendVerifiedAt: integer("resend_verified_at"),
   resendKeyError: text("resend_key_error"),
+  /** "How did you hear about sendm8?": a HeardFrom value, or "skipped". Null until asked. */
+  heardFrom: text("heard_from"),
+  /** Optional free text with the answer ("a friend at work", "Claude"). */
+  heardFromDetail: text("heard_from_detail"),
+  heardFromAt: integer("heard_from_at"),
 });
 
 export const abuseReports = sqliteTable(
