@@ -1,0 +1,37 @@
+name: Uptime
+
+# Watches sendm8.com from outside Cloudflare: the Worker can't report its own outage.
+# Needs an ALERT_WEBHOOK_URL repository secret (the same Discord or Slack webhook the Worker uses).
+# A failed run also triggers GitHub's own failure email.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  health:
+    # Forks don't watch sendm8.com.
+    if: github.repository == 'm8team/sendmate'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check sendm8.com/health
+        env:
+          ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # Three tries, 20 seconds apart, so one dropped request isn't an outage.
+          for attempt in 1 2 3; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 https://sendm8.com/health || true)
+            if [ "$code" = "200" ]; then echo "up"; exit 0; fi
+            echo "attempt $attempt: HTTP ${code:-none}"
+            sleep 20
+          done
+          message="🔴 sendm8.com/health failed 3 times in a row (last: HTTP ${code:-no response}). $RUN_URL"
+          if [ -n "$ALERT_WEBHOOK_URL" ]; then
+            jq -n --arg m "$message" '{username: "sendm8", content: $m, text: $m}' | curl -s -X POST "$ALERT_WEBHOOK_URL" -H 'content-type: application/json' --data-binary @-
+          fi
+          echo "$message"
+          exit 1

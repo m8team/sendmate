@@ -51,4 +51,12 @@ pageRoutes.post("/verify/:token", async (c) => {
   });
 });
 
-pageRoutes.get("/health", (c) => c.json({ ok: true }));
+/** For uptime checks (.github/workflows/uptime.yml): up means the Worker runs and the database answers. */
+pageRoutes.get("/health", async (c) => {
+  try {
+    await c.env.DB.prepare("SELECT 1").first();
+    return c.json({ ok: true });
+  } catch {
+    return c.json({ ok: false, error: "database_unavailable" }, 503);
+  }
+});
