@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Submission } from '../../../lib/api/types';
-import { apiFilter, emptyCopy, exportScopeNote, folderTabs, inFilter, listMeta, serverCount, tabKeyTarget, unreadIn, type TabsState } from './folders';
+import { apiFilter, emptyCopy, exportScopeNote, folderTabs, inFilter, listMeta, serverCount, tabKeyTarget, unreadIn, type TabsState, filterFromSearch, spamWeekNote } from './folders';
 
 const sub = (over: Partial<Submission> = {}): Submission =>
   ({ id: 's1', status: 'ok', read: false, starred: false, deliveries: [], spamScore: 0, data: {}, special: {}, files: [], ...over }) as Submission;
@@ -113,5 +113,25 @@ describe('copy', () => {
     expect(listMeta(1, false, '')).toBe('1 item');
     expect(listMeta(1, true, '')).toBe('1+ items');
     expect(listMeta(3, false, 'ada')).toBe('3 items found');
+  });
+});
+
+describe('links and the weekly spam note', () => {
+  it('opens the folder a link asks for, and the inbox otherwise', () => {
+    expect(filterFromSearch('?folder=spam')).toBe('spam');
+    expect(filterFromSearch('?submission=01h&folder=held')).toBe('held');
+    expect(filterFromSearch('?folder=nonsense')).toBe('inbox');
+    expect(filterFromSearch('?folder=constructor')).toBe('inbox');
+    expect(filterFromSearch('')).toBe('inbox');
+  });
+
+  it('says how much went to spam this week, or nothing', () => {
+    const counts = { inbox: 0, spam: 0, held: 0, starred: 0, total: 0 };
+    expect(spamWeekNote({ ...counts, spamThisWeek: 3 })).toBe('3 messages went to spam this week.');
+    expect(spamWeekNote({ ...counts, spamThisWeek: 1 })).toBe('1 message went to spam this week.');
+    expect(spamWeekNote({ ...counts, spamThisWeek: 0 })).toBeNull();
+    // Older Workers don't send the field.
+    expect(spamWeekNote(counts)).toBeNull();
+    expect(spamWeekNote(null)).toBeNull();
   });
 });

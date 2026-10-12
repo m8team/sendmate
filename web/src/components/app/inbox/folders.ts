@@ -9,6 +9,19 @@ export type Filter = 'inbox' | 'unread' | 'starred' | 'spam' | 'held' | 'all';
 
 export const FILTER_LABEL: Record<Filter, string> = { inbox: 'Inbox', unread: 'Unread', starred: 'Starred', spam: 'Spam', held: 'Held', all: 'All' };
 
+/** The folder a link asked for (`?folder=spam`, used by the weekly spam email), or the inbox. */
+export function filterFromSearch(search: string): Filter {
+  const folder = new URLSearchParams(search).get('folder');
+  return folder && Object.hasOwn(FILTER_LABEL, folder) ? (folder as Filter) : 'inbox';
+}
+
+/** "3 messages went to spam this week", or nothing when there's nothing to say. */
+export function spamWeekNote(counts: FolderCounts | null | undefined): string | null {
+  const n = counts?.spamThisWeek ?? 0;
+  if (n <= 0) return null;
+  return n === 1 ? '1 message went to spam this week.' : `${n} messages went to spam this week.`;
+}
+
 /** Unread is the inbox, filtered in the browser (read state lives in localStorage). */
 export const apiFilter = (f: Filter): SubmissionFilter => (f === 'unread' ? 'inbox' : f);
 

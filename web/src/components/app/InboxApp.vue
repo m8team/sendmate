@@ -4,11 +4,12 @@
  * (folders, search, bulk bar, rows) beside the detail pane. On phones the detail is a full-screen sheet.
  * State and behaviour live in the composables under ./inbox; this file wires them to the view.
  */
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import type { Channel, Form } from '../../lib/api/types';
 import InboxDetail from './InboxDetail.vue';
 import BulkBar from './inbox/BulkBar.vue';
 import FolderTabs from './inbox/FolderTabs.vue';
+import SpamWeekBanner from './inbox/SpamWeekBanner.vue';
 import FormStateBanner from './inbox/FormStateBanner.vue';
 import HeldBanner from './inbox/HeldBanner.vue';
 import InboxHeader from './inbox/InboxHeader.vue';
@@ -16,7 +17,7 @@ import InboxSearch from './inbox/InboxSearch.vue';
 import KeyboardHints from './inbox/KeyboardHints.vue';
 import SubmissionList from './inbox/SubmissionList.vue';
 import UndoToast from './inbox/UndoToast.vue';
-import type { Filter } from './inbox/folders';
+import { spamWeekNote, type Filter } from './inbox/folders';
 import { useInboxExport } from './inbox/useInboxExport';
 import { useInboxKeyboard } from './inbox/useInboxKeyboard';
 import { useInboxNav } from './inbox/useInboxNav';
@@ -56,6 +57,9 @@ const { announceView } = useInboxExport(list, () => props.form);
 
 useInboxKeyboard({ list, nav, toggleStar, toggleSelect, searchEl: () => searchRef.value?.input, listEl: () => listRef.value?.listEl });
 
+const spamDismissed = ref(false);
+const spamNote = computed(() => (spamDismissed.value || filter.value === 'spam' ? null : spamWeekNote(props.form.counts)));
+
 function setFilter(f: Filter, focusTab = false) {
   if (filter.value !== f) filter.value = f;
   selected.value = [];
@@ -82,6 +86,7 @@ onBeforeUnmount(() => window.clearInterval(clock));
 
     <FormStateBanner v-model:form-status="formStatus" :form="form" :now="now" @form-updated="emit('form-updated', $event)" />
     <HeldBanner v-if="hasHeld || form.flag" :flag="form.flag" :show-review="filter !== 'held'" @review="setFilter('held')" />
+    <SpamWeekBanner v-if="spamNote" :note="spamNote" @review="setFilter('spam')" @dismiss="spamDismissed = true" />
 
     <div class="split">
       <!-- ============ List pane ============ -->

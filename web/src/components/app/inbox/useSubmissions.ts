@@ -11,7 +11,7 @@ import { friendlyError } from '../../../lib/api/errors';
 import { getUnreadCache, markRead, readIds, setUnreadCache } from '../../../lib/api/readState';
 import { announceUnread } from '../../../lib/api/store';
 import { toast } from '../../../lib/toast';
-import { apiFilter, folderTabs, inFilter, unreadIn, type Filter, type LocalCounts } from './folders';
+import { apiFilter, filterFromSearch, folderTabs, inFilter, unreadIn, type Filter, type LocalCounts } from './folders';
 import { isMobile } from './media';
 
 const PAGE_SIZE = 50;
@@ -27,7 +27,8 @@ export function useSubmissions(props: InboxSource, onFormUpdated: (form: Form) =
   const loading = ref(true);
   const loadingMore = ref(false);
   const loadError = ref('');
-  const filter = ref<Filter>('inbox');
+  // A link can open a folder directly: the weekly spam email sends people to ?folder=spam.
+  const filter = ref<Filter>(typeof location === 'undefined' ? 'inbox' : filterFromSearch(location.search));
   const query = ref('');
   const appliedQuery = ref('');
   const selected = ref<string[]>([]);
