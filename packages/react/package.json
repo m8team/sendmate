@@ -1,6 +1,6 @@
 {
   "name": "@sendm8/react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React hooks for sendm8 forms. A drop-in replacement for @formspree/react's useForm.",
   "type": "module",
   "license": "MIT",
@@ -37,7 +37,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+    "prepublishOnly": "npm run typecheck && npm test && npm run build && npm run test:dist",
+    "test:dist": "node scripts/check-dist.mjs"
   },
   "peerDependencies": {
     "react": ">=18"

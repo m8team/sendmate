@@ -26,6 +26,7 @@ jobs:
       - run: npm run typecheck -w @sendm8/react
       - run: npm run test:coverage -w @sendm8/react
       - run: npm run build -w @sendm8/react
+      - run: npm run test:dist -w @sendm8/react
 
   web:
     runs-on: ubuntu-latest

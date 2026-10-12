@@ -3,10 +3,10 @@
  * Moving over is usually just the import line and the form id.
  */
 import { useCallback, useRef, useState, type ComponentPropsWithoutRef, type FormEvent } from "react";
-import { endpointFor, submit, type ExtraData, type SubmissionError, type SubmissionSuccess, type SubmitData } from "./submit";
+import { endpointFor, submit, type ExtraData, type SubmissionError, type SubmissionSuccess, type SubmitData } from "./submit.js";
 
-export { DEFAULT_ENDPOINT, SubmissionError, endpointFor, submit } from "./submit";
-export type { ExtraData, FieldError, SubmissionSuccess, SubmitData, SubmitResult } from "./submit";
+export { DEFAULT_ENDPOINT, SubmissionError, endpointFor, submit } from "./submit.js";
+export type { ExtraData, FieldError, SubmissionSuccess, SubmitData, SubmitResult } from "./submit.js";
 
 export interface FormState {
   submitting: boolean;
