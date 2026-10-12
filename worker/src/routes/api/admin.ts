@@ -1,4 +1,4 @@
-import type { AdminReportDto, AdminUsageDto, BlocklistEntryDto, ErrorGroupDto } from "@sendm8/shared";
+import type { AdminGrowthDto, AdminReportDto, AdminUsageDto, BlocklistEntryDto, ErrorGroupDto } from "@sendm8/shared";
 import { and, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { createRouter, requireAdmin } from "../../app";
@@ -6,12 +6,72 @@ import { getDb } from "../../db/client";
 import { abuseReports, blocklist, errorGroups, forms, session, submissions, user } from "../../db/schema";
 import { ApiError, notFound, readJson } from "../../lib/api-error";
 import { hashIp } from "../../lib/crypto";
+import { isLocalHost, parseHttpUrl } from "../../lib/http";
 import { computeUsage } from "../../lib/usage";
 import { toErrorGroupDto } from "../../ops/errors";
 
 export const adminRoutes = createRouter();
 
 adminRoutes.use("*", requireAdmin);
+
+// ── Growth ─────────────────────────────────────────────────────────────────
+
+const DAY = 86_400_000;
+
+/**
+ * Sign-ups, and whether their forms get real traffic. A form is "live" when it receives a submission
+ * from a public website (not a local dev server, not sendm8 itself) from someone other than its owner.
+ */
+adminRoutes.get("/growth", async (c) => {
+  const now = Date.now();
+  const week = now - 7 * DAY;
+  const month = now - 30 * DAY;
+  const appHost = new URL(c.env.APP_URL).hostname;
+
+  const [counts, sources, recent] = (await c.env.DB.batch([
+    c.env.DB.prepare(
+      `SELECT (SELECT count(*) FROM user) AS users, (SELECT count(*) FROM user WHERE created_at >= ?1) AS usersLast7d,
+              (SELECT count(*) FROM forms) AS forms, (SELECT count(*) FROM forms WHERE created_at >= ?1) AS formsLast7d`,
+    ).bind(week),
+    c.env.DB.prepare(`SELECT heard_from AS source, count(*) AS count FROM user_settings WHERE heard_from IS NOT NULL GROUP BY heard_from ORDER BY count DESC`),
+    c.env.DB.prepare(
+      `SELECT s.form_id AS formId, s.created_at AS createdAt, json_extract(s.meta, '$.referrer') AS referrer,
+              lower(coalesce(json_extract(s.data, '$.email'), json_extract(s.meta, '$.special._replyto'))) AS email,
+              lower(coalesce(u.email, f.owner_email)) AS owner
+       FROM submissions s JOIN forms f ON f.id = s.form_id LEFT JOIN user u ON u.id = f.user_id
+       WHERE s.status = 'ok' AND s.created_at >= ?1
+       ORDER BY s.created_at DESC LIMIT 5000`,
+    ).bind(month),
+  ])) as [D1Result, D1Result, D1Result];
+
+  type Row = { formId: string; createdAt: number; referrer: string | null; email: string | null; owner: string | null };
+  const live = (recent.results as Row[]).flatMap((row) => {
+    const host = parseHttpUrl(row.referrer)?.hostname.toLowerCase();
+    if (!host || isLocalHost(host) || host === appHost || (row.email && row.email === row.owner)) return [];
+    return [{ ...row, host }];
+  });
+
+  const sites = new Map<string, { forms: Set<string>; submissions: number }>();
+  for (const row of live) {
+    const site = sites.get(row.host) ?? { forms: new Set(), submissions: 0 };
+    site.forms.add(row.formId);
+    site.submissions++;
+    sites.set(row.host, site);
+  }
+
+  const total = counts.results[0] as { users: number; usersLast7d: number; forms: number; formsLast7d: number };
+  const data: AdminGrowthDto = {
+    ...total,
+    liveForms30d: new Set(live.map((r) => r.formId)).size,
+    liveForms7d: new Set(live.filter((r) => r.createdAt >= week).map((r) => r.formId)).size,
+    sources: sources.results as AdminGrowthDto["sources"],
+    topSites: [...sites]
+      .map(([host, s]) => ({ host, forms: s.forms.size, submissions: s.submissions }))
+      .sort((a, b) => b.submissions - a.submissions)
+      .slice(0, 10),
+  };
+  return c.json({ data });
+});
 
 // ── Errors ─────────────────────────────────────────────────────────────────
 

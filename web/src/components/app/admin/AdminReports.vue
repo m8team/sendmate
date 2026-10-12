@@ -65,7 +65,7 @@ onMounted(loadReports);
 <template>
   <section class="ad-section" aria-labelledby="ad-reports">
     <div class="ad-bar">
-      <h2 id="ad-reports" class="bay label label-lg"><span class="bay-no">02</span> {{ showAll ? 'All reports' : 'Open reports' }}</h2>
+      <h2 id="ad-reports" class="bay label label-lg"><span class="bay-no">03</span> {{ showAll ? 'All reports' : 'Open reports' }}</h2>
       <label class="ad-toggle">
         <input v-model="showAll" type="checkbox" class="switch" @change="loadReports" />
         <span>Include resolved</span>

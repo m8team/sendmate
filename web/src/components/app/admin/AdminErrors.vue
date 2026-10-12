@@ -9,7 +9,7 @@ import { errorContext, errorSourceLabel, occurrences } from './adminRules';
 import { useAdminAction } from './useAdminAction';
 
 /**
- * 03 Errors: crashes from the Worker and from browsers, grouped by fingerprint like Sentry issues.
+ * 04 Errors: crashes from the Worker and from browsers, grouped by fingerprint like Sentry issues.
  * New and returning errors also post to ALERT_WEBHOOK_URL. Resolving one means you hear about it again if it comes back.
  */
 const now = ref(Date.now());
@@ -45,7 +45,7 @@ onMounted(load);
 <template>
   <section class="ad-section" aria-labelledby="ad-errors">
     <div class="ad-bar">
-      <h2 id="ad-errors" class="bay label label-lg"><span class="bay-no">03</span> {{ showResolved ? 'Resolved errors' : 'Open errors' }}</h2>
+      <h2 id="ad-errors" class="bay label label-lg"><span class="bay-no">04</span> {{ showResolved ? 'Resolved errors' : 'Open errors' }}</h2>
       <div class="cluster">
         <label class="ad-toggle">
           <input v-model="showResolved" type="checkbox" class="switch" @change="load" />

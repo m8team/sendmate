@@ -1,5 +1,6 @@
 /** One typed function per API route. Shapes come from @sendm8/shared, the contract. */
 import type {
+  AdminGrowthDto,
   AdminReportDto,
   AdminUsageDto,
   BlocklistEntryDto,
@@ -153,6 +154,7 @@ export const api = {
 
   // ── Admin (404 for non-admins) ─────────────────────────────────────────
   adminUsage: () => request<AdminUsageDto>('/api/admin/usage'),
+  adminGrowth: () => request<AdminGrowthDto>('/api/admin/growth'),
   adminErrors: (status: 'open' | 'resolved' | 'all' = 'open') => request<ErrorGroupDto[]>('/api/admin/errors', { query: { status: status === 'open' ? undefined : status } }),
   resolveError: (id: string) => request<{ ok: true }>(`/api/admin/errors/${enc(id)}/resolve`, { method: 'POST' }),
   reopenError: (id: string) => request<{ ok: true }>(`/api/admin/errors/${enc(id)}/reopen`, { method: 'POST' }),
