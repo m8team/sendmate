@@ -105,6 +105,28 @@ describe("POST /f/:formId", () => {
     expect(await listSubmissions(form.id)).toHaveLength(1);
   });
 
+  it("always accepts posts from a local dev server, even with an allowlist", async () => {
+    const form = await createForm({ allowedOrigins: ["mysite.com"] });
+    for (const origin of ["http://localhost:5173", "http://127.0.0.1:8080", "http://[::1]:3000", "http://app.localhost:4321"]) {
+      expect((await postJson(form.id, { a: "b" }, { origin })).status, origin).toBe(200);
+    }
+    // Lookalikes are not local.
+    expect((await postJson(form.id, { a: "b" }, { origin: "http://localhost.evil.com" })).status).toBe(403);
+    expect((await postJson(form.id, { a: "b" }, { origin: "http://127.0.0.1.evil.com" })).status).toBe(403);
+
+    const preflight = await SELF.fetch(`https://sendm8.test/f/${form.id}`, { method: "OPTIONS", headers: { origin: "http://localhost:5173" } });
+    expect(preflight.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
+  });
+
+  it("follows a local _next only from a local page, so a public form can't redirect to localhost", async () => {
+    const form = await createForm({ allowedOrigins: ["mysite.com"] });
+    const local = await postForm(form.id, { email: "a@b.co", _next: "http://localhost:5173/thanks" }, { origin: "http://localhost:5173" });
+    expect(local.headers.get("location")).toBe("http://localhost:5173/thanks");
+
+    const fromPublic = await postForm(form.id, { email: "a@b.co", _next: "http://localhost:5173/thanks" }, { origin: "https://mysite.com" });
+    expect(fromPublic.headers.get("location")).not.toContain("localhost");
+  });
+
   it("answers the CORS preflight with the form's own allowlist", async () => {
     const form = await createForm({ allowedOrigins: ["mysite.com"] });
     const preflight = (origin: string) =>

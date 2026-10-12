@@ -43,6 +43,17 @@ export function requestHost(request: Request): string | null {
 }
 
 /**
+ * A developer's own machine (`localhost`, `127.x.x.x`, `::1`). Forms always accept posts from these,
+ * so testing on a dev server works with an allowlist set. It costs nothing: a script can claim any
+ * Origin anyway, so an allowlist only ever guards against other websites in a real browser.
+ */
+export function isLocalHost(host: string | null | undefined): boolean {
+  if (!host) return false;
+  const h = host.toLowerCase().replace(/^\[|\]$/g, "");
+  return h === "localhost" || h.endsWith(".localhost") || h === "::1" || /^127(\.\d{1,3}){3}$/.test(h);
+}
+
+/**
  * True when `host` matches an allowed entry exactly or is a subdomain of it.
  * `example.com` allows `example.com` and `www.example.com`, but not `badexample.com`.
  */

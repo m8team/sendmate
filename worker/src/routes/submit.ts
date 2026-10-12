@@ -8,7 +8,7 @@ import { blocklist, forms, submissions, usageDaily } from "../db/schema";
 import { deleteSubmissionFiles, storeUploads, type StoreResult } from "../files/storage";
 import { LOAD_SHED_SCOPE } from "../lib/usage";
 import { hashIp } from "../lib/crypto";
-import { clientIp, escapeHtml, hostAllowed, parseHttpUrl, requestHost, wantsJson } from "../lib/http";
+import { clientIp, escapeHtml, hostAllowed, isLocalHost, parseHttpUrl, requestHost, wantsJson } from "../lib/http";
 import { newId } from "../lib/ids";
 import { decryptSecret } from "../lib/secrets";
 import { dayKey, monthStartKey } from "../lib/time";
@@ -32,7 +32,7 @@ function corsHeaders(c: Ctx, form?: Pick<FormRow, "allowedOrigins"> | null): Rec
   if (!origin) return headers;
   const host = parseHttpUrl(origin)?.hostname;
   const restricted = form && form.allowedOrigins.length > 0;
-  if (!restricted || (host && hostAllowed(host, form.allowedOrigins))) {
+  if (!restricted || isLocalHost(host) || (host && hostAllowed(host, form.allowedOrigins))) {
     headers["access-control-allow-origin"] = origin;
   }
   return headers;
@@ -155,7 +155,8 @@ submitRoutes.post("/:formId", async (c) => {
     const submittingHost = requestHost(c.req.raw);
     const strictOrigin = form.settings.strictOrigin ?? true;
     if (form.allowedOrigins.length > 0) {
-      const allowed = submittingHost ? hostAllowed(submittingHost, form.allowedOrigins) : !strictOrigin;
+      // Local dev servers always get through, so a form can be tested before its allowlist is relaxed.
+      const allowed = submittingHost ? isLocalHost(submittingHost) || hostAllowed(submittingHost, form.allowedOrigins) : !strictOrigin;
       if (!allowed) throw new SubmitError(403, "origin_not_allowed", "This form doesn't accept submissions from this website.");
     }
 
@@ -280,7 +281,9 @@ function resolveRedirect(next: string | undefined, form: FormRow, submittingHost
   const url = parseHttpUrl(next);
   if (url) {
     const host = url.hostname.toLowerCase();
-    const ok = form.allowedOrigins.length > 0 ? hostAllowed(host, form.allowedOrigins) : host === submittingHost;
+    // A local test page may send itself to a local thank-you page; anything else follows the allowlist.
+    const localTest = isLocalHost(host) && isLocalHost(submittingHost);
+    const ok = localTest || (form.allowedOrigins.length > 0 ? hostAllowed(host, form.allowedOrigins) : host === submittingHost);
     if (ok) return url.toString();
   }
   return parseHttpUrl(form.redirectUrl)?.toString();
