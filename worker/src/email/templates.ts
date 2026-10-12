@@ -178,7 +178,7 @@ ${opts.claimed ? `<div style="margin-top:6px;">${link(f.url, "Review this form's
 
   const action = opts.claimed
     ? `<p style="margin:20px 0 0;">${button(opts.forms[0]!.url, "Review spam")}</p>`
-    : `<p style="margin:20px 0 0;">Sign in with this email address to see them and move anything real back to your inbox.</p><p style="margin:16px 0 0;">${button(opts.signInUrl, "Sign in to review")}</p>`;
+    : `<p style="margin:20px 0 0;">Sign in with this email address to see ${total === 1 ? "it" : "them"} and move anything real back to your inbox.</p><p style="margin:16px 0 0;">${button(opts.signInUrl, "Sign in to review")}</p>`;
 
   const textRows = opts.forms
     .map((f) => `- ${f.name}: ${f.spam} in spam${f.borderline ? ` (${f.borderline} close)` : ""}${opts.claimed ? `\n  ${f.url}` : ""}`)

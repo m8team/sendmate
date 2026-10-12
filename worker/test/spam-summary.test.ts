@@ -67,6 +67,7 @@ describe("weekly spam summary", () => {
     expect(email!.text).toContain("It looked clear-cut");
     expect(email!.text).toContain("Sign in to review: https://sendm8.test/app/sign-in");
     expect(email!.html).not.toContain("?folder=spam");
+    expect(email!.html).toContain("to see it and move anything real");
   });
 
   it("stays quiet for forms with notifications off, and for forms that aren't active", async () => {
