@@ -279,9 +279,16 @@ function filterCondition(filter: SubmissionFilter): SQL | undefined {
  * Tracking numbers in the dashboard ("SM8 7Q2K 9F4X 3M") are the last 10 characters of the
  * submission id, uppercased. Returns the id fragment to match, or null if q doesn't look like one.
  */
+/**
+ * Submission ids are ULIDs in Crockford base32, which has no i, l, o or u. That tells an id or
+ * tracking number apart from an ordinary word ("hello") far better than looking for a digit did:
+ * about 1 tracking number in 40 has no digits at all, and those couldn't be found.
+ */
+const CROCKFORD = /^[0-9a-hjkmnp-tv-z]{6,26}$/;
+
 export function idFragment(q: string): string | null {
   const compact = q.toLowerCase().replace(/[\s-]/g, "").replace(/^sm8/, "");
-  return /^[0-9a-z]{6,26}$/.test(compact) && /\d/.test(compact) ? compact : null;
+  return CROCKFORD.test(compact) ? compact : null;
 }
 
 function searchConditions(formId: string, opts: { filter: SubmissionFilter; q?: string }) {

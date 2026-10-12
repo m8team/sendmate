@@ -61,6 +61,11 @@ describe("forms API additions", () => {
     }
     expect(idFragment("hello")).toBeNull();
     expect(idFragment("SM8 7Q2K 9F4X 3M")).toBe("7q2k9f4x3m");
+    // A tracking number with no digits at all (about 1 in 40) is still an id.
+    expect(idFragment("SM8 GYRJ MGAQ ZX")).toBe("gyrjmgaqzx");
+    // Words with letters ids never use aren't, so they only search the submitted fields.
+    expect(idFragment("information")).toBeNull();
+    expect(idFragment("quotes")).toBeNull();
   });
 
   it("exports CSV pages with stable columns and respects search", async () => {
