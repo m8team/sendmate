@@ -54,6 +54,25 @@ Content-Type: application/json
   }
 }`;
 
+const reactCode = `
+// npm install @sendm8/react
+import { useForm, ValidationError } from "@sendm8/react";
+
+export function ContactForm() {
+  const [state, handleSubmit] = useForm("k3x9q2m7ab");
+
+  if (state.succeeded) return <p>Thanks! It's on its way.</p>;
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="email" type="email" required />
+      <textarea name="message" required />
+      <ValidationError errors={state.errors} />
+      <button disabled={state.submitting}>Send</button>
+    </form>
+  );
+}`;
+
 const statusRows = [
   { code: '200', means: 'Stored. A 2xx always means the submission is safely saved.' },
   { code: '303', means: 'Browser posts only: redirect to your thank-you page, or to the Turnstile challenge page.' },
@@ -73,6 +92,10 @@ const statusRows = [
       Want to stay on the page and show your own message? Send the form with <code>fetch</code> and an <code>Accept: application/json</code> header.
       Instead of a redirect you get JSON back, with a proper HTTP status code. It works with any framework, or none.
     </p>
+    <p>
+      Using React? <a href="https://www.npmjs.com/package/@sendm8/react"><code>@sendm8/react</code></a> does this for you: a <code>useForm</code> hook
+      that tracks sending, success and errors, with the same API as <code>@formspree/react</code>.
+    </p>
   </div>
 
   <CodeTabs
@@ -82,6 +105,7 @@ const statusRows = [
       { label: 'FormData', lang: 'js', filename: 'contact.js', code: ajaxSnippet(FORM), highlight: [8] },
       { label: 'HTML', lang: 'html', filename: 'contact.html', code: ajaxHtml },
       { label: 'JSON body', lang: 'js', filename: 'contact.js', code: ajaxJson, highlight: [4, 5] },
+      { label: 'React', lang: 'jsx', filename: 'ContactForm.jsx', code: reactCode, highlight: [3, 6, 11] },
     ]}
   />
 
