@@ -15,8 +15,8 @@
     "test:coverage": "npm run test:coverage -w worker",
     "typecheck": "npm run typecheck -w worker",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
-    "deploy": "wrangler deploy && wrangler d1 migrations apply DB --remote",
-    "deploy:sendm8": "npm run build && wrangler deploy --domain sendm8.com && wrangler d1 migrations apply DB --remote"
+    "deploy": "node scripts/deploy.mjs",
+    "deploy:sendm8": "npm run build && node scripts/deploy.mjs --domain sendm8.com"
   },
   "cloudflare": {
     "bindings": {

@@ -48,7 +48,7 @@ npx wrangler secret put GITHUB_CLIENT_SECRET
 
 ```sh
 npm run build                                           # builds web/ (the site the Worker serves)
-npm run deploy                                          # deploys, creates the D1 database if needed, runs migrations
+npm run deploy                                          # migrates (once the database exists) then deploys; creates the database on a first deploy
 npx wrangler deploy --domain forms.example.com         # optional: attach your own domain (must be a zone in your account)
 ```
 
