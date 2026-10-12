@@ -2,10 +2,11 @@ import { env } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getLimits } from "../src/config";
 import { eq } from "drizzle-orm";
-import { forms, usageDaily } from "../src/db/schema";
+import { forms, submissions, usageDaily } from "../src/db/schema";
+import { newId } from "../src/lib/ids";
 import { dayKey } from "../src/lib/time";
 import { AI_SPAM_MODEL, aiSpamScore, parseScore, submissionText } from "../src/pipeline/ai-spam";
-import { dispatchStored } from "../src/pipeline/zero-signup";
+import { deliverBacklog, dispatchStored } from "../src/pipeline/zero-signup";
 import { addChannel, createForm, createUser, db, DISCORD_URL, getSubmission, listSubmissions, mockFetch, postJson } from "./helpers";
 
 afterEach(() => {
@@ -93,6 +94,40 @@ describe("AI spam scoring", () => {
     const row = await getSubmission(id);
     expect(row).toMatchObject({ status: "ok", spamScore: 0.8 });
     expect(row?.meta.spamReasons).toContain("ai:80");
+  });
+
+  it("checks what arrived while an email endpoint waited for confirmation, before delivering it", async () => {
+    const http = mockFetch();
+    const form = await createForm({ userId: null, ownerEmail: `backlog-${crypto.randomUUID().slice(0, 8)}@example.com`, status: "active", settings: { aiSpamScoring: true } });
+    await addChannel(form.id, "discord", { webhookUrl: DISCORD_URL });
+    const meta = { ipHash: null, country: null, userAgent: null, referrer: null, special: {}, spamReasons: [] };
+    const realId = newId();
+    const spamId = newId();
+    await db().insert(submissions).values([
+      { id: realId, formId: form.id, data: { message: "Can you quote for a site?" }, meta, status: "ok", createdAt: Date.now() },
+      { id: spamId, formId: form.id, data: { message: "casino bonus, click now" }, meta, status: "ok", createdAt: Date.now() },
+    ]);
+
+    const run = vi.fn(async (_model: string, input: { messages: { content: string }[] }) => ({ response: input.messages[1]!.content.includes("casino") ? 97 : 4 }));
+    await deliverBacklog({ ...env, AI: { run } as unknown as Ai } as Env, [form.id]);
+
+    expect(run).toHaveBeenCalledTimes(2);
+    expect(await getSubmission(spamId)).toMatchObject({ status: "spam", spamScore: 0.97 });
+    expect(await getSubmission(realId)).toMatchObject({ status: "ok", spamScore: 0.04 });
+    expect(http.to("discord.com")).toHaveLength(1);
+  });
+
+  it("delivers the backlog unchecked when the form doesn't use AI scoring", async () => {
+    const http = mockFetch();
+    const form = await createForm({ userId: null, ownerEmail: `plain-${crypto.randomUUID().slice(0, 8)}@example.com`, status: "active", settings: {} });
+    await addChannel(form.id, "discord", { webhookUrl: DISCORD_URL });
+    const meta = { ipHash: null, country: null, userAgent: null, referrer: null, special: {}, spamReasons: [] };
+    await db().insert(submissions).values({ id: newId(), formId: form.id, data: { message: "hello" }, meta, status: "ok", createdAt: Date.now() });
+
+    const run = vi.fn();
+    await deliverBacklog({ ...env, AI: { run } as unknown as Ai } as Env, [form.id]);
+    expect(run).not.toHaveBeenCalled();
+    expect(http.to("discord.com")).toHaveLength(1);
   });
 
   it("records what the model thought, even when it isn't spam", async () => {

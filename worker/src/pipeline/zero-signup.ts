@@ -14,9 +14,10 @@ import { newFormId, newId } from "../lib/ids";
 import { decryptJson, encryptJson, randomToken } from "../lib/secrets";
 import { dayKey } from "../lib/time";
 import { urls } from "../lib/urls";
-import { applyAiSpamCheck } from "./ai-spam";
+import { withQueryBudget } from "../lib/query-budget";
+import { AI_CHECK_QUERIES, applyAiSpamCheck } from "./ai-spam";
 import { deliverSubmission, type EmailChannelConfig } from "./deliver";
-import { deliverMany } from "./deliver-many";
+import { deliverMany, QUERIES_PER_DELIVERY } from "./deliver-many";
 
 /**
  * Zero-signup forms: `<form action="https://sendm8.com/f/you@example.com">`.
@@ -161,20 +162,36 @@ async function runBatch(db: Db, statements: BatchItem[]) {
 }
 
 /** Delivers submissions that arrived before the owner confirmed. */
+/**
+ * Delivers what arrived while a form waited for confirmation. Those submissions skipped the AI check
+ * (it only runs for active forms), so it runs here first and spam is kept back. When the query budget
+ * runs short, the rest are delivered unchecked rather than held: losing a real message is worse.
+ */
 export async function deliverBacklog(env: Env, formIds: string[]) {
   if (formIds.length === 0) return;
-  const waiting = await getDb(env)
-    .select({ id: submissions.id })
-    .from(submissions)
-    .where(and(inArray(submissions.formId, formIds), eq(submissions.status, "ok"), sql`${submissions.deliveries} = '[]'`))
-    .orderBy(asc(submissions.id))
-    .limit(BACKLOG_LIMIT)
-    .all();
-  await deliverMany(
-    env,
-    waiting.map((w) => w.id),
-    { alreadyUsed: 12 },
-  );
+  // The confirm request has already spent roughly this many queries.
+  const budget = withQueryBudget(env, getLimits(env).queriesPerInvocation, 12);
+  const db = getDb(budget.env);
+  const [waiting, formRows] = await db.batch([
+    db
+      .select()
+      .from(submissions)
+      .where(and(inArray(submissions.formId, formIds), eq(submissions.status, "ok"), sql`${submissions.deliveries} = '[]'`))
+      .orderBy(asc(submissions.id))
+      .limit(BACKLOG_LIMIT),
+    db.select({ id: forms.id, settings: forms.settings }).from(forms).where(inArray(forms.id, formIds)),
+  ]);
+
+  const scored = new Set(env.AI ? formRows.filter((f) => f.settings.aiSpamScoring).map((f) => f.id) : []);
+  const deliver: string[] = [];
+  for (const submission of waiting) {
+    // An AI check costs two queries; keep room to deliver this submission afterwards.
+    if (scored.has(submission.formId) && budget.has(AI_CHECK_QUERIES + QUERIES_PER_DELIVERY)) {
+      if (await applyAiSpamCheck(budget.env, submission)) continue;
+    }
+    deliver.push(submission.id);
+  }
+  await deliverMany(env, deliver, { alreadyUsed: budget.used() });
 }
 
 export async function confirmZeroSignup(env: Env, token: string, now = Date.now()) {

@@ -19,6 +19,8 @@ export const AI_SPAM_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8";
  */
 export const AI_SPAM_THRESHOLD = 90;
 const MAX_INPUT_CHARS = 2_000;
+/** D1 queries one check costs: claiming the daily counter, then recording the score. */
+export const AI_CHECK_QUERIES = 2;
 
 const SYSTEM_PROMPT =
   "You review submissions from website contact forms. Reply with only a whole number from 0 to 100: " +
