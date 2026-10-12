@@ -12,7 +12,12 @@ import { captureError } from "../ops/errors";
  * The 3B model it replaced answered "83" to almost everything, genuine messages included.
  */
 export const AI_SPAM_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8";
-export const AI_SPAM_THRESHOLD = 80;
+/**
+ * Only a confident model answer bins a submission on its own. A genuine "I'd like to collaborate"
+ * enquiry to a freelancer's portfolio scored exactly 80 in production, while real spam scores 95-100,
+ * so the line sits at 90. Scores below it are still recorded, and show in the inbox as suspicious.
+ */
+export const AI_SPAM_THRESHOLD = 90;
 const MAX_INPUT_CHARS = 2_000;
 
 const SYSTEM_PROMPT =

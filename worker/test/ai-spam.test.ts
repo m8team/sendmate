@@ -79,6 +79,22 @@ describe("AI spam scoring", () => {
     expect(http.to("discord.com")).toHaveLength(0);
   });
 
+  it("delivers a borderline score instead of binning it", async () => {
+    mockFetch();
+    const owner = await createUser();
+    const form = await createForm({ userId: owner.id, settings: { notifyMode: "off" } });
+    // The real message this guards: "i need to collaborate with you for a projet" scored 80 and was binned.
+    const res = await postJson(form.id, { message: "hello, i need to collaborate with you for a projet. i think you're qualified for this job" });
+    const { id } = await res.json<{ id: string }>();
+
+    const { env: aiEnv } = withAi({ response: "80" });
+    await dispatchStored(aiEnv, { ...form, status: "active", settings: { aiSpamScoring: true } }, id, null);
+
+    const row = await getSubmission(id);
+    expect(row).toMatchObject({ status: "ok", spamScore: 0.8 });
+    expect(row?.meta.spamReasons).toContain("ai:80");
+  });
+
   it("records what the model thought, even when it isn't spam", async () => {
     mockFetch();
     const owner = await createUser();
