@@ -45,7 +45,7 @@ One difference: sendm8 reports a single form-level error (like "This form has re
 
 Returns `[state, handleSubmit, reset]`.
 
-- `formKey`: a form id from your dashboard, an email address (a [no-signup endpoint](https://sendm8.com/docs#zero-signup)), or a full endpoint URL.
+- `formKey`: a form id from your dashboard, an email address (a [no-signup endpoint](https://sendm8.com/docs/zero-signup)), or a full endpoint URL.
 - `options.data`: extra fields to send with every submission. Values can be functions, called at submit time.
 - `options.endpoint`: where your sendm8 runs, if you self-host. Defaults to `https://sendm8.com`.
 

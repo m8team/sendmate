@@ -9,7 +9,7 @@
     "url": "git+https://github.com/m8team/sendmate.git",
     "directory": "packages/react"
   },
-  "homepage": "https://sendm8.com/docs#formspree",
+  "homepage": "https://sendm8.com/docs/formspree",
   "keywords": [
     "sendm8",
     "forms",
