@@ -20,12 +20,21 @@ export const formRoutes = createRouter();
 
 // ── Validation ─────────────────────────────────────────────────────────────
 
-/** Accepts `example.com`, `*.example.com` or a pasted URL, and stores the bare hostname. */
+/**
+ * Accepts `example.com`, `*.example.com` or a pasted URL, and stores the bare hostname.
+ * A leading `www.` is dropped: an entry allows its subdomains, so storing `example.com`
+ * covers both, while storing `www.example.com` would quietly block the bare domain.
+ */
 const hostname = z
   .string()
   .trim()
   .toLowerCase()
-  .transform((value) => value.replace(/^[a-z]+:\/\//, "").replace(/[/:?#].*$/, ""))
+  .transform((value) =>
+    value
+      .replace(/^[a-z]+:\/\//, "")
+      .replace(/[/:?#].*$/, "")
+      .replace(/^www\./, ""),
+  )
   .pipe(z.string().regex(/^(\*\.)?([a-z0-9-]+\.)*[a-z0-9-]+$/, "must be a hostname like example.com"));
 
 const settingsSchema = z

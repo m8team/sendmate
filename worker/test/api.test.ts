@@ -49,7 +49,8 @@ describe("forms API", () => {
     const form = created.body.data;
     expect(form.id).toMatch(/^[0-9a-z]{10}$/);
     expect(form.endpoint).toBe(`https://sendm8.test/f/${form.id}`);
-    expect(form.allowedOrigins).toEqual(["www.mysite.com", "*.other.dev"]);
+    // www. is dropped: an entry covers its subdomains, so storing the bare host allows both.
+    expect(form.allowedOrigins).toEqual(["mysite.com", "*.other.dev"]);
 
     const list = await api<Data<FormDto[]>>("/forms", { headers: session.headers });
     expect(list.body.data.map((f) => f.id)).toEqual([form.id]);
