@@ -70,6 +70,11 @@ const entityLd = {
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    {
+      site.cfAnalyticsToken && (
+        <script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: site.cfAnalyticsToken })} />
+      )
+    }
     <script is:inline type="application/ld+json" set:html={JSON.stringify(entityLd)} />
     <script is:inline>
       (function () {

@@ -20,6 +20,11 @@ export const site = {
   sponsorUrl: 'https://github.com/sponsors/m8team',
   abuseEmail: 'abuse@sendm8.com',
   helloEmail: 'hello@sendm8.com',
+  /**
+   * Cloudflare Web Analytics site token (public: it ships in every page). Cookieless, no banner needed.
+   * Empty turns analytics off, which is the right default for self-hosted copies.
+   */
+  cfAnalyticsToken: '',
 } as const;
 
 const MB = 1024 * 1024;
