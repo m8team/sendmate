@@ -10,7 +10,8 @@
     "check": "astro check",
     "astro": "astro",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "icons": "node scripts/icons.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
