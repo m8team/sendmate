@@ -14,6 +14,7 @@ import type {
   FormDto,
   FormSettings,
   FormStatus,
+  HeardFrom,
   MeDto,
   Page,
   SubmissionDto,
@@ -62,6 +63,12 @@ export const api = {
   signOut: () => apiFetch('/api/auth/sign-out', { method: 'POST', body: {} }).then(() => undefined),
   devLogin: (email = 'dev@sendm8.local') => request<{ userId: string; email: string }>('/api/dev/login', { method: 'POST', body: { email } }),
   me: () => request<MeDto>('/api/me'),
+  /** Answer "How did you hear about sendm8?", or skip it. Either way it isn't asked again. */
+  heardFrom: (source: HeardFrom | 'skipped', detail?: string) =>
+    request<{ heardFrom: HeardFrom | 'skipped' }>('/api/settings/heard-from', {
+      method: 'PUT',
+      body: { source, ...(source !== 'skipped' && detail?.trim() && { detail: detail.trim() }) },
+    }),
   /** Better Auth's session probe: 200 with `null` when signed out, so it doesn't log a 401. */
   hasSession: () =>
     apiFetch('/api/auth/get-session')

@@ -6,6 +6,7 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import type { EmailSettingsDto, FormDto, MeDto } from '@sendm8/shared';
 import Icon from '../ui/Icon.vue';
+import HeardFromCard from './rack/HeardFromCard.vue';
 import MeterStrip from './rack/MeterStrip.vue';
 import RackTable from './rack/RackTable.vue';
 import { rackRows, rackSummary, todayLabel, type UnreadCount } from './rack/rackRows';
@@ -107,6 +108,7 @@ const rows = computed(() => rackRows(forms.value, unread));
     </div>
 
     <template v-else>
+      <HeardFromCard v-if="!loading && me && me.heardFrom === null" @done="(answer) => me && (me.heardFrom = answer)" />
       <MeterStrip :loading="loading" :summary="summary" />
       <RackTable :loading="loading" :rows="rows" :now="now" />
     </template>
