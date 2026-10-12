@@ -143,6 +143,61 @@ export function verificationEmail(opts: { email: string; verifyUrl: string }): R
   };
 }
 
+export interface SpamSummaryForm {
+  name: string;
+  spam: number;
+  /** Binned, but with a score low enough to be worth a second look. */
+  borderline: number;
+  url: string;
+}
+
+/**
+ * At most weekly, and only when something was binned: spam filters get things wrong, and a real
+ * message caught by one should never disappear without the owner hearing about it.
+ */
+export function spamSummaryEmail(opts: { forms: SpamSummaryForm[]; claimed: boolean; signInUrl: string; retentionDays: number }): RenderedEmail {
+  const total = opts.forms.reduce((sum, f) => sum + f.spam, 0);
+  const borderline = opts.forms.reduce((sum, f) => sum + f.borderline, 0);
+  const noun = total === 1 ? "message" : "messages";
+  const headline = `${total} ${noun} went to spam this week.`;
+  const check =
+    borderline === 0
+      ? `${total === 1 ? "It looked" : "They all looked"} clear-cut, but filters can be wrong.`
+      : borderline === 1
+        ? `${total === 1 ? "It was" : "One was"} a close call, so it's worth a quick look.`
+        : `${borderline} were close calls, so they're worth a quick look.`;
+
+  const rows = opts.forms
+    .map(
+      (f) => `<tr><td style="padding:12px 0;border-top:1px solid ${RULE};font:15px/1.5 Arial,Helvetica,sans-serif;">
+<b>${escapeHtml(f.name)}</b>: ${f.spam} in spam${f.borderline ? ` <span style="color:${SIGNAL};">(${f.borderline} close ${f.borderline === 1 ? "call" : "calls"})</span>` : ""}
+${opts.claimed ? `<div style="margin-top:6px;">${link(f.url, "Review this form's spam folder")}</div>` : ""}
+</td></tr>`,
+    )
+    .join("");
+
+  const action = opts.claimed
+    ? `<p style="margin:20px 0 0;">${button(opts.forms[0]!.url, "Review spam")}</p>`
+    : `<p style="margin:20px 0 0;">Sign in with this email address to see them and move anything real back to your inbox.</p><p style="margin:16px 0 0;">${button(opts.signInUrl, "Sign in to review")}</p>`;
+
+  const textRows = opts.forms
+    .map((f) => `- ${f.name}: ${f.spam} in spam${f.borderline ? ` (${f.borderline} close)` : ""}${opts.claimed ? `\n  ${f.url}` : ""}`)
+    .join("\n");
+
+  return {
+    subject: `${total} ${noun} went to your spam folder`,
+    html: layout({
+      preheader: `${headline} ${check}`,
+      stampLabel: "Spam check",
+      heading: headline,
+      body: `<p style="margin:0;color:${MUTED};">We kept ${total === 1 ? "it" : "them"} out of your inbox. ${escapeHtml(check)}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">${rows}</table>${action}`,
+      footer: `You get this at most once a week, and only when something lands in spam. Spam is kept for ${opts.retentionDays} days, then deleted.`,
+    }),
+    text: `${headline}\n${check}\n\n${textRows}\n\n${opts.claimed ? "" : `Sign in to review: ${opts.signInUrl}\n`}`,
+  };
+}
+
 export interface DigestGroup {
   formName: string;
   total: number;

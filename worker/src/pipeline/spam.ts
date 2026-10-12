@@ -145,6 +145,9 @@ const fromBrowser = (userAgent: string | null | undefined) => /Mozilla|AppleWebK
 
 const normalise = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, "");
 
+/** At or above this, a submission goes to the spam folder instead of being delivered. */
+export const SPAM_SCORE = 0.8;
+
 /** Scores at or above this send browser submissions through the Turnstile challenge (when enabled). */
 export const SUSPICIOUS_SCORE = 0.35;
 
@@ -224,5 +227,5 @@ export function assessSpam(parsed: ParsedSubmission, settings: FormSettings, opt
   }
 
   score = Math.min(1, Math.round(score * 100) / 100);
-  return { status: score >= 0.8 ? "spam" : "ok", score, reasons, drop: false };
+  return { status: score >= SPAM_SCORE ? "spam" : "ok", score, reasons, drop: false };
 }

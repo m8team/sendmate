@@ -42,7 +42,7 @@ describe("forms API additions", () => {
     await api(`/submissions/${list.body.data[0]!.id}`, { method: "PATCH", body: { starred: true }, headers: session.headers });
 
     const res = await api<Data<FormDto>>(`/forms/${form.id}`, { headers: session.headers });
-    expect(res.body.data.counts).toEqual({ inbox: 2, spam: 1, held: 1, starred: 1, total: 4 });
+    expect(res.body.data.counts).toEqual({ inbox: 2, spam: 1, spamThisWeek: 1, held: 1, starred: 1, total: 4 });
     const all = await api<Data<FormDto[]>>("/forms", { headers: session.headers });
     expect(all.body.data[0]?.counts).toBeUndefined();
   });

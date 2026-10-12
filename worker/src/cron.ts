@@ -12,6 +12,7 @@ import { deliverSubmission } from "./pipeline/deliver";
 import { QUERIES_PER_DELIVERY } from "./pipeline/deliver-many";
 import { purgeOldErrors } from "./ops/errors";
 import { sendDueDigests } from "./pipeline/digest";
+import { sendSpamSummaries } from "./pipeline/spam-summary";
 
 export const RETRY_CRON = "*/5 * * * *";
 export const HOURLY_CRON = "0 * * * *";
@@ -81,5 +82,7 @@ export async function handleScheduled(controller: ScheduledController, env: Env)
     await checkUsage(budget.env, now);
     await sendDueDigests(env, now, budget);
     if (new Date(now).getUTCHours() === CLEANUP_HOUR_UTC) await cleanup(env, now, budget);
+    // Last: it's the least urgent, and whatever doesn't fit waits for the next hour.
+    await sendSpamSummaries(env, now, budget);
   }
 }

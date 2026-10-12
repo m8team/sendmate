@@ -15,6 +15,7 @@ import { encryptSecret } from "../../lib/secrets";
 import { checkTurnstileSecret } from "../../lib/turnstile";
 import { dayKey, monthStartKey } from "../../lib/time";
 import { alertFormCreated } from "../../ops/events";
+import { SPAM_SCORE } from "../../pipeline/spam";
 
 export const formRoutes = createRouter();
 
@@ -161,6 +162,8 @@ async function folderCounts(db: Db, formId: string): Promise<FolderCounts> {
     .select({
       inbox: sql<number>`coalesce(sum(${submissions.status} = 'ok'), 0)`,
       spam: sql<number>`coalesce(sum(${submissions.status} = 'spam'), 0)`,
+      // Our filters bin at 0.8 and above; lower scores in spam are ones the owner moved there.
+      spamThisWeek: sql<number>`coalesce(sum(${submissions.status} = 'spam' AND ${submissions.spamScore} >= ${SPAM_SCORE} AND ${submissions.createdAt} >= ${Date.now() - 7 * 86_400_000}), 0)`,
       held: sql<number>`coalesce(sum(${submissions.status} = 'held'), 0)`,
       starred: sql<number>`coalesce(sum(${submissions.starred}), 0)`,
       total: count(),
@@ -168,7 +171,14 @@ async function folderCounts(db: Db, formId: string): Promise<FolderCounts> {
     .from(submissions)
     .where(eq(submissions.formId, formId))
     .get();
-  return { inbox: Number(row?.inbox ?? 0), spam: Number(row?.spam ?? 0), held: Number(row?.held ?? 0), starred: Number(row?.starred ?? 0), total: row?.total ?? 0 };
+  return {
+    inbox: Number(row?.inbox ?? 0),
+    spam: Number(row?.spam ?? 0),
+    spamThisWeek: Number(row?.spamThisWeek ?? 0),
+    held: Number(row?.held ?? 0),
+    starred: Number(row?.starred ?? 0),
+    total: row?.total ?? 0,
+  };
 }
 
 formRoutes.get("/:formId", async (c) => {

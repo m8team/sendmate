@@ -104,6 +104,8 @@ export interface FormDto {
 export interface FolderCounts {
   inbox: number;
   spam: number;
+  /** Submissions our filters moved to spam in the last 7 days (not ones the owner marked). Missing from older Workers. */
+  spamThisWeek?: number;
   held: number;
   starred: number;
   total: number;
