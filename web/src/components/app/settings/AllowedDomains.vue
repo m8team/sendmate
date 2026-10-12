@@ -29,7 +29,10 @@ function removeDomain(d: string) {
   <div class="row">
     <div class="row-text">
       <p id="fs-domains-label" class="row-title">Allowed domains</p>
-      <p class="row-desc">Only forms on these sites can post here. Use <code>*.example.com</code> for subdomains. Leave it empty and any site can use your endpoint.</p>
+      <p class="row-desc">
+        Only forms on these sites can post here. <code>example.com</code> covers its subdomains too, <code>www</code> included. Your local dev server (<code>localhost</code>) always
+        works, so you can test before deploying. Leave it empty and any site can use your endpoint.
+      </p>
     </div>
     <div class="row-control">
       <ul v-if="draft.allowedOrigins.length" class="chips" role="list" aria-labelledby="fs-domains-label">

@@ -103,6 +103,22 @@ The platform ceilings live there too, set for the free plan. If you move to Work
 
 Admins (`ADMIN_EMAILS`, signed in with a verified email) get `/app/admin`, which covers usage, abuse reports, errors, disabling and restoring forms, suspending users, and the blocklist. The same actions are available at `/api/admin/*`.
 
+## Uptime monitoring
+
+The Worker can't report its own outage, so [`.github/workflows/uptime.yml`](../.github/workflows/uptime.yml) checks `/health` from GitHub every 10 minutes. `/health` returns 503 if the database doesn't answer. After three failed tries it posts to your alert webhook, and GitHub emails you about the failed run.
+
+It only runs on the main sendm8 repository. In your own fork, change the `if:` line and the URL to your domain, then add the webhook as a repository secret:
+
+```sh
+gh secret set ALERT_WEBHOOK_URL
+```
+
+GitHub pauses scheduled workflows on repositories with no activity for 60 days; any push turns it back on.
+
+## Spam summaries
+
+When the filters move something to spam, the owner gets one email about it, at most once a week, listing close calls (scores from 0.8 to 0.95) worth a second look. Summaries use the lowest-priority slice of the system email budget, so they never crowd out notifications; if the day's budget is spent they wait for the next hourly run. Owners who turned notifications off for a form don't get them.
+
 ## Alerts and error tracking
 
 Set `ALERT_WEBHOOK_URL` to a Discord or Slack incoming webhook and sendm8 posts there when:
@@ -115,6 +131,7 @@ Set `ALERT_WEBHOOK_URL` to a Discord or Slack incoming webhook and sendm8 posts 
 | Form flagged | Enough abuse reports flag a form and its submissions are held |
 | Submission held | The phishing guard holds a submission (once per form per day) |
 | New sign-up / new form | Someone creates an account or a form. Email addresses are partly hidden. |
+| Found us via | Someone answers "How did you hear about sendm8?" (asked once, skippable) |
 
 Each kind is capped at `opsAlertsPerTypePerDay` (50) a day, so a spam wave can't flood the channel. Mentions are disabled, so a form called "@everyone" can't ping anyone.
 

@@ -27,10 +27,15 @@ Submissions belong to the form owner. We store them to deliver them and to show 
 - **Sessions:** a session token, plus the IP address and user agent it was created from, so you can stay signed in securely.
 - **Settings you give us:** notification email addresses, Discord/Slack/Telegram/webhook details, and your own Resend API key or Turnstile secret. Third-party secrets are encrypted at rest (AES-256-GCM).
 - **Usage counters:** daily counts of submissions and emails, used to enforce fair-use limits.
+- **How you heard about us:** if you choose to answer the one-off question in the dashboard, your answer and anything you add. You can skip it.
 
 ### Zero-signup email endpoints
 
 If a form posts to `sendm8.com/f/<your email>`, we store that address and email it **once** to ask whether you want the submissions. If you choose "Not me", the form is disabled, its stored messages are deleted, and we won't email you about it again.
+
+### Visiting sendm8.com
+
+We use Cloudflare Web Analytics to count visits to sendm8.com: which pages are viewed, the referring site, country, and browser type. It sets no cookies and doesn't track you across sites.
 
 ### Abuse reports
 
@@ -44,8 +49,8 @@ If something breaks, in our servers or in your browser while you're on sendm8.co
 
 | Provider | What for |
 |---|---|
-| Cloudflare | Hosting, database (D1), file storage (R2), bot checks (Turnstile), and AI spam checks if a form owner turns them on (Workers AI) |
-| Resend | Sending notification, digest and verification emails |
+| Cloudflare | Hosting, database (D1), file storage (R2), bot checks (Turnstile), AI spam checks (Workers AI), and visit counts on sendm8.com (Web Analytics) |
+| Resend | Sending notification, digest, verification and weekly spam-summary emails |
 | GitHub / Google | Signing in |
 | Discord, Slack, Telegram, or any webhook URL | Only where a form owner connected them. Submissions are sent there on the owner's instruction. |
 | Discord | Private alerts to m8team about the service: new sign-ups and forms (names, with email addresses partly hidden), forms flagged for abuse, and errors. Never the contents of submissions. |
