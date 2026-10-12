@@ -273,6 +273,7 @@ Key facts:
 - Endpoint: \`POST ${site.endpointBase}{formId}\`, or \`POST ${site.endpointBase}{email}\` with no account (the owner confirms once by email).
 - Send \`Accept: application/json\` to get JSON back. Success: \`{ "ok": true, "id": "…" }\`. Failure: \`{ "ok": false, "error": { "code": "…", "message": "…" } }\` with a 4xx or 5xx status.
 - Special fields match Formspree: \`_replyto\` (or \`email\`), \`_subject\`, \`_next\`, \`_gotcha\`, \`_cc\`.
+- React apps: \`npm install @sendm8/react\`. Same \`useForm\` and \`ValidationError\` as \`@formspree/react\`; errors are form-level, not per field.
 - Forms are created by a person in the dashboard at ${site.url}/app. There's no API key for creating forms.`;
 }
 
