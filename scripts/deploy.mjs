@@ -20,12 +20,19 @@ function run(command) {
   if (!dryRun) execSync(command, { stdio: "inherit" });
 }
 
+/**
+ * Only "no such database" means a fresh install. Anything else (a token without D1 access, a network
+ * blip) stops the deploy: guessing "fresh install" would ship new code before its migrations.
+ */
 function databaseExists() {
   try {
     execSync("npx wrangler d1 migrations list DB --remote", { stdio: "pipe" });
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    const output = `${error.stdout ?? ""}${error.stderr ?? ""}`;
+    if (/Couldn't find a D1 DB/i.test(output)) return false;
+    console.error(output);
+    throw new Error("Couldn't check the database, so nothing was deployed. Does the API token have D1 Edit permission?");
   }
 }
 
