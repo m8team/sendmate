@@ -105,6 +105,25 @@ describe("POST /f/:formId", () => {
     expect(await listSubmissions(form.id)).toHaveLength(1);
   });
 
+  it("answers the CORS preflight with the form's own allowlist", async () => {
+    const form = await createForm({ allowedOrigins: ["mysite.com"] });
+    const preflight = (origin: string) =>
+      SELF.fetch(`https://sendm8.test/f/${form.id}`, { method: "OPTIONS", headers: { origin, "access-control-request-method": "POST" } });
+
+    const allowed = await preflight("https://mysite.com");
+    expect(allowed.status).toBe(204);
+    expect(allowed.headers.get("access-control-allow-origin")).toBe("https://mysite.com");
+
+    // Promising a blocked origin here would let the browser send a POST we then refuse.
+    const blocked = await preflight("https://evil.com");
+    expect(blocked.status).toBe(204);
+    expect(blocked.headers.get("access-control-allow-origin")).toBeNull();
+
+    const open = await createForm({ allowedOrigins: [] });
+    const anywhere = await SELF.fetch(`https://sendm8.test/f/${open.id}`, { method: "OPTIONS", headers: { origin: "https://anything.test" } });
+    expect(anywhere.headers.get("access-control-allow-origin")).toBe("https://anything.test");
+  });
+
   it("silently drops honeypot submissions without storing them", async () => {
     const form = await createForm();
     const res = await postJson(form.id, { email: "bot@spam.co", _gotcha: "gotcha" });

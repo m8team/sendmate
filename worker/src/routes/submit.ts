@@ -38,11 +38,17 @@ function corsHeaders(c: Ctx, form?: Pick<FormRow, "allowedOrigins"> | null): Rec
   return headers;
 }
 
-submitRoutes.options("/:formId", (c) => {
+submitRoutes.options("/:formId", async (c) => {
+  // The preflight has to answer with the form's own allowlist, or it promises access the POST then refuses.
+  const form = await getDb(c.env)
+    .select({ allowedOrigins: forms.allowedOrigins })
+    .from(forms)
+    .where(eq(forms.id, c.req.param("formId")))
+    .get();
   return new Response(null, {
     status: 204,
     headers: {
-      ...corsHeaders(c),
+      ...corsHeaders(c, form),
       "access-control-allow-methods": "POST, OPTIONS",
       "access-control-allow-headers": "Content-Type, Accept, X-Requested-With",
       "access-control-max-age": "86400",
