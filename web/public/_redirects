@@ -1,0 +1,4 @@
+# Static redirects, applied by Cloudflare before the Worker runs.
+
+# The sitemap is an index (sitemap-index.xml) listing sitemap-0.xml. Tools that guess /sitemap.xml land on the index.
+/sitemap.xml /sitemap-index.xml 301
