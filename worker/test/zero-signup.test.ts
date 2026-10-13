@@ -38,6 +38,26 @@ afterEach(() => {
 });
 
 describe("first submission to an email endpoint", () => {
+  it("refuses throwaway inboxes, which anyone can read and so anyone could confirm", async () => {
+    const http = mockFetch();
+    for (const address of [`dev${counter++}@yopmail.com`, `dev${counter++}@inbox.mailinator.com`]) {
+      const res = await postJson(address, { name: "DexSync", message: "You're invited! http://192.168.1.83:5173/register" });
+      expect(res.status, address).toBe(400);
+      const body = await res.json<{ ok: false; error: { code: string; message: string } }>();
+      expect(body.error.code).toBe("disposable_endpoint");
+      expect(body.error.message).toContain("an address you own");
+      expect(await formFor(address)).toBeUndefined();
+    }
+    // A plain browser post gets a readable page instead of JSON.
+    const page = await postForm(`dev${counter++}@yopmail.com`, { message: "hi" });
+    expect(page.status).toBe(400);
+    expect(await page.text()).toContain("yopmail.com");
+
+    // Nothing was stored, so no confirmation email went to the throwaway inbox.
+    await new Promise((r) => setTimeout(r, 50));
+    expect(http.emails().filter((e) => /yopmail|mailinator/.test(e.to[0]))).toHaveLength(0);
+  });
+
   it("creates a pending form, stores the message, and emails the owner once", async () => {
     const http = mockFetch();
     const email = uniqueEmail();

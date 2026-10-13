@@ -19,7 +19,7 @@ import { renderPage, stamp } from "../pages/layout";
 import { isEmail } from "../pipeline/deliver";
 import { invalidFields, SubmitError } from "../pipeline/errors";
 import { parseSubmission, type ParsedSubmission } from "../pipeline/parse";
-import { assessSpam, submitterEmail, SUSPICIOUS_SCORE } from "../pipeline/spam";
+import { assessSpam, disposableDomain, submitterEmail, SUSPICIOUS_SCORE } from "../pipeline/spam";
 import { validateFields } from "../pipeline/validate";
 import { claimZeroSignupSlot, dispatchStored, newZeroSignupForm, zeroSignupInserts } from "../pipeline/zero-signup";
 
@@ -96,6 +96,16 @@ submitRoutes.post("/:formId", async (c) => {
     const zeroSignupEmail = endpoint.includes("@") ? endpoint : null;
     if (zeroSignupEmail && !isEmail(zeroSignupEmail)) {
       throw new SubmitError(404, "form_not_found", "That isn't a valid email endpoint. Use /f/you@example.com or a form ID.");
+    }
+    // Confirming an endpoint proves someone can read its inbox. Anyone can read a throwaway inbox
+    // (yopmail, mailinator…), so confirmation would prove nothing and the endpoint becomes an open relay.
+    const throwaway = zeroSignupEmail ? disposableDomain(zeroSignupEmail) : null;
+    if (throwaway) {
+      throw new SubmitError(
+        400,
+        "disposable_endpoint",
+        `Email endpoints need an address you own. Anyone can read ${throwaway} inboxes, so they can't receive submissions.`,
+      );
     }
 
     const db = getDb(env);
