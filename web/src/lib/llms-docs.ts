@@ -291,14 +291,14 @@ ${links.join('\n')}
 
 - [Self-hosting](${site.repo}/blob/main/docs/self-hosting.md): run your own copy on Cloudflare.
 - [Webhook payloads and signatures](${site.repo}/blob/main/docs/webhooks.md)
-- [Pricing and fair-use limits](${site.url}/pricing)
+- [Pricing and fair-use limits](${site.url}/pricing/)
 `;
 }
 
 export function renderSectionMarkdown(site: SiteInfo, section: DocsSectionMarkdown): string {
   return `# ${section.title}
 
-Part of the ${site.name} docs: ${site.url}/docs#${section.id}. Index for AI assistants: ${site.url}/llms.txt
+Part of the ${site.name} docs: ${site.url}/docs/#${section.id}. Index for AI assistants: ${site.url}/llms.txt
 
 ${section.markdown}
 `;

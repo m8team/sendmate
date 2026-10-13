@@ -107,7 +107,7 @@ describe('rendered files', () => {
   });
 
   it('writes a standalone file per section', () => {
-    expect(renderSectionMarkdown(site, sections[0]!)).toMatch(/^# The basic form\n\nPart of the sendm8 docs: https:\/\/sendm8.com\/docs#basic\./);
+    expect(renderSectionMarkdown(site, sections[0]!)).toMatch(/^# The basic form\n\nPart of the sendm8 docs: https:\/\/sendm8.com\/docs\/#basic\./);
   });
 
   it('has a summary for every docs section', () => {

@@ -17,7 +17,7 @@ export const GET: APIRoute = () =>
         // A fully-qualified URL (not a relative path) so @astrojs/rss uses it verbatim — its
         // relative-link handling force-appends a trailing slash after the string, landing after
         // the #fragment and breaking the anchor.
-        link: `${site.url}/changelog#${entry.slug}`,
+        link: `${site.url}/changelog/#${entry.slug}`,
         categories: entry.tags,
       })),
     customData: '<language>en-gb</language>',

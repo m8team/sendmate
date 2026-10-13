@@ -35,7 +35,7 @@ export const vsContent: VsContent[] = [
     migration: {
       title: 'Moving from Formspree takes one line',
       body: 'Change the form’s action URL to your sendm8 endpoint. The Formspree-compatible fields — _replyto, _subject, _next, _gotcha and _cc — work the same way, so the rest of the form doesn’t need to change.',
-      cta: { label: 'Read the Formspree migration guide', href: '/docs/formspree' },
+      cta: { label: 'Read the Formspree migration guide', href: '/docs/formspree/' },
     },
     faq: [
       {
@@ -60,7 +60,7 @@ export const vsContent: VsContent[] = [
     migration: {
       title: 'Switching over',
       body: 'There’s no dedicated migration guide since it’s a straight swap: point the form’s action at your sendm8 endpoint instead of Web3Forms’ access-key URL. The basic form docs cover React, Vue, Astro and Next.js examples if you need them.',
-      cta: { label: 'See the basic form docs', href: '/docs/basic-form' },
+      cta: { label: 'See the basic form docs', href: '/docs/basic-form/' },
     },
     faq: [
       {
@@ -85,7 +85,7 @@ export const vsContent: VsContent[] = [
     migration: {
       title: 'Switching over',
       body: 'Same shape, one line: swap the form’s action for your sendm8 endpoint. FormSubmit’s own special fields don’t carry over 1:1, so check the basic form and special fields docs for the sendm8 equivalents.',
-      cta: { label: 'See the basic form docs', href: '/docs/basic-form' },
+      cta: { label: 'See the basic form docs', href: '/docs/basic-form/' },
     },
     faq: [
       {

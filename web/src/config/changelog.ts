@@ -32,7 +32,7 @@ export const changelog: ChangelogEntry[] = [
       'Sharing a sendm8 link now shows a real card, every docs section has its own page, and there’s a sitemap plus structured data for search engines and AI assistants.',
     body: [
       'A link to sendm8.com dropped into Slack, Discord, Twitter or an iMessage thread now shows an actual card: the stamp mark, the pitch, and the one-line setup snippet, instead of a bare blue link. The favicon got PNG and ICO fallbacks too (16, 32, 180, 192, 512px, plus a proper <code>site.webmanifest</code>) for the places that don’t read the SVG one.',
-      'Each section of the <a href="/docs">docs quickstart</a> — the basic form, AJAX, webhooks, moving from Formspree and the rest — now has its own page under <code>/docs/&lt;section&gt;</code>, with its own title and description, alongside the full one-page version for people who’d rather scroll than click.',
+      'Each section of the <a href="/docs/">docs quickstart</a> — the basic form, AJAX, webhooks, moving from Formspree and the rest — now has its own page under <code>/docs/&lt;section&gt;</code>, with its own title and description, alongside the full one-page version for people who’d rather scroll than click.',
       'There’s a sitemap now, and <a href="/robots.txt">robots.txt</a> allows everything. Pages we don’t want indexed (the dashboard, system pages, an internal mockup index) carry a <code>noindex</code> tag instead of a <code>Disallow</code> line — a public list of “paths not to look at” is a gift to anyone with worse intentions than a search engine. Structured data (JSON-LD) went in too: an Organization/WebSite graph on every page, a SoftwareApplication block on the homepage declaring what it actually costs, and breadcrumbs on docs pages.',
     ],
   },
@@ -44,7 +44,7 @@ export const changelog: ChangelogEntry[] = [
     summary: 'The docs are now published as Markdown at /llms.txt for AI assistants, plus a full guide for moving over from Formspree.',
     body: [
       'The quickstart is now published as clean Markdown at <a href="/llms.txt">/llms.txt</a> (and <a href="/llms-full.txt">/llms-full.txt</a>) for AI coding assistants to read directly, no HTML scraping required.',
-      'And if you’re moving from Formspree: the <a href="/docs/formspree">migration guide</a> covers the URL change, which underscore fields carry over as-is, and <code>fetch</code>/React examples.',
+      'And if you’re moving from Formspree: the <a href="/docs/formspree/">migration guide</a> covers the URL change, which underscore fields carry over as-is, and <code>fetch</code>/React examples.',
     ],
   },
   {
@@ -83,4 +83,4 @@ export const changelog: ChangelogEntry[] = [
   },
 ];
 
-export const changelogRoute = (slug: string) => `/changelog#${slug}`;
+export const changelogRoute = (slug: string) => `/changelog/#${slug}`;

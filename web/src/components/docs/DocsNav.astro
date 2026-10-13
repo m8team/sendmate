@@ -20,7 +20,7 @@ interface Props {
 }
 const { sections, editUrl, heading = 'Quickstart', currentId } = Astro.props;
 const num = (i: number) => String(i + 1).padStart(2, '0');
-const hrefFor = (id: string) => (currentId ? `/docs/${id}` : `#${id}`);
+const hrefFor = (id: string) => (currentId ? `/docs/${id}/` : `#${id}`);
 const initial = Math.max(0, currentId ? sections.findIndex((s) => s.id === currentId) : 0);
 ---
 

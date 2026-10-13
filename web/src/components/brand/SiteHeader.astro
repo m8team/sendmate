@@ -4,8 +4,9 @@ import Icon from '../ui/Icon.astro';
 import ThemeToggle from '../ui/ThemeToggle.astro';
 import { nav } from '../../config/site';
 
-const path = Astro.url.pathname.replace(/\/$/, '') || '/';
-const isActive = (href: string) => !href.startsWith('http') && !href.includes('#') && (path === href || path.startsWith(href + '/'));
+const trim = (p: string) => p.replace(/\/$/, '') || '/';
+const path = trim(Astro.url.pathname);
+const isActive = (href: string) => !href.startsWith('http') && !href.includes('#') && (path === trim(href) || path.startsWith(trim(href) + '/'));
 ---
 
 <header class="site-header">

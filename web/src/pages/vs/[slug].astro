@@ -30,7 +30,7 @@ const breadcrumbLd = {
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'sendm8', item: site.url },
     { '@type': 'ListItem', position: 2, name: 'Compare', item: `${site.url}/#compare` },
-    { '@type': 'ListItem', position: 3, name: title, item: `${site.url}/vs/${slug}` },
+    { '@type': 'ListItem', position: 3, name: title, item: `${site.url}/vs/${slug}/` },
   ],
 };
 const faqLd = {
@@ -112,7 +112,7 @@ const faqLd = {
       {others.map((c, i) => (
         <>
           {i > 0 && ' · '}
-          <a class="link-signal" href={`/vs/${c.slug}`}>sendm8 vs {c.name}</a>
+          <a class="link-signal" href={`/vs/${c.slug}/`}>sendm8 vs {c.name}</a>
         </>
       ))}
     </p>

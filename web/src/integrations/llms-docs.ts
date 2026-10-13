@@ -13,7 +13,7 @@ export default function llmsDocs(): AstroIntegration {
       'astro:build:done': async ({ dir, logger }) => {
         const out = fileURLToPath(dir);
         const html = await readFile(`${out}/docs/index.html`, 'utf8');
-        const rendered = docsToMarkdown(html, `${site.url}/docs`);
+        const rendered = docsToMarkdown(html, `${site.url}/docs/`);
 
         // Every section in the sidebar must come out the other end, in the same order.
         const ids = rendered.map((s) => s.id);
