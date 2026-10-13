@@ -1,5 +1,5 @@
 import type { EmailAddressDto } from "@sendm8/shared";
-import { LIMITS } from "@sendm8/shared";
+import { LIMITS, SECURITY_HEADERS } from "@sendm8/shared";
 import { createScheduledController, SELF } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
@@ -9,6 +9,7 @@ import { emailAddresses, submissions, usageDaily, userSettings } from "../src/db
 import { sendSystemEmail } from "../src/email/sender";
 import { consumeVerificationToken } from "../src/email/verification";
 import { submissionsToCsv } from "../src/lib/csv";
+import { withSecurityHeaders } from "../src/lib/security-headers";
 import { dayKey } from "../src/lib/time";
 import { decryptSecret, encryptSecret } from "../src/lib/secrets";
 import { sendDueDigests } from "../src/pipeline/digest";
@@ -52,6 +53,28 @@ describe("routing", () => {
     const page = await SELF.fetch("https://sendm8.test/definitely-not-here");
     expect(page.status).toBe(404);
     expect(await page.text()).toContain("Return to sender");
+  });
+
+  it("sends the security headers on pages, API errors, form posts and unknown routes", async () => {
+    const form = await createForm();
+    const responses = [
+      await SELF.fetch("https://sendm8.test/f/abc1234567"),
+      await SELF.fetch("https://sendm8.test/api/nope"),
+      await SELF.fetch(`https://sendm8.test/f/${form.id}`, { method: "POST", headers: { accept: "application/json", "content-type": "application/json" }, body: "{}" }),
+      await SELF.fetch("https://sendm8.test/definitely-not-here"),
+    ];
+    for (const res of responses) {
+      for (const [name, value] of Object.entries(SECURITY_HEADERS)) expect(res.headers.get(name), `${res.url} ${name}`).toBe(value);
+    }
+  });
+
+  it("adds security headers to immutable responses by copying them", () => {
+    const fetched = Response.redirect("https://sendm8.test/elsewhere", 302);
+    const res = withSecurityHeaders(fetched);
+    expect(res).not.toBe(fetched);
+    expect(res.status).toBe(302);
+    expect(res.headers.get("location")).toBe("https://sendm8.test/elsewhere");
+    expect(res.headers.get("x-frame-options")).toBe("SAMEORIGIN");
   });
 
   it("explains the endpoint when a form URL is opened in a browser", async () => {

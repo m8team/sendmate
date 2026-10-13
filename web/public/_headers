@@ -1,0 +1,9 @@
+# Security headers for the static site. Keep in step with packages/shared/src/security.ts
+# (src/lib/security-headers.test.ts checks); the Worker adds the same ones to its own responses.
+/*
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: frame-ancestors 'self'
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()

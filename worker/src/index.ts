@@ -3,6 +3,7 @@ import { ensureAppUrl } from "./lib/app-url";
 import { handleScheduled } from "./cron";
 import { getAuth } from "./auth";
 import { ApiError } from "./lib/api-error";
+import { securityHeaders, withSecurityHeaders } from "./lib/security-headers";
 import { captureError, scrubPath } from "./ops/errors";
 import { renderPage, stamp } from "./pages/layout";
 import { apiRoutes } from "./routes/api";
@@ -18,6 +19,7 @@ import { submitRoutes } from "./routes/submit";
 
 const app = createRouter();
 
+app.use("*", securityHeaders);
 app.on(["GET", "POST"], "/api/auth/*", (c) => getAuth(c.env).handler(c.req.raw));
 app.route("/api/dev", devRoutes);
 // Public, so it's mounted before /api, whose middleware requires a signed-in user.
@@ -59,7 +61,7 @@ export default {
     } catch (error) {
       // Hono's onError covers routes; this catches anything outside them.
       ctx.waitUntil(captureError(env, error, { where: "fetch", method: request.method, path: scrubPath(request.url) }));
-      return new Response("Something went wrong.", { status: 500 });
+      return withSecurityHeaders(new Response("Something went wrong.", { status: 500 }));
     }
   },
   async scheduled(controller, env) {
