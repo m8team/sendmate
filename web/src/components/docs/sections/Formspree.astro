@@ -38,7 +38,8 @@ const result = await res.json();
 if (result.ok) {
   showThanks();
 } else {
-  // Formspree: result.errors.map((e) => e.message)
+  // One sentence for the whole form. Field problems are also in
+  // result.errors, shaped like Formspree's: [{ field, code, message }].
   showError(result.error.message);
 }`;
 
@@ -53,6 +54,7 @@ export function ContactForm() {
   return (
     <form onSubmit={handleSubmit}>
       <input name="email" type="email" required />
+      <ValidationError field="email" errors={state.errors} />
       <textarea name="message" required />
       <ValidationError errors={state.errors} />
       <button disabled={state.submitting}>Send</button>
@@ -74,11 +76,13 @@ Endpoint mapping (Formspree → sendm8):
    data-fs-* attributes, and environment variables holding Formspree form IDs.
 2. HTML forms: change only the action URL. Field names stay the same.
 3. JavaScript submissions: POST to the sendm8 URL with "Accept: application/json".
-   Success is { ok: true, id }. Failure is { ok: false, error: { code, message } }:
-   show error.message. Update any code that reads Formspree's errors array.
+   Success is { ok: true, id }. Failure is { ok: false, error: { code, message }, errors? }:
+   error.message is always there. errors (field problems only) matches Formspree's
+   [{ field, code, message }], so code reading it per field can stay.
 4. Replace @formspree/react with @sendm8/react (same useForm and ValidationError API):
-   change the import and the form id. Add <ValidationError errors={state.errors} /> without
-   a field prop, since sendm8 reports one form-level error rather than per-field errors.
+   change the import and the form id. Keep field-level <ValidationError field="..." />, and
+   make sure there's also one without a field prop: errors like the monthly limit aren't
+   about a field.
    Replace @formspree/ajax with fetch or the sendm8 helper script. Then remove the old packages.
 5. Don't change styling, copy or field names.
 6. List every file you changed, and anything you couldn't migrate.`;
@@ -139,7 +143,7 @@ Endpoint mapping (Formspree → sendm8):
         </tr>
         <tr>
           <td>JSON errors: an <code>errors</code> array</td>
-          <td><code>&lbrace; ok: false, error: &lbrace; code, message &rbrace; &rbrace;</code> with a matching HTTP status. <a href="/docs/ajax/">AJAX / fetch</a>.</td>
+          <td><code>&lbrace; ok: false, error: &lbrace; code, message &rbrace; &rbrace;</code> with a matching HTTP status, plus the same <code>errors</code> array when a field is at fault. <a href="/docs/ajax/">AJAX / fetch</a>.</td>
         </tr>
         <tr>
           <td><code>@formspree/react</code> (<code>useForm</code>, <code>ValidationError</code>)</td>
@@ -157,17 +161,18 @@ Endpoint mapping (Formspree → sendm8):
   <div class="prose">
     <p>
       In a React app, swap <code>@formspree/react</code> for <a href="https://www.npmjs.com/package/@sendm8/react"><code>@sendm8/react</code></a>. It has the same
-      <code>useForm</code> and <code>ValidationError</code>, so the import and the form id are the only changes. sendm8 reports one error for the whole form
-      rather than one per field, so keep a <code>&lt;ValidationError&gt;</code> without a <code>field</code> somewhere in the form.
+      <code>useForm</code> and <code>ValidationError</code>, so the import and the form id are the only changes. Field errors work the same, and every failure also comes with
+      one error for the whole form (some, like the monthly limit, aren’t about a field), so keep a <code>&lt;ValidationError&gt;</code> without
+      a <code>field</code> somewhere in the form too.
     </p>
   </div>
   <CodeTabs
     class="wide"
     name="Migrating JavaScript submissions"
     tabs={[
-      { label: 'React', lang: 'jsx', filename: 'ContactForm.jsx', code: reactCode, highlight: [1, 4, 12] },
+      { label: 'React', lang: 'jsx', filename: 'ContactForm.jsx', code: reactCode, highlight: [1, 4, 11, 13] },
       { label: 'Install', lang: 'sh', filename: 'terminal', code: reactInstall },
-      { label: 'fetch', lang: 'js', filename: 'contact.js', code: fetchCode, highlight: [12] },
+      { label: 'fetch', lang: 'js', filename: 'contact.js', code: fetchCode, highlight: [13] },
     ]}
   />
 

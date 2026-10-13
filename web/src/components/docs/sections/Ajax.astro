@@ -54,6 +54,25 @@ Content-Type: application/json
   }
 }`;
 
+const fieldErrResponse = `
+HTTP/1.1 422 Unprocessable Content
+Content-Type: application/json
+
+{
+  "ok": false,
+  "error": {
+    "code": "invalid_fields",
+    "message": "Enter a valid email address."
+  },
+  "errors": [
+    {
+      "field": "email",
+      "code": "invalid_email",
+      "message": "Enter a valid email address."
+    }
+  ]
+}`;
+
 const reactCode = `
 // npm install @sendm8/react
 import { useForm, ValidationError } from "@sendm8/react";
@@ -66,6 +85,7 @@ export function ContactForm() {
   return (
     <form onSubmit={handleSubmit}>
       <input name="email" type="email" required />
+      <ValidationError field="email" errors={state.errors} />
       <textarea name="message" required />
       <ValidationError errors={state.errors} />
       <button disabled={state.submitting}>Send</button>
@@ -81,6 +101,7 @@ const statusRows = [
   { code: '404', means: 'No form with that id. Check for a typo in the URL.' },
   { code: '410', means: 'The form has been disabled by its owner.' },
   { code: '413', means: `A file is over ${limits.fileUploadMb} MB, or the files add up to more than ${limits.submissionUploadMb} MB.` },
+  { code: '422', means: 'A field didn’t check out, like an email or _replyto field that isn’t an email address. The errors array says which.' },
   { code: '423', means: 'The form is paused. Nothing is stored until it’s switched back on.' },
   { code: '429', means: `Too many too fast (${limits.ratePerIpPerMinute} a minute per visitor), or the form’s monthly cap is used up.` },
 ];
@@ -105,7 +126,7 @@ const statusRows = [
       { label: 'FormData', lang: 'js', filename: 'contact.js', code: ajaxSnippet(FORM), highlight: [8] },
       { label: 'HTML', lang: 'html', filename: 'contact.html', code: ajaxHtml },
       { label: 'JSON body', lang: 'js', filename: 'contact.js', code: ajaxJson, highlight: [4, 5] },
-      { label: 'React', lang: 'jsx', filename: 'ContactForm.jsx', code: reactCode, highlight: [3, 6, 11] },
+      { label: 'React', lang: 'jsx', filename: 'ContactForm.jsx', code: reactCode, highlight: [2, 5, 10, 12] },
     ]}
   />
 
@@ -124,7 +145,13 @@ const statusRows = [
     <p>
       <code>ok</code> is always there, so checking it is enough. The <code>id</code> is the submission’s id in your dashboard. On failure, <code>error.message</code> is a plain-English sentence you can show to your visitor as it is, and <code>error.code</code> (like <code>quota_exceeded</code> or <code>rate_limited</code>) stays the same for your code to check.
     </p>
+    <p>
+      When the problem is a particular field, there’s also an <code>errors</code> array with one entry per field, shaped like Formspree’s, so you can
+      show each message next to its input. Today that’s an <code>email</code> or <code>_replyto</code> that isn’t an email address (an empty one is
+      fine; use <code>required</code> for that), and a field or file that’s too big. <code>error.message</code> still sums it up.
+    </p>
   </div>
+  <CodeBlock code={fieldErrResponse} lang="http" filename="422 with field errors" compact />
 
   <div class="table-wrap wide status-table">
     <table class="table">
