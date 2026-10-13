@@ -274,6 +274,7 @@ Key facts:
 - Send \`Accept: application/json\` to get JSON back. Success: \`{ "ok": true, "id": "…" }\`. Failure: \`{ "ok": false, "error": { "code": "…", "message": "…" } }\` with a 4xx or 5xx status.
 - Special fields match Formspree: \`_replyto\` (or \`email\`), \`_subject\`, \`_next\`, \`_gotcha\`, \`_cc\`.
 - React apps: \`npm install @sendm8/react\`. Same \`useForm\` and \`ValidationError\` as \`@formspree/react\`, field errors included. Also render one \`<ValidationError>\` without a \`field\`, for errors that aren't about a field.
+- Submissions go to the form's owner. sendm8 is not an API for emailing other people: in \`/f/{email}\` the address is the owner's, never a recipient's, and throwaway domains (yopmail, mailinator…) are refused. For invitations, receipts or password resets, use an email API such as Resend.
 - Forms are created by a person in the dashboard at ${site.url}/app. There's no API key for creating forms.`;
 }
 
