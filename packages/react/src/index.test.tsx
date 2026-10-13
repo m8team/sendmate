@@ -50,6 +50,19 @@ describe("submit", () => {
     expect(outcome.error.getFieldErrors("email")).toEqual([]);
   });
 
+  it("reads per-field errors, keeping the form-level summary, and skips malformed ones", async () => {
+    const reply = {
+      ok: false,
+      error: { code: "invalid_fields", message: "Enter a valid email address." },
+      errors: [{ field: "email", code: "invalid_email", message: "Enter a valid email address." }, { field: 3 }, null],
+    };
+    const outcome = await submit("u", {}, {}, ok(reply, 422));
+    if (outcome.ok) throw new Error("expected a failure");
+    expect(outcome.error.getFieldErrors("email")).toEqual([{ field: "email", code: "invalid_email", message: "Enter a valid email address." }]);
+    expect(outcome.error.getFormErrors()).toEqual([{ code: "invalid_fields", message: "Enter a valid email address." }]);
+    expect(outcome.error.getAllFieldErrors().map(([field]) => field)).toEqual(["email"]);
+  });
+
   it("copes with a network failure and a non-JSON reply", async () => {
     const offline = await submit("u", {}, {}, vi.fn(async () => Promise.reject(new TypeError("offline"))));
     expect(!offline.ok && offline.error.getFormErrors()[0]!.code).toBe("network_error");

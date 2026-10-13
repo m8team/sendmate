@@ -67,9 +67,19 @@ export interface SubmitSuccess {
   next?: string;
 }
 
+/** A problem with one submitted field, e.g. an `email` that isn't an email address. */
+export interface SubmitFieldError {
+  field: string;
+  code: string;
+  message: string;
+}
+
 export interface SubmitFailure {
   ok: false;
+  /** What went wrong, in one message. When fields were at fault, it sums up `errors`. */
   error: { code: string; message: string };
+  /** Per-field problems, shaped like Formspree's `errors` so its clients can show them by field. */
+  errors?: SubmitFieldError[];
 }
 
 // ── Dashboard API ───────────────────────────────────────────────────────────

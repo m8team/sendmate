@@ -10,7 +10,8 @@ export interface FieldError {
 
 /**
  * What went wrong, shaped like @formspree/react's SubmissionError so `getFormErrors()` and
- * `<ValidationError>` keep working. sendm8 reports one form-level error per failure, never per field.
+ * `<ValidationError>` keep working. Most failures are one form-level error; field problems (an `email`
+ * that isn't an email address, a file that's too big) come back per field.
  */
 export class SubmissionError {
   readonly errors: FieldError[];
@@ -84,13 +85,28 @@ export async function submit(url: string, data: SubmitData, extra: ExtraData = {
     return { ok: false, error: new SubmissionError({ code: "network_error", message: "Couldn't reach the form. Check your connection and try again." }) };
   }
 
-  const json = (await res.json().catch(() => null)) as { ok?: boolean; id?: string; next?: string; error?: { code?: string; message?: string } } | null;
+  const json = (await res.json().catch(() => null)) as {
+    ok?: boolean;
+    id?: string;
+    next?: string;
+    error?: { code?: string; message?: string };
+    errors?: unknown;
+  } | null;
   if (res.ok && json?.ok) return { ok: true, result: { id: json.id ?? "", ...(json.next && { next: json.next }) } };
+
+  // Field problems also come back one per field, like Formspree's, for `<ValidationError field="email">`.
+  // The form-level summary stays too, so a form that only shows form-level errors still shows them.
+  const fieldErrors = (Array.isArray(json?.errors) ? json.errors : []).filter(
+    (e): e is FieldError => typeof e?.field === "string" && typeof e.code === "string" && typeof e.message === "string",
+  );
   return {
     ok: false,
-    error: new SubmissionError({
-      code: json?.error?.code ?? `http_${res.status}`,
-      message: json?.error?.message ?? "Something went wrong sending the form. Please try again.",
-    }),
+    error: new SubmissionError(
+      {
+        code: json?.error?.code ?? `http_${res.status}`,
+        message: json?.error?.message ?? "Something went wrong sending the form. Please try again.",
+      },
+      ...fieldErrors.map(({ field, code, message }) => ({ field, code, message })),
+    ),
   };
 }

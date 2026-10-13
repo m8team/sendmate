@@ -17,9 +17,10 @@ import { captureError } from "../ops/errors";
 import { alertFormCreated, alertSubmissionHeld } from "../ops/events";
 import { renderPage, stamp } from "../pages/layout";
 import { isEmail } from "../pipeline/deliver";
-import { SubmitError } from "../pipeline/errors";
+import { invalidFields, SubmitError } from "../pipeline/errors";
 import { parseSubmission, type ParsedSubmission } from "../pipeline/parse";
 import { assessSpam, submitterEmail, SUSPICIOUS_SCORE } from "../pipeline/spam";
+import { validateFields } from "../pipeline/validate";
 import { claimZeroSignupSlot, dispatchStored, newZeroSignupForm, zeroSignupInserts } from "../pipeline/zero-signup";
 
 export const submitRoutes = createRouter();
@@ -180,6 +181,10 @@ submitRoutes.post("/:formId", async (c) => {
       referrer: c.req.header("referer") ?? null,
       userAgent: c.req.header("user-agent") ?? null,
     });
+    // After the spam check, so a honeypot hit still gets its silent fake success instead of a hint.
+    const fieldErrors = verdict.drop ? [] : validateFields(parsed);
+    if (fieldErrors.length) throw invalidFields(fieldErrors);
+
     let status = verdict.status;
     const reasons = [...verdict.reasons];
     if (status === "ok" && form.flaggedReason) {
@@ -306,7 +311,7 @@ function success(c: Ctx, form: FormRow, id: string, next: string | undefined): R
 
 function failure(c: Ctx, json: boolean, form: FormRow | undefined, error: SubmitError): Response {
   if (json) {
-    const body: SubmitFailure = { ok: false, error: { code: error.code, message: error.message } };
+    const body: SubmitFailure = { ok: false, error: { code: error.code, message: error.message }, ...(error.fields.length && { errors: error.fields }) };
     return new Response(JSON.stringify(body), {
       status: error.status,
       headers: { "content-type": "application/json", ...corsHeaders(c, form) },

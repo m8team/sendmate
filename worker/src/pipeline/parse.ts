@@ -67,11 +67,8 @@ class FieldCollector {
       throw new SubmitError(400, "field_name_too_long", `Field names are limited to ${this.limits.maxFieldNameLength} characters.`);
     }
     if (encoder.encode(value).byteLength > this.limits.maxFieldValueBytes) {
-      throw new SubmitError(
-        413,
-        "field_too_large",
-        `The field "${name}" is too long (max ${Math.round(this.limits.maxFieldValueBytes / 1024)} KB).`,
-      );
+      const message = `The field "${name}" is too long (max ${Math.round(this.limits.maxFieldValueBytes / 1024)} KB).`;
+      throw new SubmitError(413, "field_too_large", message, [{ field: name, code: "field_too_large", message }]);
     }
 
     if (name.startsWith("_") || TOKEN_FIELDS.has(name)) {
@@ -143,13 +140,15 @@ export async function parseSubmission(request: Request, limits: Limits, opts: { 
       else if (value.size === 0 && !value.name) continue;
       else if (!multipartUploads) collector.droppedFiles.push(name);
       else {
+        const field = name.trim().replace(/\[\]$/, "");
         if (value.size > limits.maxFileBytes) {
-          throw new SubmitError(413, "file_too_large", `"${value.name}" is too big. Files are limited to ${size(limits.maxFileBytes)}.`);
+          const message = `"${value.name}" is too big. Files are limited to ${size(limits.maxFileBytes)}.`;
+          throw new SubmitError(413, "file_too_large", message, [{ field, code: "file_too_large", message }]);
         }
         if (collector.files.length >= limits.maxFilesPerSubmission) {
           throw new SubmitError(413, "too_many_files", `Submissions are limited to ${limits.maxFilesPerSubmission} files.`);
         }
-        collector.files.push({ field: name.trim().replace(/[]$/, ""), file: value });
+        collector.files.push({ field, file: value });
       }
     }
     return collector.result();

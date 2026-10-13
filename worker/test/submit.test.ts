@@ -231,6 +231,55 @@ describe("POST /f/:formId", () => {
     expect(await listSubmissions(form.id)).toHaveLength(0);
   });
 
+  it("names the field that was too large", async () => {
+    const form = await createForm();
+    const res = await postJson(form.id, { message: "x".repeat(11 * 1024) });
+    expect(await res.json()).toMatchObject({
+      ok: false,
+      error: { code: "field_too_large" },
+      errors: [{ field: "message", code: "field_too_large", message: expect.stringContaining('"message" is too long') }],
+    });
+  });
+
+  it("rejects an email field that isn't an email, per field, without storing it", async () => {
+    const form = await createForm();
+    const res = await postJson(form.id, { email: "not-an-email", _replyto: "also bad", message: "hi" });
+
+    expect(res.status).toBe(422);
+    expect(await res.json()).toEqual({
+      ok: false,
+      error: { code: "invalid_fields", message: "Enter a valid email address." },
+      errors: [
+        { field: "email", code: "invalid_email", message: "Enter a valid email address." },
+        { field: "_replyto", code: "invalid_email", message: "Enter a valid email address." },
+      ],
+    });
+    expect(await listSubmissions(form.id)).toHaveLength(0);
+  });
+
+  it("checks every value of a repeated email field, and leaves empty ones to the form's own required", async () => {
+    const form = await createForm();
+    expect((await postJson(form.id, { email: ["a@b.co", "nope"] })).status).toBe(422);
+    expect((await postJson(form.id, { email: "  ", message: "no email given" })).status).toBe(200);
+    expect((await postJson(form.id, { email: " padded@site.co " })).status).toBe(200);
+  });
+
+  it("shows field errors on the HTML error page for browser posts", async () => {
+    const form = await createForm();
+    const res = await postForm(form.id, { email: "nope" }, { referer: "https://site.com/contact" });
+    expect(res.status).toBe(422);
+    const html = await res.text();
+    expect(html).toContain("Enter a valid email address.");
+    expect(html).toContain("https://site.com/contact");
+  });
+
+  it("still fakes success for a honeypot hit with a bad email, so bots learn nothing", async () => {
+    const form = await createForm();
+    const res = await postJson(form.id, { email: "junk", _gotcha: "filled" });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ ok: true });
+  });
+
   it("rejects invalid JSON and too many fields", async () => {
     const form = await createForm();
     const bad = await SELF.fetch(`https://sendm8.test/f/${form.id}`, { method: "POST", headers: { "content-type": "application/json" }, body: "{nope" });

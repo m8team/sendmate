@@ -37,7 +37,9 @@ export function ContactForm() {
 
 `state.submitting`, `state.succeeded`, `state.errors` (with `getFormErrors()` and `getFieldErrors()`), `reset` and `<ValidationError>` all work the same. Field names like `_replyto`, `_subject` and `_gotcha` are the same too.
 
-One difference: sendm8 reports a single form-level error (like "This form has reached its monthly submission limit") rather than per-field errors, so put a `<ValidationError errors={state.errors} />` without a `field` somewhere in your form.
+Field errors work like Formspree's: an `email` field (or `_replyto`) that isn't an email address, or a field or file that's too big, shows up in `<ValidationError field="email" errors={state.errors} />`.
+
+One difference: every failure also comes with one form-level error, including problems that aren't about a field (like "This form has reached its monthly submission limit"). So put a `<ValidationError errors={state.errors} />` without a `field` somewhere in your form too.
 
 ## API
 
@@ -45,7 +47,7 @@ One difference: sendm8 reports a single form-level error (like "This form has re
 
 Returns `[state, handleSubmit, reset]`.
 
-- `formKey`: a form id from your dashboard, an email address (a [no-signup endpoint](https://sendm8.com/docs/zero-signup)), or a full endpoint URL.
+- `formKey`: a form id from your dashboard, an email address (a [no-signup endpoint](https://sendm8.com/docs/zero-signup/)), or a full endpoint URL.
 - `options.data`: extra fields to send with every submission. Values can be functions, called at submit time.
 - `options.endpoint`: where your sendm8 runs, if you self-host. Defaults to `https://sendm8.com`.
 

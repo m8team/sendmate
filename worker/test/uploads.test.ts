@@ -90,6 +90,9 @@ describe("uploading", () => {
     const res = await SELF.fetch(`https://sendm8.test/api/submissions/${row!.id}/files/${row!.meta.files![0]!.id}`, { headers: session.headers });
     expect(res.headers.get("content-type")).toBe("application/octet-stream");
     expect(res.headers.get("content-disposition")).toMatch(/^attachment/);
+    // The download's own sandboxing policy wins over the site-wide frame-ancestors one.
+    expect(res.headers.get("content-security-policy")).toBe("sandbox; default-src 'none'");
+    expect(res.headers.get("x-frame-options")).toBe("SAMEORIGIN");
   });
 
   it("enforces per-file size and file count limits", async () => {
@@ -97,7 +100,7 @@ describe("uploading", () => {
     const limits = getLimits(env);
     const big = await upload(form.id, [["f", "big.bin", new Uint8Array(limits.maxFileBytes + 1)]]);
     expect(big.status).toBe(413);
-    expect(await big.json()).toMatchObject({ error: { code: "file_too_large" } });
+    expect(await big.json()).toMatchObject({ error: { code: "file_too_large" }, errors: [{ field: "f", code: "file_too_large" }] });
 
     const many = await upload(
       form.id,
