@@ -1,6 +1,6 @@
 {
   "name": "@sendm8/react",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "React hooks for sendm8 forms. A drop-in replacement for @formspree/react's useForm.",
   "type": "module",
   "license": "MIT",
@@ -9,7 +9,7 @@
     "url": "git+https://github.com/m8team/sendmate.git",
     "directory": "packages/react"
   },
-  "homepage": "https://sendm8.com/docs/formspree",
+  "homepage": "https://sendm8.com/docs/formspree/",
   "keywords": [
     "sendm8",
     "forms",
