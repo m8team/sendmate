@@ -1,13 +1,17 @@
 # You've reached the sorting office. Come in, look around.
 #
-#        .-""""""""""""""""""""""-.
-#        |  .------------------.  |
-#        |  |                  |  |
-#        |  |       m8         |  |
-#        |  |                  |  |
-#        |  '------------------'  |
-#        '-......................-'
-#          POSTAGE PAID  ·  0.00
+#               o
+#               |
+#           .---'---.
+#           | o   o |
+#     o     |  \_/  |
+#      \    '-------'
+#       \ .----' '----.         ____________
+#        \|   [===]   |========|\          /|
+#         |           |        | \________/ |
+#         '-----------'        |  for  you  |
+#           | |   | |          |____________|
+#          (__|   |__)
 #
 # Human reading this instead of a crawler: hi. The source is at
 # https://github.com/m8team/sendmate (AGPL-3.0) if you want to see how any of this works.
