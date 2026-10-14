@@ -12,7 +12,7 @@ import { addAddress, api, createUser, db, getSubmission, listSubmissions, mockFe
 type Data<T> = { data: T };
 
 let counter = 0;
-const uniqueEmail = () => `owner${Date.now()}${counter++}@zero.test`;
+const uniqueEmail = () => `owner${Date.now()}${counter++}@zero-signup.dev`;
 
 const formFor = (email: string) => db().select().from(forms).where(eq(forms.ownerEmail, email)).get();
 
@@ -56,6 +56,20 @@ describe("first submission to an email endpoint", () => {
     // Nothing was stored, so no confirmation email went to the throwaway inbox.
     await new Promise((r) => setTimeout(r, 50));
     expect(http.emails().filter((e) => /yopmail|mailinator/.test(e.to[0]))).toHaveLength(0);
+  });
+
+  it("refuses reserved domains like example.com, where the confirmation could only bounce", async () => {
+    const http = mockFetch();
+    for (const address of [`alex${counter++}@example.com`, `dev${counter++}@mail.example.org`, `a${counter++}@site.test`, `b${counter++}@printer.local`]) {
+      const res = await postJson(address, { name: "DexSync Invitations", message: "You're invited! http://192.168.1.83:5173/register" });
+      expect(res.status, address).toBe(400);
+      const body = await res.json<{ ok: false; error: { code: string; message: string } }>();
+      expect(body.error.code).toBe("undeliverable_endpoint");
+      expect(body.error.message).toContain("reserved");
+      expect(await formFor(address)).toBeUndefined();
+    }
+    await new Promise((r) => setTimeout(r, 50));
+    expect(http.emails()).toHaveLength(0);
   });
 
   it("creates a pending form, stores the message, and emails the owner once", async () => {
@@ -205,7 +219,7 @@ describe("confirming", () => {
     // A dashboard verification token can't be used on /confirm (and vice versa).
     const http = mockFetch();
     const session = await signIn();
-    await api("/emails", { method: "POST", body: { email: "dash@zero.test" }, headers: session.headers });
+    await api("/emails", { method: "POST", body: { email: "dash@zero-signup.dev" }, headers: session.headers });
     const dashToken = http.emails()[0].text.match(/verify\/([\w-]+)/)![1];
     expect((await postConfirm(dashToken, "confirm")).status).toBe(400);
 

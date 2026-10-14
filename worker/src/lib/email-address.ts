@@ -30,3 +30,17 @@ export function plusVariantsPattern(email: string): string | null {
   const escape = (s: string) => s.replace(/[!%_]/g, (c) => `!${c}`);
   return `${escape(lower.slice(0, at))}+%${escape(lower.slice(at))}`;
 }
+
+/** Reserved for docs and testing (RFC 2606, 6761, 6762, 8375), so no mail can ever be delivered there. */
+const RESERVED_DOMAINS = ["example.com", "example.net", "example.org"];
+const RESERVED_TLDS = ["example", "invalid", "localhost", "test", "local", "internal", "home.arpa"];
+
+/** The reserved domain an address is under, or null when mail to it could be delivered. */
+export function undeliverableDomain(email: string): string | null {
+  const domain = email.split("@")[1]?.trim().toLowerCase().replace(/\.$/, "");
+  if (!domain) return null;
+  const reserved = RESERVED_DOMAINS.find((d) => domain === d || domain.endsWith(`.${d}`));
+  if (reserved) return reserved;
+  const tld = RESERVED_TLDS.find((t) => domain === t || domain.endsWith(`.${t}`));
+  return tld ? `.${tld}` : null;
+}

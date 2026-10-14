@@ -302,7 +302,7 @@ describe("activity alerts", () => {
     expect((await api("/forms", { method: "POST", headers, body: { name } })).status).toBe(201);
     await waitFor(async () => alerts(http).find((a) => a.embeds[0]!.fields.some((f) => f.value.startsWith(name))));
 
-    const email = `owner${Date.now()}@endpoint.test`;
+    const email = `owner${Date.now()}@endpoint-owner.dev`;
     expect((await postJson(email, { message: "hello" }, { referer: "https://shop.example/contact" })).status).toBe(200);
     const zero = await waitFor(async () => alerts(http).find((a) => a.embeds[0]!.title.includes("email endpoint")));
     expect(JSON.stringify(zero)).not.toContain(email);

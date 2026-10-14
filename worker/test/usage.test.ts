@@ -55,7 +55,7 @@ describe("free-tier usage guard", () => {
     const stored = await listSubmissions(target.id);
     expect(stored.map((s) => s.status)).toEqual(["ok"]);
 
-    const email = `shed${Date.now()}@zero.test`;
+    const email = `shed${Date.now()}@zero-signup.dev`;
     expect((await postJson(email, { a: "b" })).status).toBe(429);
     expect(await db().select().from(forms).where(eq(forms.ownerEmail, email)).get()).toBeUndefined();
 

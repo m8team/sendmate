@@ -8,6 +8,7 @@ import { blocklist, forms, submissions, usageDaily } from "../db/schema";
 import { deleteSubmissionFiles, storeUploads, type StoreResult } from "../files/storage";
 import { LOAD_SHED_SCOPE } from "../lib/usage";
 import { hashIp } from "../lib/crypto";
+import { undeliverableDomain } from "../lib/email-address";
 import { clientIp, escapeHtml, hostAllowed, isLocalHost, parseHttpUrl, requestHost, wantsJson } from "../lib/http";
 import { newId } from "../lib/ids";
 import { decryptSecret } from "../lib/secrets";
@@ -105,6 +106,15 @@ submitRoutes.post("/:formId", async (c) => {
         400,
         "disposable_endpoint",
         `Email endpoints need an address you own. Anyone can read ${throwaway} inboxes, so they can't receive submissions.`,
+      );
+    }
+    // Reserved domains (example.com, *.test…) can't receive mail: the confirmation would only bounce.
+    const reserved = zeroSignupEmail ? undeliverableDomain(zeroSignupEmail) : null;
+    if (reserved) {
+      throw new SubmitError(
+        400,
+        "undeliverable_endpoint",
+        `Email endpoints need a real address you own. ${reserved} is reserved for examples, so nothing can be delivered there.`,
       );
     }
 

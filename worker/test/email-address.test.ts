@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { plusBase, plusVariantsPattern, reachesInboxOf } from "../src/lib/email-address";
+import { plusBase, plusVariantsPattern, reachesInboxOf, undeliverableDomain } from "../src/lib/email-address";
 
 describe("plus addressing", () => {
   it("strips the tag and lowercases", () => {
@@ -23,5 +23,19 @@ describe("plus addressing", () => {
     expect(plusVariantsPattern("k_m%!@x.com")).toBe("k!_m!%!!+%@x.com");
     expect(plusVariantsPattern("kim+a@gmail.com")).toBeNull();
     expect(plusVariantsPattern("nope")).toBeNull();
+  });
+});
+
+describe("reserved domains", () => {
+  it("spots addresses that can never receive mail", () => {
+    expect(undeliverableDomain("alex@example.com")).toBe("example.com");
+    expect(undeliverableDomain("a@Mail.Example.ORG.")).toBe("example.org");
+    expect(undeliverableDomain("a@site.test")).toBe(".test");
+    expect(undeliverableDomain("a@nas.home.arpa")).toBe(".home.arpa");
+    expect(undeliverableDomain("a@localhost")).toBe(".localhost");
+    expect(undeliverableDomain("a@gmail.com")).toBeNull();
+    expect(undeliverableDomain("a@notexample.com")).toBeNull();
+    expect(undeliverableDomain("a@latest.dev")).toBeNull();
+    expect(undeliverableDomain("nope")).toBeNull();
   });
 });
