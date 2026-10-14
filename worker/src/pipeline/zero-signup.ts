@@ -9,6 +9,7 @@ import { zeroSignupConfirmEmail } from "../email/templates";
 import { findByToken } from "../email/verification";
 import { deleteSubmissionFiles, submissionsWithFiles } from "../files/storage";
 import { sha256Hex } from "../lib/crypto";
+import { plusVariantsPattern, reachesInboxOf } from "../lib/email-address";
 import { parseHttpUrl } from "../lib/http";
 import { newFormId, newId } from "../lib/ids";
 import { decryptJson, encryptJson, randomToken } from "../lib/secrets";
@@ -236,67 +237,78 @@ export async function declineZeroSignup(env: Env, token: string, now = Date.now(
 }
 
 /**
- * Moves unclaimed forms for the user's verified email into their account. Signing in with that
- * address proves ownership, so pending forms activate and a previous "Not me" is undone.
- * Forms an admin disabled stay disabled.
+ * Moves unclaimed forms for the user's verified email into their account, including forms sent to a
+ * `+tag` of it (same inbox). Signing in with that address proves ownership, so pending forms
+ * activate and a previous "Not me" is undone. Forms an admin disabled stay disabled.
+ * Returns the claimed forms, and those that just opened, whose waiting messages need delivering.
  */
-export async function claimFormsForUser(env: Env, user: SessionUser): Promise<string[]> {
-  if (!user.emailVerified) return [];
+export async function claimFormsForUser(env: Env, user: SessionUser): Promise<{ formIds: string[]; reopened: string[] }> {
+  const none = { formIds: [], reopened: [] };
+  if (!user.emailVerified) return none;
   const db = getDb(env);
   const email = user.email.toLowerCase();
+  const variants = plusVariantsPattern(email);
 
-  const unclaimed = await db
+  const candidates = await db
     .select()
     .from(forms)
-    .where(and(isNull(forms.userId), eq(forms.ownerEmail, email)))
+    .where(and(isNull(forms.userId), variants ? or(eq(forms.ownerEmail, email), sql`${forms.ownerEmail} LIKE ${variants} ESCAPE '!'`) : eq(forms.ownerEmail, email)))
     .all();
-  if (unclaimed.length === 0) return [];
+  // The LIKE only narrows the query; this decides.
+  const unclaimed = candidates.filter((f) => f.ownerEmail && reachesInboxOf(f.ownerEmail, email));
+  if (unclaimed.length === 0) return none;
 
   const now = Date.now();
-  const [nullAddress, userAddress] = await Promise.all([
-    unclaimedAddress(db, email),
-    db
-      .select()
-      .from(emailAddresses)
-      .where(and(eq(emailAddresses.userId, user.id), eq(emailAddresses.email, email)))
-      .get(),
-  ]);
-
   const statements: BatchItem[] = [];
-  let addressId: string;
-  if (userAddress) {
-    addressId = userAddress.id;
-    if (!userAddress.verifiedAt) statements.push(db.update(emailAddresses).set({ verifiedAt: now }).where(eq(emailAddresses.id, userAddress.id)));
-  } else if (nullAddress) {
-    addressId = nullAddress.id;
-    statements.push(
-      db
-        .update(emailAddresses)
-        .set({ userId: user.id, verifiedAt: nullAddress.verifiedAt ?? now, tokenHash: null, tokenSentAt: null })
-        .where(eq(emailAddresses.id, nullAddress.id)),
-    );
-  } else {
-    addressId = newId();
-    statements.push(db.insert(emailAddresses).values({ id: addressId, userId: user.id, email, verifiedAt: now, createdAt: now }));
-  }
+  const reopened: string[] = [];
+  const byAddress = new Map<string, FormRow[]>();
+  for (const form of unclaimed) byAddress.set(form.ownerEmail!, [...(byAddress.get(form.ownerEmail!) ?? []), form]);
 
-  for (const form of unclaimed) {
-    const declined = form.flaggedReason === DECLINED_REASON;
-    const reopen = form.status === "pending_confirmation" || (form.status === "disabled" && declined);
-    statements.push(
+  for (const [address, group] of byAddress) {
+    const [nullAddress, userAddress] = await Promise.all([
+      unclaimedAddress(db, address),
       db
-        .update(forms)
-        .set({ userId: user.id, status: reopen ? "active" : form.status, flaggedReason: declined ? null : form.flaggedReason })
-        .where(eq(forms.id, form.id)),
-    );
-  }
+        .select()
+        .from(emailAddresses)
+        .where(and(eq(emailAddresses.userId, user.id), eq(emailAddresses.email, address)))
+        .get(),
+    ]);
 
-  const formIds = unclaimed.map((f) => f.id);
-  const replace = userAddress && nullAddress ? nullAddress.id : undefined;
-  // Channel statements must be built before the old address is deleted.
-  statements.push(...(await emailChannelStatements(env, db, formIds, { id: addressId, email }, replace)));
-  if (replace) statements.push(db.delete(emailAddresses).where(eq(emailAddresses.id, replace)));
+    let addressId: string;
+    if (userAddress) {
+      addressId = userAddress.id;
+      if (!userAddress.verifiedAt) statements.push(db.update(emailAddresses).set({ verifiedAt: now }).where(eq(emailAddresses.id, userAddress.id)));
+    } else if (nullAddress) {
+      addressId = nullAddress.id;
+      statements.push(
+        db
+          .update(emailAddresses)
+          .set({ userId: user.id, verifiedAt: nullAddress.verifiedAt ?? now, tokenHash: null, tokenSentAt: null })
+          .where(eq(emailAddresses.id, nullAddress.id)),
+      );
+    } else {
+      addressId = newId();
+      statements.push(db.insert(emailAddresses).values({ id: addressId, userId: user.id, email: address, verifiedAt: now, createdAt: now }));
+    }
+
+    for (const form of group) {
+      const declined = form.flaggedReason === DECLINED_REASON;
+      const reopen = form.status === "pending_confirmation" || (form.status === "disabled" && declined);
+      if (reopen) reopened.push(form.id);
+      statements.push(
+        db
+          .update(forms)
+          .set({ userId: user.id, status: reopen ? "active" : form.status, flaggedReason: declined ? null : form.flaggedReason })
+          .where(eq(forms.id, form.id)),
+      );
+    }
+
+    const replace = userAddress && nullAddress ? nullAddress.id : undefined;
+    // Channel statements must be built before the old address is deleted.
+    statements.push(...(await emailChannelStatements(env, db, group.map((f) => f.id), { id: addressId, email: address }, replace)));
+    if (replace) statements.push(db.delete(emailAddresses).where(eq(emailAddresses.id, replace)));
+  }
 
   await runBatch(db, statements);
-  return formIds;
+  return { formIds: unclaimed.map((f) => f.id), reopened };
 }

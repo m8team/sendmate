@@ -300,6 +300,58 @@ describe("claiming", () => {
     }
   });
 
+  it("delivers what was waiting once a pending form is claimed", async () => {
+    mockFetch();
+    const email = uniqueEmail();
+    await postJson(email, { message: "sent before I signed up" });
+
+    const http = mockFetch();
+    const owner = await createUser({ email });
+    await api("/me", { headers: (await signIn(owner.id)).headers });
+    const sent = await waitFor(async () => http.emails().find((e) => e.to[0] === email && e.text.includes("sent before I signed up")));
+    expect(sent).toBeTruthy();
+  });
+
+  it("claims forms sent to a +tag of the user's address, which lands in the same inbox", async () => {
+    mockFetch();
+    const base = uniqueEmail();
+    const tagged = base.replace("@", "+folio@");
+    await postJson(tagged, { message: "from my portfolio" });
+
+    const http = mockFetch();
+    const owner = await createUser({ email: base });
+    const session = await signIn(owner.id);
+    await api("/me", { headers: session.headers });
+
+    expect(await formFor(tagged)).toMatchObject({ userId: owner.id, status: "active" });
+    // The tagged address joins the account as its own verified recipient, and the backlog goes to it.
+    const address = await db().select().from(emailAddresses).where(eq(emailAddresses.email, tagged)).get();
+    expect(address).toMatchObject({ userId: owner.id });
+    expect(address?.verifiedAt).not.toBeNull();
+    await waitFor(async () => http.emails().find((e) => e.to[0] === tagged && e.text.includes("from my portfolio")));
+  });
+
+  it("never claims someone else's +tag, or a sibling tag of your own", async () => {
+    mockFetch();
+    const victim = uniqueEmail();
+    const theirs = victim.replace("@", "+shop@");
+    const sibling = victim.replace("@", "+blog@");
+    await postJson(theirs, { a: "b" });
+    await postJson(sibling, { a: "b" });
+    await postJson(victim, { a: "b" });
+
+    // Same domain, different person. LIKE wildcards in their address mustn't match either.
+    for (const email of [victim.replace("owner", "other"), victim.replace("owner", "own_r")]) {
+      const someone = await createUser({ email });
+      await api("/me", { headers: (await signIn(someone.id)).headers });
+    }
+    // A tagged sign-in only proves that one tag.
+    const tagOwner = await createUser({ email: victim.replace("@", "+other@") });
+    await api("/me", { headers: (await signIn(tagOwner.id)).headers });
+
+    for (const email of [theirs, sibling, victim]) expect((await formFor(email))?.userId).toBeNull();
+  }, 20_000);
+
   it("doesn't claim for unverified emails", async () => {
     mockFetch();
     const email = uniqueEmail();

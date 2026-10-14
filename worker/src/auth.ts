@@ -1,11 +1,8 @@
 import { betterAuth } from "better-auth";
-import { eq } from "drizzle-orm";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { getDb } from "./db/client";
 import { account, session, user, verification } from "./db/schema";
-import { captureError } from "./ops/errors";
 import { alertSignup } from "./ops/events";
-import { claimFormsForUser } from "./pipeline/zero-signup";
 
 export const SESSION_COOKIE_PREFIX = "sendm8";
 
@@ -40,19 +37,8 @@ function createAuth(env: Env) {
           after: async (created) => alertSignup(env, created),
         },
       },
-      session: {
-        create: {
-          // Signing in claims zero-signup forms sent to the user's verified email. Never block sign-in on it.
-          after: async (created) => {
-            try {
-              const owner = await getDb(env).select().from(user).where(eq(user.id, created.userId)).get();
-              if (owner) await claimFormsForUser(env, owner);
-            } catch (error) {
-              await captureError(env, error, { where: "claiming forms on sign-in" });
-            }
-          },
-        },
-      },
+      // Zero-signup forms are claimed by GET /api/me, which the dashboard calls straight after
+      // sign-in and which can deliver their waiting messages in the background.
     },
     advanced: {
       cookiePrefix: SESSION_COOKIE_PREFIX,

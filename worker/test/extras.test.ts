@@ -1,16 +1,13 @@
 import { env } from "cloudflare:workers";
-import { eq } from "drizzle-orm";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getAuth } from "../src/auth";
 import { discordBody } from "../src/channels/discord";
 import { slackBody } from "../src/channels/slack";
 import { telegramText } from "../src/channels/telegram";
 import type { Notification } from "../src/channels/types";
-import { forms } from "../src/db/schema";
 import worker from "../src/index";
 import { ensureAppUrl, emailFrom } from "../src/lib/app-url";
 import { instanceSettings } from "../src/db/schema";
-import { createUser, db, mockFetch, postJson } from "./helpers";
+import { db } from "./helpers";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -44,23 +41,6 @@ describe("dev login (localhost only)", () => {
     );
     const first = (await login.clone().json()) as { data: { userId: string } };
     expect(((await again.json()) as { data: { userId: string } }).data.userId).toBe(first.data.userId);
-  });
-});
-
-describe("sign-in hook", () => {
-  it("claims zero-signup forms when a session is created, without ever failing sign-in", async () => {
-    mockFetch();
-    const email = `hook${Date.now()}@zero.test`;
-    await postJson(email, { a: "b" });
-    const owner = await createUser({ email });
-
-    const hooks = getAuth(env).options.databaseHooks!.session!.create!.after!;
-    await hooks({ userId: owner.id } as never);
-    expect((await db().select().from(forms).where(eq(forms.ownerEmail, email)).get())?.userId).toBe(owner.id);
-
-    // A missing user (or any error) is swallowed.
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    await expect(hooks({ userId: "ghost" } as never)).resolves.toBeUndefined();
   });
 });
 

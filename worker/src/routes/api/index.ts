@@ -4,7 +4,8 @@ import { createRouter, requireSameOrigin, requireUser } from "../../app";
 import { getLimits } from "../../config";
 import { getDb } from "../../db/client";
 import { userSettings } from "../../db/schema";
-import { claimFormsForUser } from "../../pipeline/zero-signup";
+import { captureError } from "../../ops/errors";
+import { claimFormsForUser, deliverBacklog } from "../../pipeline/zero-signup";
 import { adminRoutes } from "./admin";
 import { channelRoutes } from "./channels";
 import { emailRoutes } from "./emails";
@@ -18,8 +19,12 @@ apiRoutes.use("*", requireSameOrigin, requireUser);
 
 apiRoutes.get("/me", async (c) => {
   const user = c.get("user");
-  // Picks up any zero-signup forms sent to this user's verified email (also done on sign-in).
-  await claimFormsForUser(c.env, user);
+  // Picks up any zero-signup forms sent to this user's verified email (or a +tag of it), and
+  // delivers what was waiting on the ones that were still pending.
+  const { reopened } = await claimFormsForUser(c.env, user);
+  if (reopened.length) {
+    c.executionCtx.waitUntil(deliverBacklog(c.env, reopened).catch((error) => captureError(c.env, error, { where: "backlog delivery" })));
+  }
   const limits = getLimits(c.env);
   const settings = await getDb(c.env).select({ heardFrom: userSettings.heardFrom }).from(userSettings).where(eq(userSettings.userId, user.id)).get();
   const body: MeDto = {
