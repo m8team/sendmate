@@ -96,7 +96,7 @@ export function ContactForm() {
 const statusRows = [
   { code: '200', means: 'Stored. A 2xx always means the submission is safely saved.' },
   { code: '303', means: 'Browser posts only: redirect to your thank-you page, or to the Turnstile challenge page.' },
-  { code: '400', means: `We couldn’t read it: bad JSON, more than ${limits.fieldsPerSubmission} fields, or a body over ${limits.bodyKb} KB without files. Or the endpoint is a throwaway inbox (disposable_endpoint).` },
+  { code: '400', means: `We couldn’t read it: bad JSON, more than ${limits.fieldsPerSubmission} fields, or a body over ${limits.bodyKb} KB without files. Or the endpoint is a throwaway inbox (disposable_endpoint), or a reserved domain like example.com that can’t receive mail (undeliverable_endpoint).` },
   { code: '403', means: 'The page it came from isn’t on the form’s allowed domains (localhost always is, for testing), or a Turnstile check failed.' },
   { code: '404', means: 'No form with that id. Check for a typo in the URL.' },
   { code: '410', means: 'The form has been disabled by its owner.' },
