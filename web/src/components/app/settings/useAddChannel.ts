@@ -59,6 +59,16 @@ export function useAddChannel({ formId, addresses, onAdded }: AddChannelOptions)
     document.querySelector<HTMLInputElement>('.addtype input:checked')?.focus();
   }
 
+  /** Straight to "email a new address": the quickest way to copy someone else in on a form. */
+  async function openAddEmail() {
+    adding.value = true;
+    checkInbox.value = null;
+    addType.value = 'email';
+    addEmailChoice.value = NEW_ADDRESS;
+    await nextTick();
+    document.querySelector<HTMLInputElement>('#fs-add-email-new')?.focus();
+  }
+
   async function cancelAdd() {
     adding.value = false;
     Object.assign(addDraft, emptyChannelDraft());
@@ -143,6 +153,7 @@ export function useAddChannel({ formId, addresses, onAdded }: AddChannelOptions)
     adding,
     addType,
     addTypes,
+    openAddEmail,
     addDraft,
     addErr,
     addBusy,

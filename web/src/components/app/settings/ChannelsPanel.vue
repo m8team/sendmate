@@ -5,7 +5,7 @@ import ChannelSlip from './ChannelSlip.vue';
 import { useFormSettings } from './useFormSettings';
 
 const { chans, limits, addChannel } = useFormSettings();
-const { adding, checkInbox, openAdd } = addChannel;
+const { adding, checkInbox, openAdd, openAddEmail } = addChannel;
 </script>
 
 <template>
@@ -29,7 +29,11 @@ const { adding, checkInbox, openAdd } = addChannel;
       <ChannelSlip v-for="c in chans" :key="c.id" :channel="c" />
     </ul>
 
-    <button v-if="!adding" id="fs-add-channel" type="button" class="btn btn-outline addbtn" @click="openAdd"><Icon name="plus" /> Add channel</button>
+    <div v-if="!adding" class="addrow">
+      <button id="fs-add-channel" type="button" class="btn btn-outline" @click="openAdd"><Icon name="plus" /> Add channel</button>
+      <button id="fs-add-email" type="button" class="btn btn-ghost" @click="openAddEmail"><Icon name="mail" /> Email another address</button>
+      <p class="addrow-hint muted">Want a teammate or a second inbox to get these too? Add them here. No need for another form or account.</p>
+    </div>
 
     <AddChannelForm v-else />
   </section>
@@ -47,8 +51,16 @@ const { adding, checkInbox, openAdd } = addChannel;
   padding: var(--s-5) var(--s-5) 0;
   color: var(--fg-muted);
 }
-.addbtn {
+.addrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
   margin: 0 var(--s-5) var(--s-5);
+}
+.addrow-hint {
+  flex-basis: 100%;
+  font-size: var(--fs-sm);
 }
 .fs-checkinbox {
   margin: var(--s-5) var(--s-5) 0;
@@ -57,9 +69,11 @@ const { adding, checkInbox, openAdd } = addChannel;
   .slips {
     padding: var(--s-3);
   }
-  .addbtn {
+  .addrow {
     margin: 0 var(--s-3) var(--s-4);
-    width: calc(100% - var(--s-3) * 2);
+  }
+  .addrow .btn {
+    width: 100%;
   }
 }
 </style>
