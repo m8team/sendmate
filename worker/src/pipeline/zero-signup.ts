@@ -116,7 +116,7 @@ export async function dispatchStored(env: Env, form: FormRow, submissionId: stri
     if (form.settings.aiSpamScoring && env.AI) {
       const submission = await getDb(env).select().from(submissions).where(eq(submissions.id, submissionId)).get();
       // Spam caught here is never delivered.
-      if (submission && (await applyAiSpamCheck(env, submission))) return;
+      if (submission && (await applyAiSpamCheck(env, submission, form.ownerEmail))) return;
     }
     if (form.settings.notifyMode !== "off") await deliverSubmission(env, submissionId);
   } else if (form.status === "pending_confirmation" && form.ownerEmail) {
@@ -180,15 +180,15 @@ export async function deliverBacklog(env: Env, formIds: string[]) {
       .where(and(inArray(submissions.formId, formIds), eq(submissions.status, "ok"), sql`${submissions.deliveries} = '[]'`))
       .orderBy(asc(submissions.id))
       .limit(BACKLOG_LIMIT),
-    db.select({ id: forms.id, settings: forms.settings }).from(forms).where(inArray(forms.id, formIds)),
+    db.select({ id: forms.id, settings: forms.settings, ownerEmail: forms.ownerEmail }).from(forms).where(inArray(forms.id, formIds)),
   ]);
 
-  const scored = new Set(env.AI ? formRows.filter((f) => f.settings.aiSpamScoring).map((f) => f.id) : []);
+  const scored = new Map(env.AI ? formRows.filter((f) => f.settings.aiSpamScoring).map((f) => [f.id, f.ownerEmail]) : []);
   const deliver: string[] = [];
   for (const submission of waiting) {
     // An AI check costs two queries; keep room to deliver this submission afterwards.
     if (scored.has(submission.formId) && budget.has(AI_CHECK_QUERIES + QUERIES_PER_DELIVERY)) {
-      if (await applyAiSpamCheck(budget.env, submission)) continue;
+      if (await applyAiSpamCheck(budget.env, submission, scored.get(submission.formId))) continue;
     }
     deliver.push(submission.id);
   }

@@ -3,8 +3,10 @@ import { getLimits } from "../config";
 import { getDb, type SubmissionRow } from "../db/client";
 import { submissions } from "../db/schema";
 import { claimCounter } from "../email/budget";
+import { plusBase } from "../lib/email-address";
 import { dayKey } from "../lib/time";
 import { captureError } from "../ops/errors";
+import { submitterEmail } from "./spam";
 
 /**
  * Small enough to stay inside the free allowance (~0.8 neurons a check, so the daily cap of
@@ -71,11 +73,27 @@ export async function aiSpamScore(env: Env, submission: Pick<SubmissionRow, "dat
 }
 
 /**
+ * Someone trying out their own form signs it with their own address, and their "is this thing on?"
+ * message reads like junk to the model (one scored 95). Only a clean submission is let off: the
+ * endpoint address is public, so a spammer could copy it, but links or other red flags still count.
+ */
+export function ownerIsTesting(submission: Pick<SubmissionRow, "data" | "meta">, ownerEmail: string | null): boolean {
+  if (!ownerEmail || submission.meta.spamReasons.length > 0) return false;
+  const from = submitterEmail({ fields: submission.data, special: submission.meta.special });
+  return from !== null && plusBase(from) === plusBase(ownerEmail);
+}
+
+/**
  * Runs the AI check and records what the model thought, so the inbox can show "a bit suspicious"
  * instead of a bare zero. Only a confident score moves the submission to spam.
  * Returns true when it did, which stops delivery.
  */
-export async function applyAiSpamCheck(env: Env, submission: Pick<SubmissionRow, "id" | "data" | "meta" | "spamScore">): Promise<boolean> {
+export async function applyAiSpamCheck(
+  env: Env,
+  submission: Pick<SubmissionRow, "id" | "data" | "meta" | "spamScore">,
+  ownerEmail: string | null = null,
+): Promise<boolean> {
+  if (ownerIsTesting(submission, ownerEmail)) return false;
   const score = await aiSpamScore(env, submission);
   if (score === null) return false;
   const spam = score >= AI_SPAM_THRESHOLD;

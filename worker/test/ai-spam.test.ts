@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { forms, submissions, usageDaily } from "../src/db/schema";
 import { newId } from "../src/lib/ids";
 import { dayKey } from "../src/lib/time";
-import { AI_SPAM_MODEL, aiSpamScore, parseScore, submissionText } from "../src/pipeline/ai-spam";
+import { AI_SPAM_MODEL, aiSpamScore, ownerIsTesting, parseScore, submissionText } from "../src/pipeline/ai-spam";
 import { deliverBacklog, dispatchStored } from "../src/pipeline/zero-signup";
 import { addChannel, createForm, createUser, db, DISCORD_URL, getSubmission, listSubmissions, mockFetch, postJson } from "./helpers";
 
@@ -115,6 +115,44 @@ describe("AI spam scoring", () => {
     expect(await getSubmission(spamId)).toMatchObject({ status: "spam", spamScore: 0.97 });
     expect(await getSubmission(realId)).toMatchObject({ status: "ok", spamScore: 0.04 });
     expect(http.to("discord.com")).toHaveLength(1);
+  });
+
+  it("lets the owner's own clean test messages through without asking the model", async () => {
+    const http = mockFetch();
+    const owner = `tester-${crypto.randomUUID().slice(0, 8)}+folio@example.com`;
+    const form = await createForm({ userId: null, ownerEmail: owner, status: "active", settings: { aiSpamScoring: true } });
+    await addChannel(form.id, "discord", { webhookUrl: DISCORD_URL });
+    const meta = { ipHash: null, country: null, userAgent: null, referrer: null, special: {}, spamReasons: [] };
+    const testId = newId();
+    const linkId = newId();
+    const strangerId = newId();
+    await db().insert(submissions).values([
+      // Signed with the base address of the owner's +tag: still them.
+      { id: testId, formId: form.id, data: { email: owner.replace("+folio", ""), message: "Message technique pour ouvrir la reception." }, meta, status: "ok", createdAt: Date.now() },
+      // The endpoint address is public, so a red flag still goes to the model.
+      { id: linkId, formId: form.id, data: { email: owner, message: "seo deal" }, meta: { ...meta, spamReasons: ["links"] }, spamScore: 0.4, status: "ok", createdAt: Date.now() },
+      { id: strangerId, formId: form.id, data: { email: "someone@example.org", message: "Message technique." }, meta, status: "ok", createdAt: Date.now() },
+    ]);
+
+    const run = vi.fn(async () => ({ response: 95 }));
+    await deliverBacklog({ ...env, AI: { run } as unknown as Ai } as Env, [form.id]);
+
+    expect(run).toHaveBeenCalledTimes(2);
+    expect(await getSubmission(testId)).toMatchObject({ status: "ok", spamScore: 0 });
+    expect(await getSubmission(linkId)).toMatchObject({ status: "spam" });
+    expect(await getSubmission(strangerId)).toMatchObject({ status: "spam" });
+    expect(http.to("discord.com")).toHaveLength(1);
+  });
+
+  it("only treats the owner's own address, or a +tag of the same inbox, as the owner", () => {
+    const meta = { ipHash: null, country: null, userAgent: null, referrer: null, special: {}, spamReasons: [] };
+    const from = (email: string, special: Record<string, string> = {}) => ({ data: { email }, meta: { ...meta, special } });
+    expect(ownerIsTesting(from("Kim@Example.com"), "kim@example.com")).toBe(true);
+    expect(ownerIsTesting(from("kim+test@example.com"), "kim@example.com")).toBe(true);
+    expect(ownerIsTesting(from("x@y.z", { _replyto: "kim@example.com" }), "kim@example.com")).toBe(true);
+    expect(ownerIsTesting(from("kimberly@example.com"), "kim@example.com")).toBe(false);
+    expect(ownerIsTesting(from("kim@example.org"), "kim@example.com")).toBe(false);
+    expect(ownerIsTesting(from("kim@example.com"), null)).toBe(false);
   });
 
   it("delivers the backlog unchecked when the form doesn't use AI scoring", async () => {
