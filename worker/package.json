@@ -19,11 +19,11 @@
   },
   "dependencies": {
     "@sendm8/shared": "*",
-    "better-auth": "^1.7.4",
-    "drizzle-orm": "^0.45.2",
-    "hono": "^4.13.7",
+    "better-auth": "^1.7.10",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.13",
     "ulidx": "^2.4.1",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "^1.4.0",
