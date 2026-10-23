@@ -181,6 +181,8 @@ export interface MeDto {
   limits: Limits;
   /** Their answer, "skipped", or null when they haven't been asked yet. */
   heardFrom: HeardFrom | "skipped" | null;
+  /** Whether /app/admin is theirs. Here rather than probed, since ad blockers block /api/admin/… requests. */
+  isAdmin: boolean;
 }
 
 export type ChannelType = "email" | "discord" | "slack" | "telegram" | "webhook";

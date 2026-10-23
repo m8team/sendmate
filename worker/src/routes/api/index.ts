@@ -1,6 +1,6 @@
 import type { MeDto } from "@sendm8/shared";
 import { eq } from "drizzle-orm";
-import { createRouter, requireSameOrigin, requireUser } from "../../app";
+import { createRouter, isAdmin, requireSameOrigin, requireUser } from "../../app";
 import { getLimits } from "../../config";
 import { getDb } from "../../db/client";
 import { userSettings } from "../../db/schema";
@@ -31,6 +31,7 @@ apiRoutes.get("/me", async (c) => {
     user: { id: user.id, name: user.name, email: user.email, image: user.image ?? null },
     limits,
     heardFrom: (settings?.heardFrom as MeDto["heardFrom"]) ?? null,
+    isAdmin: isAdmin(c.env, user),
   };
   return c.json({ data: body });
 });

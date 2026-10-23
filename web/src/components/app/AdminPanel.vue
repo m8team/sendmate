@@ -8,7 +8,6 @@ import type { MeDto } from '@sendm8/shared';
 import Icon from '../ui/Icon.vue';
 import { friendlyError } from '../../lib/api/errors';
 import { guardSession } from '../../lib/api/session';
-import { loadIsAdmin } from '../../lib/api/store';
 import AdminUsage from './admin/AdminUsage.vue';
 import AdminGrowth from './admin/AdminGrowth.vue';
 import AdminReports from './admin/AdminReports.vue';
@@ -25,7 +24,7 @@ onMounted(async () => {
   try {
     me.value = await guardSession();
     if (!me.value) return;
-    if (!(await loadIsAdmin(me.value.user.id))) {
+    if (!me.value.isAdmin) {
       state.value = 'forbidden';
       return;
     }

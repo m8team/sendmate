@@ -30,42 +30,6 @@ export const loadHasSession = () => cached<boolean>('has-session', () => api.has
 export const loadLimits = () => loadMe().then((me) => me.limits);
 export const loadForms = () => cached<FormDto[]>('forms', api.listForms);
 
-const ADMIN_KEY = (userId: string) => `sendm8-admin-v1:${userId}`;
-
-function session(): Storage | null {
-  try {
-    return typeof sessionStorage === 'undefined' ? null : sessionStorage;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Whether this user can use /app/admin: `GET /api/admin/usage` is 200 for admins and 404 for
- * everyone else. The answer is remembered for the browser session so the probe runs once.
- */
-export function loadIsAdmin(userId: string): Promise<boolean> {
-  return cached(`admin:${userId}`, async () => {
-    const remembered = session()?.getItem(ADMIN_KEY(userId));
-    if (remembered === '1' || remembered === '0') return remembered === '1';
-    try {
-      await api.adminUsage();
-      rememberAdmin(userId, true);
-      return true;
-    } catch (err) {
-      if ((err as { status?: number })?.status === 404) rememberAdmin(userId, false);
-      return false;
-    }
-  });
-}
-
-function rememberAdmin(userId: string, admin: boolean) {
-  try {
-    session()?.setItem(ADMIN_KEY(userId), admin ? '1' : '0');
-  } catch {
-    /* private mode: probe again next page */
-  }
-}
 export const loadEmailSettings = () => cached<EmailSettingsDto>('email-settings', api.emailSettings);
 export const loadStats = (formId: string) => cached(`stats:${formId}`, () => api.stats(formId, 30));
 

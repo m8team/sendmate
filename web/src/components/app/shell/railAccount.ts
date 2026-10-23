@@ -4,7 +4,7 @@
 import type { MeDto } from '@sendm8/shared';
 import { api } from '../../../lib/api/endpoints';
 import { initials } from '../../../lib/api/session';
-import { invalidate, loadEmailSettings, loadIsAdmin } from '../../../lib/api/store';
+import { invalidate, loadEmailSettings } from '../../../lib/api/store';
 import { usageReading } from './railFormat';
 
 export function mountAccount() {
@@ -36,11 +36,9 @@ export function mountAccount() {
     document.querySelector('[data-account-mail]')!.textContent = me.user.email;
   }
 
-  /** The admin link only appears for admins (the usage endpoint 404s for everyone else). */
+  /** The admin link only appears for admins. */
   function showAdminLink(me: MeDto) {
-    loadIsAdmin(me.user.id).then((admin) => {
-      document.querySelector<HTMLElement>('[data-admin-link]')!.hidden = !admin;
-    });
+    document.querySelector<HTMLElement>('[data-admin-link]')!.hidden = !me.isAdmin;
   }
 
   window.addEventListener('sendm8:email-settings-changed', () => {

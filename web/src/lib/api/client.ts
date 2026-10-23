@@ -81,7 +81,7 @@ export async function apiFetch(path: string, opts: RequestOptions = {}): Promise
     res = await fetch(buildUrl(path, opts.query), init);
   } catch (err) {
     if ((err as Error)?.name === 'AbortError') throw err;
-    throw new ApiRequestError(0, 'network', 'Couldn’t reach sendm8. Check your connection and try again.');
+    throw new ApiRequestError(0, 'network', 'Couldn’t reach sendm8. Check your connection, or whether an ad blocker is stopping the request, and try again.');
   }
   if (!res.ok) {
     const error = await errorFrom(res);

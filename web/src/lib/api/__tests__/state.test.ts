@@ -139,7 +139,7 @@ describe('session', () => {
 
   it('resolves the user when signed in', async () => {
     const nav = vi.fn();
-    const me = { user: { id: 'u', name: 'A', email: 'a@x.com', image: null }, limits: LIMITS, heardFrom: null };
+    const me = { user: { id: 'u', name: 'A', email: 'a@x.com', image: null }, limits: LIMITS, heardFrom: null, isAdmin: false };
     await expect(guardSession(nav, async () => me, yes)).resolves.toBe(me);
     expect(nav).not.toHaveBeenCalled();
   });

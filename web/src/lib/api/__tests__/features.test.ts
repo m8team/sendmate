@@ -16,7 +16,7 @@ import {
 } from '../adapters';
 import { friendlyError } from '../errors';
 import { ApiRequestError } from '../client';
-import { invalidate, loadIsAdmin, loadLimits } from '../store';
+import { invalidate, loadLimits } from '../store';
 import type { FormDto, SubmissionDto } from '@sendm8/shared';
 import { json, mockFetch } from './helpers';
 
@@ -148,57 +148,10 @@ describe('admin helpers', () => {
   });
 });
 
-describe('store: limits and admin probe', () => {
+describe('store: limits', () => {
   it('reads limits from /api/me', async () => {
     mockFetch(() => json({ data: { user: {}, limits: { spamRetentionDays: 14 } } }));
     await expect(loadLimits()).resolves.toEqual({ spamRetentionDays: 14 });
   });
 
-  function stubSession() {
-    const map = new Map<string, string>();
-    vi.stubGlobal('sessionStorage', { getItem: (k: string) => map.get(k) ?? null, setItem: (k: string, v: string) => void map.set(k, v) });
-    return map;
-  }
-
-  it('is an admin when usage answers 200, and remembers it', async () => {
-    const map = stubSession();
-    const { calls } = mockFetch(() => json({ data: { day: '2026-09-15' } }));
-    await expect(loadIsAdmin('u1')).resolves.toBe(true);
-    expect(map.get('sendm8-admin-v1:u1')).toBe('1');
-    invalidate();
-    await expect(loadIsAdmin('u1')).resolves.toBe(true);
-    expect(calls).toHaveLength(1);
-  });
-
-  it('is not an admin on 404, and remembers that too', async () => {
-    const map = stubSession();
-    mockFetch(() => json({ error: { code: 'not_found', message: 'No such endpoint.' } }, 404));
-    await expect(loadIsAdmin('u2')).resolves.toBe(false);
-    expect(map.get('sendm8-admin-v1:u2')).toBe('0');
-    invalidate();
-    const { calls } = mockFetch();
-    await expect(loadIsAdmin('u2')).resolves.toBe(false);
-    expect(calls).toHaveLength(0);
-  });
-
-  it('does not remember other failures, and copes without sessionStorage', async () => {
-    const map = stubSession();
-    mockFetch(() => json({ error: { code: 'x', message: 'down' } }, 500));
-    await expect(loadIsAdmin('u3')).resolves.toBe(false);
-    expect(map.has('sendm8-admin-v1:u3')).toBe(false);
-
-    invalidate();
-    vi.stubGlobal('sessionStorage', {
-      getItem: () => null,
-      setItem: () => {
-        throw new Error('blocked');
-      },
-    });
-    mockFetch(() => json({ data: {} }));
-    await expect(loadIsAdmin('u4')).resolves.toBe(true);
-
-    invalidate();
-    vi.stubGlobal('sessionStorage', undefined);
-    await expect(loadIsAdmin('u5')).resolves.toBe(true);
-  });
 });

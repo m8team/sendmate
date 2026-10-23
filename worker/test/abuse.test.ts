@@ -363,6 +363,12 @@ describe("admin API", () => {
     expect((await api("/admin/reports", { headers: (await signIn(unverified.id)).headers })).status).toBe(404);
   });
 
+  it("says who's an admin on /me, so the dashboard needn't probe an endpoint ad blockers block", async () => {
+    const regular = await signIn();
+    expect((await api<{ data: { isAdmin: boolean } }>("/me", { headers: regular.headers })).body.data.isAdmin).toBe(false);
+    expect((await api<{ data: { isAdmin: boolean } }>("/me", { headers: await admin() })).body.data.isAdmin).toBe(true);
+  });
+
   it("lists and resolves reports", async () => {
     const headers = await admin();
     const owner = await createUser();
