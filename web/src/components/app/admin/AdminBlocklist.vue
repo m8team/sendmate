@@ -30,7 +30,7 @@ async function load() {
 
 async function addBlock() {
   blockError.value = validateBlock(block.type, block.value);
-  if (blockError.value) return document.getElementById('ad-block-value')?.focus();
+  if (blockError.value) return document.getElementById('office-block-value')?.focus();
   const label = block.type === 'ip' ? 'that IP' : block.value.trim();
   if (await run('block:add', () => api.addBlock({ ...block }), `Blocked ${label}.`)) {
     block.value = '';
@@ -51,44 +51,44 @@ defineExpose({ load });
 </script>
 
 <template>
-  <section class="ad-section" aria-labelledby="ad-block">
-    <div class="ad-bar">
-      <h2 id="ad-block" class="bay label label-lg"><span class="bay-no">05</span> Blocklist</h2>
+  <section class="office-section" aria-labelledby="office-block">
+    <div class="office-bar">
+      <h2 id="office-block" class="bay label label-lg"><span class="bay-no">05</span> Blocklist</h2>
     </div>
 
-    <form class="ad-panel ad-blockform" novalidate @submit.prevent="addBlock">
+    <form class="office-panel office-blockform" novalidate @submit.prevent="addBlock">
       <div class="field">
-        <label class="field-label" for="ad-block-type">Block</label>
-        <select id="ad-block-type" v-model="block.type" class="select">
+        <label class="field-label" for="office-block-type">Block</label>
+        <select id="office-block-type" v-model="block.type" class="select">
           <option v-for="t in blockTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
         </select>
       </div>
       <div class="field">
-        <label class="field-label" for="ad-block-value">Value</label>
+        <label class="field-label" for="office-block-value">Value</label>
         <input
-          id="ad-block-value"
+          id="office-block-value"
           v-model="block.value"
           class="input mono"
           autocomplete="off"
           spellcheck="false"
           :placeholder="blockTypes.find((t) => t.value === block.type)?.placeholder"
           :aria-invalid="blockError ? 'true' : undefined"
-          :aria-describedby="blockError ? 'ad-block-err' : block.type === 'ip' ? 'ad-block-hint' : undefined"
+          :aria-describedby="blockError ? 'office-block-err' : block.type === 'ip' ? 'office-block-hint' : undefined"
         />
-        <p v-if="blockError" id="ad-block-err" class="field-error"><Icon name="alert" :size="14" /> {{ blockError }}</p>
-        <p v-else-if="block.type === 'ip'" id="ad-block-hint" class="field-hint">Only its hash is stored, the same way submissions store IPs.</p>
+        <p v-if="blockError" id="office-block-err" class="field-error"><Icon name="alert" :size="14" /> {{ blockError }}</p>
+        <p v-else-if="block.type === 'ip'" id="office-block-hint" class="field-hint">Only its hash is stored, the same way submissions store IPs.</p>
       </div>
       <div class="field">
-        <label class="field-label" for="ad-block-reason">Reason <span class="muted">(optional)</span></label>
-        <input id="ad-block-reason" v-model="block.reason" class="input" maxlength="200" autocomplete="off" />
+        <label class="field-label" for="office-block-reason">Reason <span class="muted">(optional)</span></label>
+        <input id="office-block-reason" v-model="block.reason" class="input" maxlength="200" autocomplete="off" />
       </div>
       <button type="submit" class="btn btn-signal btn-sm" :aria-disabled="busy['block:add'] ? 'true' : undefined"><Icon name="plus" :size="16" /> Add to blocklist</button>
     </form>
 
     <div v-if="blocklistLoading" class="skel" style="height: 5rem" aria-hidden="true"></div>
     <p v-else-if="blocklistError" class="field-error" role="alert"><Icon name="alert" :size="14" /> {{ blocklistError }}</p>
-    <p v-else-if="!blocklist.length" class="ad-empty">Nobody’s blocked.</p>
-    <div v-else class="table-wrap ad-table">
+    <p v-else-if="!blocklist.length" class="office-empty">Nobody’s blocked.</p>
+    <div v-else class="table-wrap office-table">
       <table class="table">
         <caption class="sr-only">Blocklist</caption>
         <thead>
@@ -101,7 +101,7 @@ defineExpose({ load });
         </thead>
         <tbody>
           <tr v-for="e in blocklist" :key="`${e.type}:${e.value}`">
-            <td class="mono ad-value">{{ e.value }}</td>
+            <td class="mono office-value">{{ e.value }}</td>
             <td><span class="tag tag-plain">{{ blockTypeLabel[e.type] }}</span></td>
             <td>
               {{ e.reason ?? '—' }}<br /><span class="muted small">{{ dayMonth(e.createdAt) }}</span>
@@ -120,21 +120,21 @@ defineExpose({ load });
 
 <style scoped src="./admin-section.css"></style>
 <style scoped>
-.ad-blockform {
+.office-blockform {
   grid-template-columns: 11rem minmax(0, 1fr);
   align-items: start;
 }
-.ad-blockform > .field:nth-child(3) {
+.office-blockform > .field:nth-child(3) {
   grid-column: 1 / -1;
 }
-.ad-blockform > .btn {
+.office-blockform > .btn {
   justify-self: start;
 }
 .small {
   font-size: var(--fs-2xs);
 }
 @media (max-width: 900px) {
-  .ad-blockform {
+  .office-blockform {
     grid-template-columns: minmax(0, 1fr);
   }
 }

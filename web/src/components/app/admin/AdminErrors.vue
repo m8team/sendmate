@@ -43,11 +43,11 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="ad-section" aria-labelledby="ad-errors">
-    <div class="ad-bar">
-      <h2 id="ad-errors" class="bay label label-lg"><span class="bay-no">04</span> {{ showResolved ? 'Resolved errors' : 'Open errors' }}</h2>
+  <section class="office-section" aria-labelledby="office-errors">
+    <div class="office-bar">
+      <h2 id="office-errors" class="bay label label-lg"><span class="bay-no">04</span> {{ showResolved ? 'Resolved errors' : 'Open errors' }}</h2>
       <div class="cluster">
-        <label class="ad-toggle">
+        <label class="office-toggle">
           <input v-model="showResolved" type="checkbox" class="switch" @change="load" />
           <span>Show resolved</span>
         </label>
@@ -57,31 +57,31 @@ onMounted(load);
 
     <div v-if="loading" class="skel" style="height: 6rem" aria-hidden="true"></div>
     <p v-else-if="loadError" class="field-error" role="alert"><Icon name="alert" :size="14" /> {{ loadError }}</p>
-    <p v-else-if="!groups.length" class="ad-empty">{{ showResolved ? 'Nothing resolved recently.' : 'No open errors. Running clean.' }}</p>
-    <ul v-else role="list" class="ad-errors">
-      <li v-for="g in groups" :key="g.id" class="ad-error" :class="{ resolved: g.resolvedAt }">
-        <div class="ad-error-main">
-          <p class="ad-error-top">
+    <p v-else-if="!groups.length" class="office-empty">{{ showResolved ? 'Nothing resolved recently.' : 'No open errors. Running clean.' }}</p>
+    <ul v-else role="list" class="office-errors">
+      <li v-for="g in groups" :key="g.id" class="office-error" :class="{ resolved: g.resolvedAt }">
+        <div class="office-error-main">
+          <p class="office-error-top">
             <span class="tag" :class="g.source === 'worker' ? 'tag-signal' : 'tag-warn'">{{ errorSourceLabel[g.source] }}</span>
-            <b class="ad-count">{{ occurrences(g.count) }}</b>
-            <span class="mono muted ad-when">last {{ ago(g.lastSeenAt, now) }} · first {{ ago(g.firstSeenAt, now) }}</span>
+            <b class="office-count">{{ occurrences(g.count) }}</b>
+            <span class="mono muted office-when">last {{ ago(g.lastSeenAt, now) }} · first {{ ago(g.firstSeenAt, now) }}</span>
           </p>
-          <p class="ad-error-title">
-            <span class="mono ad-error-name">{{ g.name }}</span> {{ g.message }}
+          <p class="office-error-title">
+            <span class="mono office-error-name">{{ g.name }}</span> {{ g.message }}
           </p>
-          <dl v-if="errorContext(g.context).length" class="ad-context">
+          <dl v-if="errorContext(g.context).length" class="office-context">
             <div v-for="[key, value] in errorContext(g.context)" :key="key">
               <dt class="label">{{ key }}</dt>
               <dd class="mono">{{ value }}</dd>
             </div>
           </dl>
-          <details v-if="g.stack" class="ad-stack">
+          <details v-if="g.stack" class="office-stack">
             <summary>Stack trace</summary>
             <pre class="mono">{{ g.stack }}</pre>
           </details>
         </div>
 
-        <div class="ad-actions">
+        <div class="office-actions">
           <button v-if="!g.resolvedAt" type="button" class="btn btn-outline btn-sm" :aria-disabled="busy[`resolve:${g.id}`] ? 'true' : undefined" @click="resolve(g)">
             <Icon name="check" :size="16" /> Resolve
           </button>
@@ -96,7 +96,7 @@ onMounted(load);
 
 <style scoped src="./admin-section.css"></style>
 <style scoped>
-.ad-toggle {
+.office-toggle {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
@@ -104,70 +104,70 @@ onMounted(load);
   font-weight: 600;
   cursor: pointer;
 }
-.ad-errors {
+.office-errors {
   display: grid;
   border-top: var(--bw-heavy) solid var(--line-strong);
 }
-.ad-error {
+.office-error {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--s-3) var(--s-5);
   padding: var(--s-4) 0;
   border-bottom: 1px solid var(--line);
 }
-.ad-error.resolved .ad-error-main {
+.office-error.resolved .office-error-main {
   opacity: 0.7;
 }
-.ad-error-main {
+.office-error-main {
   display: grid;
   gap: 0.45rem;
   min-width: 0;
 }
-.ad-error-top {
+.office-error-top {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--s-2);
   font-size: var(--fs-sm);
 }
-.ad-count {
+.office-count {
   font-variant-numeric: tabular-nums;
 }
-.ad-when {
+.office-when {
   font-size: var(--fs-2xs);
 }
-.ad-error-title {
+.office-error-title {
   max-width: 80ch;
   overflow-wrap: anywhere;
 }
-.ad-error-name {
+.office-error-name {
   font-weight: 700;
   color: var(--signal-text);
 }
-.ad-context {
+.office-context {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-1) var(--s-4);
   font-size: var(--fs-xs);
 }
-.ad-context div {
+.office-context div {
   display: flex;
   gap: 0.4rem;
   min-width: 0;
 }
-.ad-context dt {
+.office-context dt {
   color: var(--fg-muted);
 }
-.ad-context dd {
+.office-context dd {
   overflow-wrap: anywhere;
 }
-.ad-stack summary {
+.office-stack summary {
   width: fit-content;
   font-size: var(--fs-xs);
   font-weight: 600;
   cursor: pointer;
 }
-.ad-stack pre {
+.office-stack pre {
   margin-top: var(--s-2);
   padding: var(--s-3);
   max-height: 18rem;
@@ -178,16 +178,16 @@ onMounted(load);
   line-height: 1.5;
   white-space: pre;
 }
-.ad-actions {
+.office-actions {
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
 }
 @media (max-width: 900px) {
-  .ad-error {
+  .office-error {
     grid-template-columns: minmax(0, 1fr);
   }
-  .ad-actions {
+  .office-actions {
     justify-content: flex-start;
   }
 }

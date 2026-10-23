@@ -33,18 +33,18 @@ async function unsuspend() {
 </script>
 
 <template>
-  <section class="ad-section" aria-labelledby="ad-users">
-    <div class="ad-bar">
-      <h2 id="ad-users" class="bay label label-lg"><span class="bay-no">06</span> Suspend a user</h2>
+  <section class="office-section" aria-labelledby="office-users">
+    <div class="office-bar">
+      <h2 id="office-users" class="bay label label-lg"><span class="bay-no">06</span> Suspend a user</h2>
     </div>
-    <form class="ad-panel" novalidate @submit.prevent="suspend">
+    <form class="office-panel" novalidate @submit.prevent="suspend">
       <div class="field">
-        <label class="field-label" for="ad-user-id">User id</label>
-        <input id="ad-user-id" v-model="user.id" class="input mono" autocomplete="off" spellcheck="false" placeholder="e.g. dev-user" @input="confirmSuspend = false" />
+        <label class="field-label" for="office-user-id">User id</label>
+        <input id="office-user-id" v-model="user.id" class="input mono" autocomplete="off" spellcheck="false" placeholder="e.g. dev-user" @input="confirmSuspend = false" />
       </div>
       <div class="field">
-        <label class="field-label" for="ad-user-reason">Reason</label>
-        <input id="ad-user-reason" v-model="user.reason" class="input" maxlength="200" autocomplete="off" placeholder="phishing: repeat offender" />
+        <label class="field-label" for="office-user-reason">Reason</label>
+        <input id="office-user-reason" v-model="user.reason" class="input" maxlength="200" autocomplete="off" placeholder="phishing: repeat offender" />
       </div>
       <p v-if="userError" class="field-error" role="alert"><Icon name="alert" :size="14" /> {{ userError }}</p>
       <div v-if="confirmSuspend" class="notice notice-signal" role="alert">

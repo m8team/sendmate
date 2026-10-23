@@ -58,9 +58,9 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="ad-section" aria-labelledby="ad-growth">
-    <div class="ad-bar">
-      <h2 id="ad-growth" class="bay label label-lg">
+  <section class="office-section" aria-labelledby="office-growth">
+    <div class="office-bar">
+      <h2 id="office-growth" class="bay label label-lg">
         <span class="bay-no">02</span> Growth
       </h2>
       <button type="button" class="btn btn-ghost btn-xs" @click="load">
@@ -89,7 +89,7 @@ onMounted(load);
       <div class="gr-two">
         <div>
           <h3 class="label gr-sub">How people found sendm8</h3>
-          <p v-if="!shares.length" class="ad-empty">
+          <p v-if="!shares.length" class="office-empty">
             No answers yet. New accounts are asked once, on their forms page.
           </p>
           <ul v-else role="list" class="gr-bars">
@@ -125,7 +125,7 @@ onMounted(load);
               </thead>
               <tbody>
                 <tr v-for="s in growth.topSites" :key="s.host">
-                  <td class="mono ad-value">{{ s.host }}</td>
+                  <td class="mono office-value">{{ s.host }}</td>
                   <td class="num tabular">{{ s.forms }}</td>
                   <td class="num tabular">{{ s.submissions }}</td>
                 </tr>

@@ -25,21 +25,21 @@ onMounted(loadUsage);
 </script>
 
 <template>
-  <section class="ad-section" aria-labelledby="ad-usage">
-    <div class="ad-bar">
-      <h2 id="ad-usage" class="bay label label-lg"><span class="bay-no">01</span> Usage today</h2>
+  <section class="office-section" aria-labelledby="office-usage">
+    <div class="office-bar">
+      <h2 id="office-usage" class="bay label label-lg"><span class="bay-no">01</span> Usage today</h2>
       <button type="button" class="btn btn-ghost btn-xs" @click="loadUsage"><Icon name="refresh" :size="14" /> Refresh</button>
     </div>
     <p v-if="usageError" class="field-error" role="alert"><Icon name="alert" :size="14" /> {{ usageError }}</p>
-    <div v-else-if="!usage" class="ad-grid" aria-hidden="true">
+    <div v-else-if="!usage" class="office-grid" aria-hidden="true">
       <span v-for="n in 5" :key="n" class="skel" style="height: 7rem"></span>
     </div>
     <template v-else>
-      <div class="ad-tiles">
-        <div v-for="t in tiles" :key="t.key" class="ad-tile">
-          <p class="label ad-tile-label">{{ t.label }}</p>
-          <p class="ad-num tabular">
-            {{ t.value }}<span v-if="t.of" class="ad-of">{{ t.of }}</span>
+      <div class="office-tiles">
+        <div v-for="t in tiles" :key="t.key" class="office-tile">
+          <p class="label office-tile-label">{{ t.label }}</p>
+          <p class="office-num tabular">
+            {{ t.value }}<span v-if="t.of" class="office-of">{{ t.of }}</span>
           </p>
           <span
             v-if="t.pct !== null"
@@ -49,11 +49,11 @@ onMounted(loadUsage);
             role="img"
             :aria-label="`${t.pct}% used`"
           ></span>
-          <p class="ad-note">{{ t.note }}</p>
+          <p class="office-note">{{ t.note }}</p>
         </div>
       </div>
 
-      <div class="table-wrap ad-table">
+      <div class="table-wrap office-table">
         <table class="table">
           <caption class="label">Busiest forms today</caption>
           <thead>
@@ -64,7 +64,7 @@ onMounted(loadUsage);
           </thead>
           <tbody>
             <tr v-for="f in usage.topForms" :key="f.formId">
-              <td class="mono ad-value">{{ f.formId }}</td>
+              <td class="mono office-value">{{ f.formId }}</td>
               <td class="num tabular">{{ f.submissions.toLocaleString('en-GB') }}</td>
             </tr>
             <tr v-if="!usage.topForms.length">
@@ -79,33 +79,33 @@ onMounted(loadUsage);
 
 <style scoped src="./admin-section.css"></style>
 <style scoped>
-.ad-grid,
-.ad-tiles {
+.office-grid,
+.office-tiles {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0;
 }
-.ad-grid {
+.office-grid {
   gap: var(--s-3);
 }
-.ad-tiles {
+.office-tiles {
   border: var(--bw-strong) solid var(--line-strong);
   background: var(--bg-raised);
 }
-.ad-tile {
+.office-tile {
   display: grid;
   align-content: start;
   gap: 0.4rem;
   padding: var(--s-4);
   min-width: 0;
 }
-.ad-tile + .ad-tile {
+.office-tile + .office-tile {
   border-left: 1px dashed var(--line);
 }
-.ad-tile-label {
+.office-tile-label {
   color: var(--fg-muted);
 }
-.ad-num {
+.office-num {
   font-family: var(--font-display);
   font-stretch: var(--stretch-condensed);
   font-weight: 900;
@@ -113,43 +113,43 @@ onMounted(loadUsage);
   line-height: 0.9;
   overflow-wrap: anywhere;
 }
-.ad-of {
+.office-of {
   margin-left: 0.1em;
   font-size: 0.45em;
   font-weight: 700;
   color: var(--fg-muted);
 }
-.ad-tile .meter {
+.office-tile .meter {
   height: 10px;
 }
-.ad-note {
+.office-note {
   font-size: var(--fs-xs);
   color: var(--fg-muted);
 }
 @media (max-width: 1100px) {
-  .ad-tiles,
-  .ad-grid {
+  .office-tiles,
+  .office-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .ad-tile:nth-child(3n + 1) {
+  .office-tile:nth-child(3n + 1) {
     border-left: 0;
   }
-  .ad-tile:nth-child(n + 4) {
+  .office-tile:nth-child(n + 4) {
     border-top: 1px dashed var(--line);
   }
 }
 @media (max-width: 900px) {
-  .ad-tiles,
-  .ad-grid {
+  .office-tiles,
+  .office-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .ad-tile:nth-child(3n + 1) {
+  .office-tile:nth-child(3n + 1) {
     border-left: 1px dashed var(--line);
   }
-  .ad-tile:nth-child(odd) {
+  .office-tile:nth-child(odd) {
     border-left: 0;
   }
-  .ad-tile:nth-child(n + 3) {
+  .office-tile:nth-child(n + 3) {
     border-top: 1px dashed var(--line);
   }
 }
