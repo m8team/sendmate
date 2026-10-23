@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .node-version
           cache: npm
       # The Deploy to Cloudflare button needs wrangler.jsonc without a database id. Forks can keep theirs.
       - name: wrangler.jsonc has no database_id
@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .node-version
           cache: npm
           cache-dependency-path: web/package-lock.json
       # Run inside web/: with --prefix, npm installs the repo root into web/node_modules.

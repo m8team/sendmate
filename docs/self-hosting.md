@@ -18,7 +18,7 @@ Cloudflare forks the repo into your GitHub account, creates the D1 database, ask
 
 ## By hand
 
-You'll need a Cloudflare account, Node 22+, a Resend account and a GitHub OAuth app.
+You'll need a Cloudflare account, Node 22.23.4 or newer (see `.node-version`), a Resend account and a GitHub OAuth app.
 
 ```sh
 git clone https://github.com/m8team/sendmate && cd sendmate
