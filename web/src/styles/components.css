@@ -137,7 +137,8 @@
   min-width: 100%;
 }
 .cb-body .hl-line {
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  /* 18%: at 22% the coral keyword colour fell just under 4.5:1 contrast in dark mode. */
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
   box-shadow: inset 3px 0 0 var(--accent);
   margin-inline: -1.1rem;
   padding-inline: 1.1rem;
