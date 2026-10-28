@@ -84,7 +84,7 @@ const headingId = `${id}-title`;
           {
             competitors.map((c) => (
               <li>
-                <strong>{c.name}:</strong>{' '}
+                <strong>{c.name}</strong>{c.checkedOnLabel && <> (checked <time datetime={c.checkedOn}>{c.checkedOnLabel}</time>)</>}:{' '}
                 {c.sources?.map((s, i) => (
                   <>
                     {i > 0 && ', '}
