@@ -60,6 +60,12 @@ export function pageSource(pathname: string, data: SitemapData): PageSource | nu
       return { files: [`${WEB}/pages/emails.astro`, 'web/public/emails/new-submission.html'] };
     case '/docs':
       return { files: [`${WEB}/pages/docs/index.astro`, `${WEB}/components/docs`] };
+    case '/form-to-email':
+      return { files: [`${WEB}/pages/form-to-email.astro`] };
+    case '/formspree-alternative':
+      return { files: [`${WEB}/pages/formspree-alternative.astro`, `${WEB}/config/vs.ts`, `${WEB}/config/compare.ts`] };
+    case '/guides':
+      return { files: [`${WEB}/pages/guides/index.astro`, `${WEB}/config/guides`] };
     case '/privacy':
     case '/terms': {
       const date = statedDate(data.legal[path.slice(1) as 'privacy' | 'terms']);
@@ -73,6 +79,10 @@ export function pageSource(pathname: string, data: SitemapData): PageSource | nu
     if (!file) return null;
     const sections = `${WEB}/components/docs/sections`;
     return { files: [`${WEB}/pages/docs/[id].astro`, `${sections}/${file}`, `${sections}/docsSections.ts`] };
+  }
+
+  if (/^\/guides\/[a-z0-9-]+$/.test(path)) {
+    return { files: [`${WEB}/pages/guides/[slug].astro`, `${WEB}/config/guides`] };
   }
 
   if (/^\/vs\/[a-z0-9-]+$/.test(path)) {

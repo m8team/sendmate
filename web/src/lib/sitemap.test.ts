@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import { docsSections } from '../components/docs/sections/docsSections';
 import { competitors } from '../config/compare';
+import { guides } from '../config/guides';
 import { createLastmod, docsSectionFiles, gitDates, isIndexable, pageSource, statedDate, type SitemapData } from './sitemap';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url));
@@ -30,7 +31,11 @@ function indexablePaths(): string[] {
     }
   };
   walk(pagesDir);
-  paths.push(...docsSections.map((s) => `/docs/${s.id}`), ...competitors.filter((c) => c.slug).map((c) => `/vs/${c.slug}`));
+  paths.push(
+    ...docsSections.map((s) => `/docs/${s.id}`),
+    ...competitors.filter((c) => c.slug).map((c) => `/vs/${c.slug}`),
+    ...guides.map((g) => `/guides/${g.slug}`),
+  );
   return paths.filter(isIndexable);
 }
 

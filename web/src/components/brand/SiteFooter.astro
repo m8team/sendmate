@@ -5,6 +5,7 @@ import Icon from '../ui/Icon.astro';
 import CopyButton from '../ui/CopyButton.astro';
 import { site } from '../../config/site';
 import { MONTHS } from '../../mocks';
+import { competitors } from '../../config/compare';
 
 const built = new Date();
 const day = `${String(built.getDate()).padStart(2, '0')} ${MONTHS[built.getMonth()].toUpperCase()}`;
@@ -21,6 +22,15 @@ const cols = [
       { href: '/docs/#byok', label: 'Bring your own Resend key' },
       { href: '/docs/formspree/', label: 'Moving from Formspree' },
       { href: '/llms.txt', label: 'Docs for AI assistants' },
+    ],
+  },
+  {
+    title: 'Compare & guides',
+    links: [
+      { href: '/form-to-email/', label: 'Form to email' },
+      { href: '/formspree-alternative/', label: 'Formspree alternative' },
+      ...competitors.map((c) => ({ href: `/vs/${c.slug}/`, label: `sendm8 vs ${c.name.replace(/ \(.*\)$/, '')}` })),
+      { href: '/guides/', label: 'Guides: static sites & chat apps' },
     ],
   },
   {

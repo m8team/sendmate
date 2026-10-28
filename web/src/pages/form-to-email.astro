@@ -1,0 +1,274 @@
+---
+/**
+ * /form-to-email: for people searching "form to email" and "html form email". A working form first,
+ * then how it works, spam, redirects, uploads and an FAQ (also published as FAQPage JSON-LD).
+ */
+import { LIMITS } from '@sendm8/shared';
+import Marketing from '../layouts/Marketing.astro';
+import CodeBlock from '../components/ui/CodeBlock.astro';
+import Callout from '../components/docs/Callout.astro';
+import Icon from '../components/ui/Icon.astro';
+import { fmt, limits, site } from '../config/site';
+
+const EMAIL = `${site.endpointBase}you@example.com`;
+
+const formCode = `
+<form action="${EMAIL}" method="POST">
+  <label>Your name <input name="name" required></label>
+  <label>Your email <input name="email" type="email" required></label>
+  <label>Message <textarea name="message" required></textarea></label>
+  <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+  <button>Send</button>
+</form>`;
+
+const redirectCode = `
+<input type="hidden" name="_next" value="https://yoursite.com/thanks.html">
+<input type="hidden" name="_subject" value="New enquiry from yoursite.com">`;
+
+const uploadCode = `
+<form action="${EMAIL}" method="POST" enctype="multipart/form-data">
+  <input name="email" type="email" required>
+  <input name="cv" type="file" accept=".pdf,.doc,.docx">
+  <button>Apply</button>
+</form>`;
+
+const fetchCode = `
+<script src="${site.url}/s/v1.js" defer></script>
+<form action="${EMAIL}" method="POST"
+      data-sendm8 data-sendm8-success="Thanks! I’ll reply soon.">
+  …
+</form>`;
+
+const faq = [
+  {
+    q: 'How do I make an HTML form send an email?',
+    a: 'Set the form’s action to a form backend URL that includes your email address, such as https://sendm8.com/f/you@example.com, and its method to POST. The backend receives each submission and emails it to you. No server code is needed.',
+  },
+  {
+    q: 'Is it really free?',
+    a: `Yes. There’s no paid plan. A form made with your email in the URL keeps up to ${fmt.n(LIMITS.submissionsPerUnclaimedFormPerMonth)} submissions a month; sign in and each form keeps ${fmt.n(limits.submissionsPerFormPerMonth)} a month, on up to ${fmt.n(limits.forms)} forms. sendm8 is open source, so you can also run your own copy.`,
+  },
+  {
+    q: 'Do I need to sign up?',
+    a: 'No. Put your address in the URL and confirm it once by clicking the link in the first email. Sign in later only if you want the dashboard, Discord, Slack, Telegram or webhooks.',
+  },
+  {
+    q: 'Why not use a mailto: link as the action?',
+    a: 'A mailto: action opens the visitor’s own email app rather than sending anything, so it fails for anyone without one set up and gives you no spam filtering. A form backend works in every browser.',
+  },
+  {
+    q: 'Will my email address be visible in the page source?',
+    a: 'Yes, with the email-in-the-URL endpoint. If you’d rather keep it private, sign in, create a form in the dashboard and use its id in the URL instead.',
+  },
+  {
+    q: 'Can people reply to the visitor directly?',
+    a: 'Yes. If the form has an email or _replyto field, it becomes the Reply-To of the notification, so hitting reply answers the person who wrote in.',
+  },
+];
+
+const faqLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+};
+---
+
+<Marketing
+  title="Form to email: send an HTML form to your inbox, free"
+  description="Make any HTML form email you its submissions. Copy a working form, change one address, done. No server, no PHP, no signup. Free and open source."
+>
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(faqLd)} />
+
+  <article class="wrap fte">
+    <header>
+      <p class="label label-lg muted">Form to email</p>
+      <h1 class="fte-h1">Send an HTML form to your email.</h1>
+      <p class="lede">
+        Copy this form, change <code>you@example.com</code> to your address, and put it on any page. Every submission is emailed to you, with spam filtered out. No
+        server, no PHP, no JavaScript and no account.
+      </p>
+    </header>
+
+    <CodeBlock code={formCode} lang="html" filename="contact.html" highlight={[1]} class="fte-code" />
+
+    <div class="fte-cta">
+      <a class="btn btn-signal btn-lg" href="/app/onboarding">Or make a form in the dashboard <Icon name="arrow-right" /></a>
+      <a class="btn btn-ghost btn-lg" href="/docs/basic-form/">Read the docs</a>
+    </div>
+
+    <div class="fte-body">
+      <h2 class="fte-h2">How it works</h2>
+      <ol class="prose fte-steps">
+        <li><strong>The form posts to sendm8.</strong> A browser can’t send email on its own, so the form sends its fields to your endpoint instead, as a normal form post.</li>
+        <li>
+          <strong>You confirm your address once.</strong> The first submission is stored, and we send one confirmation link to the address in the URL. Click it and that
+          message, plus anything that arrived meanwhile, is delivered. We never send more than one confirmation every {limits.confirmationCooldownHours} hours, so nobody
+          can use sendm8 to flood someone else’s inbox.
+        </li>
+        <li>
+          <strong>Every submission after that is emailed to you.</strong> It comes from <code>notify@sendm8.com</code>, with each field listed under the name you gave it,
+          and the visitor’s address as Reply-To.
+        </li>
+        <li><strong>The visitor sees a thank-you page,</strong> or your own one (below).</li>
+      </ol>
+      <div class="prose">
+        <p>
+          Every field with a <code>name</code> is included, so add phone numbers, dropdowns and checkboxes as you like. A submission can have up to {limits.fieldsPerSubmission}
+          fields. Keep your own HTML and CSS: sendm8 doesn’t add anything to your page.
+        </p>
+      </div>
+
+      <h2 class="fte-h2">Spam protection</h2>
+      <div class="prose">
+        <p>A contact form on a public page gets found by bots. Every submission goes through several checks before it reaches you:</p>
+        <ul>
+          <li>The hidden <code>_gotcha</code> honeypot in the form above, which people never see and bots fill in.</li>
+          <li>Rate limits: {limits.ratePerIpPerMinute} submissions a minute per visitor.</li>
+          <li>Checks for link-stuffing, known spam phrases, throwaway email domains and keyboard-mash gibberish.</li>
+          <li>A small AI model that scores the message itself.</li>
+          <li>Optionally, a Cloudflare Turnstile challenge for borderline submissions, turned on in the dashboard.</li>
+        </ul>
+        <p>
+          Anything flagged goes to a spam folder instead of your inbox, and it’s deleted after {limits.spamRetentionDays} days. Nothing disappears silently: you get at most
+          one email a week if something was caught.
+        </p>
+      </div>
+
+      <h2 class="fte-h2">Redirect after submit</h2>
+      <div class="prose">
+        <p>
+          To send visitors to your own thank-you page, add a hidden <code>_next</code> field with its full address. A page on the same site works straight away; for a
+          different domain, sign in and add it to the form’s allowed domains, so nobody can use your form as an open redirect.
+        </p>
+      </div>
+      <CodeBlock code={redirectCode} lang="html" filename="contact.html" />
+      <div class="prose">
+        <p>
+          <code>_subject</code> sets the subject line of the email you receive. Want to stay on the page instead? Add the helper script and a
+          <code>data-sendm8</code> attribute, and the form sends in the background and shows your message:
+        </p>
+      </div>
+      <CodeBlock code={fetchCode} lang="html" filename="contact.html" highlight={[1, 3]} />
+
+      <h2 class="fte-h2">File uploads</h2>
+      <div class="prose">
+        <p>
+          Add <code>enctype="multipart/form-data"</code> and use normal file inputs. Each file can be up to {limits.fileUploadMb} MB, with {limits.submissionUploadMb} MB
+          and {LIMITS.maxFilesPerSubmission} files per submission. Files are kept with the submission and your email links to them, rather than attaching them.
+        </p>
+      </div>
+      <CodeBlock code={uploadCode} lang="html" filename="apply.html" highlight={[1]} />
+
+      <Callout title="Want it somewhere other than email?" kind="accent" icon="zap">
+        <p>
+          Sign in with the same address and your form moves into a dashboard: an inbox with search and export, and delivery to
+          <a href="/guides/html-form-to-discord/">Discord</a>, <a href="/guides/html-form-to-slack/">Slack</a>,
+          <a href="/guides/html-form-to-telegram/">Telegram</a> or a <a href="/guides/html-form-to-webhook/">webhook</a>.
+        </p>
+      </Callout>
+
+      <h2 class="fte-h2">On your platform</h2>
+      <div class="prose">
+        <p>
+          The form above works anywhere HTML does. For the details of a particular site builder, see the guides for
+          <a href="/guides/github-pages-contact-form/">GitHub Pages</a>, <a href="/guides/astro-contact-form/">Astro</a>,
+          <a href="/guides/hugo-contact-form/">Hugo</a>, <a href="/guides/jekyll-contact-form/">Jekyll</a>,
+          <a href="/guides/eleventy-contact-form/">Eleventy</a> and <a href="/guides/nextjs-static-export-contact-form/">Next.js static export</a>. Moving from another
+          service? Compare sendm8 with <a href="/vs/formspree/">Formspree</a>, <a href="/vs/web3forms/">Web3Forms</a>,
+          <a href="/vs/formsubmit/">FormSubmit</a> and <a href="/vs/getform/">Getform</a>.
+        </p>
+      </div>
+
+      <section aria-labelledby="fte-faq">
+        <h2 id="fte-faq" class="fte-h2">Questions</h2>
+        <dl class="faq">
+          {
+            faq.map((f) => (
+              <div class="faq-item">
+                <dt class="faq-q">{f.q}</dt>
+                <dd class="faq-a">{f.a}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </section>
+    </div>
+  </article>
+</Marketing>
+
+<style>
+  .fte {
+    padding-block: clamp(2.5rem, 6vw, 5rem);
+  }
+  .fte-h1 {
+    margin-top: var(--s-3);
+    max-width: 16ch;
+    font-family: var(--font-display);
+    font-stretch: 64%;
+    font-weight: 900;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    line-height: 0.9;
+  }
+  .lede {
+    margin-top: var(--s-5);
+    max-width: 62ch;
+    font-size: var(--fs-lg);
+    line-height: 1.5;
+    color: var(--fg-muted);
+  }
+  :global(.fte-code) {
+    margin-top: var(--s-6);
+    max-width: 78ch;
+  }
+  .fte-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-5);
+  }
+  .fte-body {
+    display: grid;
+    gap: var(--s-4);
+    max-width: 78ch;
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+    padding-top: var(--s-5);
+    border-top: var(--bw-heavy) solid var(--line-strong);
+  }
+  .fte-body > :global(*) {
+    min-width: 0;
+  }
+  .fte-h2 {
+    margin-top: var(--s-5);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 850;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+  .fte-steps li + li {
+    margin-top: var(--s-3);
+  }
+  .faq {
+    margin-top: var(--s-4);
+    border-top: 1px solid var(--line);
+  }
+  .faq-item {
+    padding-block: var(--s-4);
+    border-bottom: 1px dashed var(--line);
+  }
+  .faq-q {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: 1.1rem;
+  }
+  .faq-a {
+    margin-top: var(--s-2);
+    color: var(--fg-muted);
+    line-height: 1.6;
+  }
+  @media (max-width: 520px) {
+    .fte-cta .btn {
+      flex: 1 1 100%;
+    }
+  }
+</style>

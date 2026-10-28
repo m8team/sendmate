@@ -1,0 +1,256 @@
+---
+/**
+ * /formspree-alternative: for people searching for one. The Formspree facts and the switching code come
+ * from config/compare.ts and config/vs.ts, so they can't drift from /vs/formspree.
+ */
+import { LIMITS } from '@sendm8/shared';
+import Marketing from '../layouts/Marketing.astro';
+import Compare from '../components/home/Compare.astro';
+import CodeBlock from '../components/ui/CodeBlock.astro';
+import Icon from '../components/ui/Icon.astro';
+import { competitors, fairPoints } from '../config/compare';
+import { vsFor } from '../config/vs';
+import { fmt, limits, site } from '../config/site';
+
+const formspree = competitors.find((c) => c.slug === 'formspree')!;
+const vs = vsFor('formspree')!;
+const perForm = fmt.n(limits.submissionsPerFormPerMonth);
+
+/** Other options, each fact from that service's own pricing page (sources in compare.ts, plus Basin below). */
+const others = [
+  { name: 'FormSubmit', href: '/vs/formsubmit/', what: 'No account and no stated submission cap: your email in the URL. No dashboard; history is API-only for 30 days.' },
+  { name: 'Web3Forms', href: '/vs/web3forms/', what: 'An access key by email instead of an account. Webhooks, chat apps and file uploads are on paid plans.' },
+  { name: 'Getform (now Forminit)', href: '/vs/getform/', what: 'One form and 100 submissions a month free, with file uploads and an unlimited archive. Integrations and export on Pro.' },
+  {
+    name: 'Basin',
+    href: 'https://usebasin.com/pricing',
+    external: true,
+    what: 'One form and 50 submissions a month free, with 30-day retention. Redirects, export and integrations on paid plans.',
+  },
+];
+const basinCheckedOn = '28 Oct 2026';
+
+const faq = [
+  {
+    q: 'What is the best free alternative to Formspree?',
+    a: `It depends on what you need. sendm8 keeps ${perForm} submissions a month per form, includes webhooks, Discord, Slack and Telegram, and is open source. FormSubmit has no stated cap but no dashboard. Web3Forms and Forminit keep integrations for paid plans.`,
+  },
+  {
+    q: 'Is there a Formspree alternative that doesn’t need an account?',
+    a: `Yes. sendm8 and FormSubmit both work with your email address in the form’s URL: confirm once by email and submissions arrive. A no-account sendm8 endpoint keeps ${fmt.n(LIMITS.submissionsPerUnclaimedFormPerMonth)} submissions a month.`,
+  },
+  {
+    q: 'Is there an open-source Formspree alternative I can self-host?',
+    a: `sendm8 is open source under ${site.license} and runs on Cloudflare Workers, D1 and R2. The same code runs sendm8.com, and the repository has self-hosting instructions.`,
+  },
+  {
+    q: 'How hard is it to move from Formspree?',
+    a: 'For most forms you change the action URL. Rename a subject field to _subject, add _next for a thank-you redirect, and swap @formspree/react for @sendm8/react if you use React.',
+  },
+];
+const faqLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+};
+---
+
+<Marketing
+  title="A free, open-source Formspree alternative"
+  description={`Looking for a Formspree alternative? sendm8 is free and open source: no signup, ${perForm} submissions a month per form, uploads, redirects, webhooks and Slack.`}
+>
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(faqLd)} />
+
+  <section class="wrap fa-hero">
+    <p class="label label-lg muted">Formspree alternative</p>
+    <h1 class="fa-h1">A free, open-source Formspree alternative.</h1>
+    <p class="lede">
+      Formspree is a solid service, but its free plan keeps 50 submissions a month, needs an account, and saves redirects, file uploads and webhooks for paid plans.
+      sendm8 is a free, open-source form backend that does all of that at no cost, and you can switch by changing one URL.
+    </p>
+    <div class="fa-cta">
+      <a class="btn btn-signal btn-lg" href="/app/onboarding">Get your endpoint <Icon name="arrow-right" /></a>
+      <a class="btn btn-ghost btn-lg" href="#switch">How to switch</a>
+    </div>
+  </section>
+
+  <Compare
+    id="table"
+    bayNo="01"
+    kicker="sendm8 vs Formspree"
+    titleMain="Free plan,"
+    titleSub="side by side."
+    competitors={[formspree]}
+    fairPoints={fairPoints.filter((p) => p.who === 'Formspree')}
+  />
+
+  <section class="wrap fa-sec" id="switch" aria-labelledby="fa-switch">
+    <p class="bay label label-lg"><span class="bay-no">02</span> Switching</p>
+    <h2 id="fa-switch" class="h2">One line, usually.</h2>
+    <p class="fa-p">{vs.switching.intro}</p>
+    <div class="fa-code">
+      <CodeBlock {...vs.switching.before} />
+      <CodeBlock {...vs.switching.after} />
+    </div>
+    <ul class="fa-list" role="list">
+      {vs.switching.notes.map((n) => <li set:html={n} />)}
+    </ul>
+    <p class="fa-p"><a class="link-signal" href="/docs/formspree/">The full Formspree migration guide, including a prompt for AI assistants →</a></p>
+  </section>
+
+  <section class="wrap fa-sec" aria-labelledby="fa-others">
+    <p class="bay label label-lg"><span class="bay-no">03</span> Other options</p>
+    <h2 id="fa-others" class="h2">Not sold on us? Fair enough.</h2>
+    <p class="fa-p">Other free Formspree alternatives, described from their own pricing pages:</p>
+    <dl class="fa-others">
+      {
+        others.map((o) => (
+          <div>
+            <dt>
+              <a class="link-signal" href={o.href} {...(o.external ? { rel: 'noopener', target: '_blank' } : {})}>
+                {o.name}
+              </a>
+            </dt>
+            <dd>{o.what}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p class="label muted fa-checked">
+      Checked {basinCheckedOn}. Sources for each are linked on its comparison page; Basin’s is its <a href="https://usebasin.com/pricing" rel="noopener">pricing page</a>.
+    </p>
+    <p class="fa-p">Pick Formspree itself if…</p>
+    <ul class="fa-list" role="list">
+      {vs.pickThemIf.map((p) => <li>{p}</li>)}
+    </ul>
+  </section>
+
+  <section class="wrap fa-sec fa-last" aria-labelledby="fa-faq">
+    <p class="bay label label-lg"><span class="bay-no">04</span> Questions</p>
+    <h2 id="fa-faq" class="h2">Before you switch.</h2>
+    <dl class="faq">
+      {
+        faq.map((f) => (
+          <div class="faq-item">
+            <dt class="faq-q">{f.q}</dt>
+            <dd class="faq-a">{f.a}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+</Marketing>
+
+<style>
+  .fa-hero {
+    padding-top: clamp(2.5rem, 6vw, 5rem);
+  }
+  .fa-h1 {
+    margin-top: var(--s-3);
+    max-width: 18ch;
+    font-family: var(--font-display);
+    font-stretch: 64%;
+    font-weight: 900;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    line-height: 0.9;
+  }
+  .lede {
+    margin-top: var(--s-5);
+    max-width: 62ch;
+    font-size: var(--fs-lg);
+    line-height: 1.5;
+    color: var(--fg-muted);
+  }
+  .fa-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-5);
+  }
+  .fa-sec {
+    padding-top: clamp(3rem, 6vw, 5rem);
+  }
+  .fa-last {
+    padding-bottom: clamp(3rem, 6vw, 5rem);
+  }
+  .h2 {
+    margin-top: var(--s-3);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 850;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+  }
+  .fa-p {
+    margin-top: var(--s-4);
+    max-width: 62ch;
+    font-size: var(--fs-md);
+  }
+  .fa-code {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-4);
+    margin-top: var(--s-5);
+  }
+  .fa-code > :global(*) {
+    min-width: 0;
+  }
+  .fa-list {
+    display: grid;
+    gap: var(--s-3);
+    max-width: 70ch;
+    margin-top: var(--s-4);
+    padding-left: 1.2rem;
+    list-style: square;
+    line-height: 1.6;
+  }
+  .fa-others {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: var(--s-5);
+    margin-top: var(--s-5);
+  }
+  .fa-others dt {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: 1.1rem;
+  }
+  .fa-others dd {
+    margin-top: var(--s-2);
+    color: var(--fg-muted);
+    line-height: 1.55;
+  }
+  .fa-checked {
+    margin-top: var(--s-4);
+  }
+  .faq {
+    margin-top: var(--s-5);
+    max-width: 70ch;
+    border-top: 1px solid var(--line);
+  }
+  .faq-item {
+    padding-block: var(--s-4);
+    border-bottom: 1px dashed var(--line);
+  }
+  .faq-q {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-semi);
+    font-weight: 800;
+    font-size: 1.1rem;
+  }
+  .faq-a {
+    margin-top: var(--s-2);
+    color: var(--fg-muted);
+    line-height: 1.6;
+  }
+  @media (max-width: 860px) {
+    .fa-code {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 520px) {
+    .fa-cta .btn {
+      flex: 1 1 100%;
+    }
+  }
+</style>

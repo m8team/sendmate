@@ -24,6 +24,18 @@ export interface ChangelogEntry {
 // Newest first. Entries sharing a date are ordered newest-first within that day too.
 export const changelog: ChangelogEntry[] = [
   {
+    slug: 'guides-and-comparisons',
+    date: '2026-10-28',
+    title: 'Guides for static sites, and honest comparisons',
+    tags: ['Docs'],
+    summary:
+      'Step-by-step guides for GitHub Pages, Astro, Hugo, Jekyll, Eleventy, Next.js and plain HTML, sending forms to Discord, Slack, Telegram and webhooks, and re-checked comparisons with Formspree, Web3Forms, FormSubmit and Getform.',
+    body: [
+      'There’s a <a href="/guides/">guide</a> for each common static-site setup, each starting with a form you can paste in and test, plus guides to sending submissions to <a href="/guides/html-form-to-discord/">Discord</a>, <a href="/guides/html-form-to-slack/">Slack</a>, <a href="/guides/html-form-to-telegram/">Telegram</a> and <a href="/guides/html-form-to-webhook/">your own webhook</a>. <a href="/form-to-email/">Form to email</a> covers the basics on one page.',
+      'The comparison pages were re-checked against each service’s own pricing and docs, and now show the date they were checked. Getform, which renamed itself Forminit in January, has a <a href="/vs/getform/">page of its own</a>. Each page also says when you’d be better off with the other service, and shows how to switch with before-and-after code.',
+    ],
+  },
+  {
     slug: 'social-cards-sitemap-and-docs-pages',
     date: '2026-09-16',
     title: 'Social cards, a sitemap, and docs that stand on their own',
