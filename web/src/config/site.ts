@@ -12,7 +12,7 @@ export const site = {
   endpointBase: 'https://sendm8.com/f/',
   tagline: "Your form's got mail.",
   description:
-    'sendm8 is a free, open-source form backend. Point any HTML form at a URL and get the submissions by email, Discord, Slack, Telegram or webhook. No server, no signup required.',
+    'sendm8 is a free, open-source form backend. Point any HTML form at a URL and get submissions by email, Discord, Slack, Telegram or webhook. No signup needed.',
   repo: 'https://github.com/m8team/sendmate',
   repoShort: 'github.com/m8team/sendmate',
   deployUrl: 'https://deploy.workers.cloudflare.com/?url=https://github.com/m8team/sendmate',

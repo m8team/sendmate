@@ -10,6 +10,8 @@ interface Props {
 }
 const { id, no, title, kicker } = Astro.props;
 const num = String(no).padStart(2, '0');
+// On the section's own page (/docs/<id>/) this is the page heading; on the combined /docs page it's one of many.
+const Tag = Astro.url.pathname.replace(/\/+$/, '') === `/docs/${id}` ? 'h1' : 'h2';
 ---
 
 <header class="dh">
@@ -18,9 +20,9 @@ const num = String(no).padStart(2, '0');
     {kicker && <span class="dh-sep" aria-hidden="true">·</span>}
     {kicker && <span>{kicker}</span>}
   </p>
-  <h2 class="dh-title" id={`${id}-title`}>
+  <Tag class="dh-title" id={`${id}-title`}>
     <a class="dh-anchor" href={`#${id}`} aria-label={`Link to “${title}”`}>#</a>{title}
-  </h2>
+  </Tag>
 </header>
 
 <style>

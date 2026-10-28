@@ -32,11 +32,12 @@ const softwareLd = {
     <div slot="headline">
       <p class="hero-kicker">
         <span class="priority">Free for real</span>
-        <span class="label label-lg">Form backend · Open source · No server</span>
+        <span class="label label-lg">No server · No signup</span>
       </p>
       <h1 class="hero-h1">
         <span class="hero-line">Your form’s</span>
         <span class="hero-line">got <em>mail.</em></span>
+        <span class="hero-sub">The free, open-source form backend</span>
       </h1>
     </div>
     <div slot="intro" class="hero">
@@ -86,6 +87,18 @@ const softwareLd = {
   .hero-line {
     display: block;
     white-space: nowrap;
+  }
+  .hero-sub {
+    display: block;
+    margin-top: var(--s-4);
+    font-family: var(--font-mono, monospace);
+    font-stretch: normal;
+    font-weight: 600;
+    font-size: var(--fs-md);
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
   }
   .hero-h1 em {
     font-style: normal;

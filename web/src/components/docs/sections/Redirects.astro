@@ -29,10 +29,10 @@ const nextCode = `
 
   <CodeBlock code={nextCode} lang="html" filename="contact.html" highlight={[2]} class="wide" />
 
-  <Callout title="Redirects must be on an allowed domain" kind="signal" icon="lock">
+  <Callout title="Redirects stay on your own sites" kind="signal" icon="lock">
     <p>
-      <code>_next</code> only works for addresses on one of the form’s allowed domains (<strong>Form settings → General → Allowed domains</strong>). If it
-      points anywhere else, we ignore it and show the default thank-you page. This stops a sendm8 form being used as an open redirect to send people to a
+      <code>_next</code> only works for a page on the same site the form was sent from or, once the form has allowed domains (<strong>Form settings → General →
+      Allowed domains</strong>), on one of those. If it points anywhere else, we ignore it and show the default thank-you page. This stops a sendm8 form being used as an open redirect to send people to a
       phishing site.
     </p>
   </Callout>

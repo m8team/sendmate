@@ -63,7 +63,15 @@
   padding-left: 0.35rem;
 }
 .cb-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--fg-muted);
+}
+/* A long filename shrinks; the copy button never gets pushed off a phone screen. */
+.cb-head > .copy-btn {
+  flex: none;
 }
 .cb-tablist {
   display: flex;

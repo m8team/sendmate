@@ -56,10 +56,13 @@ const { class: className, withLabel = false } = Astro.props;
   document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-      document.documentElement.dataset.theme = next;
       try {
         localStorage.setItem('sendm8-theme', next);
       } catch {}
+      // Base.astro's apply() sets the theme and the matching theme-color. It reads the stored choice,
+      // so if storage is blocked, set the theme directly instead.
+      (window as unknown as { __sendm8Theme?: () => void }).__sendm8Theme?.();
+      if (document.documentElement.dataset.theme !== next) document.documentElement.dataset.theme = next;
       sync();
     });
   });

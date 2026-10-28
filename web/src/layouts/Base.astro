@@ -62,8 +62,8 @@ const entityLd = {
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImage} />
-    <meta name="theme-color" content="#f2ede2" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#16140f" media="(prefers-color-scheme: dark)" />
+    <!-- One theme-color, kept in step with the page theme by the script below (SEO audits flag two). -->
+    <meta name="theme-color" content="#f2ede2" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
     <link rel="icon" href="/favicon-16x16.png" sizes="16x16" type="image/png" />
@@ -90,6 +90,8 @@ const entityLd = {
         function apply() {
           var t = stored();
           root.dataset.theme = t === 'dark' || (t !== 'light' && mq.matches) ? 'dark' : 'light';
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', root.dataset.theme === 'dark' ? '#16140f' : '#f2ede2');
         }
         apply();
         mq.addEventListener('change', function () {
