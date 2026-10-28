@@ -1,0 +1,18 @@
+name: sendm8
+
+# docker compose -f docker/compose.yml up -d
+# Put your settings in docker/sendm8.env (see docs/self-hosting.md#docker). Put a reverse proxy with TLS
+# (Caddy, Traefik, nginx) in front and set TRUST_PROXY=1, so rate limits see real visitor addresses.
+services:
+  sendm8:
+    build: ..
+    image: sendm8
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8787:8787"
+    env_file: sendm8.env
+    volumes:
+      - sendm8-data:/data
+
+volumes:
+  sendm8-data:

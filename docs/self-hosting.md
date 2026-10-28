@@ -56,6 +56,50 @@ You don't need the database id in `wrangler.jsonc`. Later deploys reuse the data
 
 sendm8.com itself deploys with `npm run deploy:sendm8`, which does the same thing with `--domain sendm8.com`.
 
+## Docker
+
+Prefer your own server to a Cloudflare account? The same Worker runs in a container, in [workerd](https://github.com/cloudflare/workerd) (Cloudflare's open-source runtime), with the database and uploaded files kept on a volume at `/data`.
+
+```sh
+cp .dev.vars.example docker/sendm8.env   # fill it in: see below
+docker compose -f docker/compose.yml up -d --build
+```
+
+Or without Compose:
+
+```sh
+docker build -t sendm8 .
+docker run -d --name sendm8 -p 127.0.0.1:8787:8787 -v sendm8-data:/data --env-file docker/sendm8.env sendm8
+```
+
+**Settings.** Use the same names as [Settings and secrets](#settings-and-secrets), as environment variables. `APP_URL`, `BETTER_AUTH_SECRET`, `IP_HASH_SECRET` and `ENCRYPTION_KEY` are required: the container won't start without them. Set `APP_URL` to the public address, such as `https://forms.example.com`. For email you still need Resend (`RESEND_API_KEY` and an `EMAIL_FROM` on a domain you've verified there), and for sign-in a GitHub or Google OAuth app with the callback `{APP_URL}/api/auth/callback/github` (or `/google`). `docker/*.env` is git-ignored and kept out of the image.
+
+**Put HTTPS in front.** The container speaks plain HTTP on port 8787. Run it behind a reverse proxy such as Caddy, Traefik or nginx, and set `TRUST_PROXY=1` so sendm8 reads the visitor's address from `X-Forwarded-For`. Rate limits and spam checks are per visitor, so without it every visitor looks like your proxy. Only set it when the container can't be reached except through that proxy.
+
+**What's different from Cloudflare:**
+
+- **No AI spam check.** Workers AI only runs on Cloudflare, so the Docker build leaves it out. The honeypot, rate limits, spam heuristics and [Turnstile](#settings-and-secrets) all still work.
+- **One container only.** The database is a SQLite file on the volume and rate limits are counted in memory, so don't run several copies against the same data.
+- **Scheduled jobs run on a timer** inside the container (retries every 5 minutes, digests, usage checks and cleanup hourly), on the same schedule as `triggers.crons` in `wrangler.jsonc`.
+- **It runs through Wrangler's local mode**, the same runtime Cloudflare uses, started by `docker/server.mjs`. That suits personal and small-team use. For a busy public instance, Cloudflare is the better home.
+
+**Updating.** Pull, rebuild and restart. Migrations run each time the container starts.
+
+```sh
+git pull
+docker compose -f docker/compose.yml up -d --build
+```
+
+**Backups.** Everything is in the `/data` volume. Stop the container for a moment so the database is consistent, then archive the volume:
+
+```sh
+docker compose -f docker/compose.yml stop
+docker run --rm -v sendm8_sendm8-data:/data -v "$PWD":/backup busybox tar czf /backup/sendm8-data.tgz /data
+docker compose -f docker/compose.yml start
+```
+
+(Compose prefixes the volume with the project name, `sendm8_` here. Check with `docker volume ls`.)
+
 ## File uploads (R2)
 
 File uploads are on in [`wrangler.jsonc`](../wrangler.jsonc), and the `sendm8-files` bucket is created on the first deploy. R2 needs a payment method on your Cloudflare account, although the free tier covers 10 GB and sendm8 enforces caps below that (`packages/shared/src/limits.ts`).
