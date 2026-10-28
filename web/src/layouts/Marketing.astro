@@ -5,13 +5,14 @@ import SiteFooter from '../components/brand/SiteFooter.astro';
 
 interface Props {
   title?: string;
+  bareTitle?: boolean;
   description?: string;
   noindex?: boolean;
 }
-const { title, description, noindex = false } = Astro.props;
+const { title, bareTitle = false, description, noindex = false } = Astro.props;
 ---
 
-<Base title={title} description={description} noindex={noindex}>
+<Base title={title} bareTitle={bareTitle} description={description} noindex={noindex}>
   <slot name="head" slot="head" />
   <SiteHeader />
   <main id="main" tabindex="-1">

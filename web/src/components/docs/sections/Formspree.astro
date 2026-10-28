@@ -91,8 +91,13 @@ Endpoint mapping (Formspree → sendm8):
 <DocsSection id="formspree" kicker="Bring your forms">
   <div class="prose">
     <p>
-      sendm8 reads the same field names as Formspree, so a plain HTML form moves with a one-line change: the <code>action</code> URL. Code that sends
-      forms with JavaScript needs a small change to how it reads errors.
+      sendm8 reads Formspree’s usual field names (<code>email</code>, <code>_replyto</code>, <code>_gotcha</code> and friends), so a plain HTML form
+      usually moves with a one-line change: the <code>action</code> URL. If yours sets the subject with a plain <code>subject</code> field, rename it
+      <code>_subject</code>. Code that sends forms with JavaScript needs a small change to how it reads errors.
+    </p>
+    <p>
+      Still deciding? <a href="/vs/formspree/">sendm8 vs Formspree</a> compares the free plans side by side, and
+      <a href="/formspree-alternative/">Formspree alternatives</a> covers the other options too.
     </p>
   </div>
 

@@ -259,7 +259,7 @@ const endpoint = "${EMAIL}";
     kind: 'platform',
     name: 'Eleventy',
     h1: 'Contact form for an Eleventy (11ty) site',
-    title: 'Eleventy (11ty) contact form, no serverless function',
+    title: 'Eleventy (11ty) contact form without a function',
     description: 'Add a contact form to an Eleventy site with a reusable include and global data. Submissions are emailed to you, with no serverless function or signup.',
     intro: 'Eleventy outputs static HTML, so a form needs a backend to post to. Rather than writing a serverless function, point the form at sendm8: put the endpoint in global data, the form in an include, and use it on any page.',
     blocks: [
@@ -306,7 +306,7 @@ const endpoint = "${EMAIL}";
     kind: 'platform',
     name: 'Next.js static export',
     h1: 'Contact form for a Next.js static export',
-    title: 'Next.js static export contact form (output: export)',
+    title: 'Contact form for a Next.js static export',
     description: 'With output: "export", Next.js has no API routes or Server Actions. Add a contact form that posts to sendm8 instead: plain HTML or a client component.',
     intro: 'Set output: "export" and Next.js builds plain files, which means no API routes and no Server Actions to handle a form. Post the form to sendm8 instead. It works as a plain HTML form, or as a client component that shows its own success message.',
     blocks: [

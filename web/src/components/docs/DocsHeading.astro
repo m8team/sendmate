@@ -20,9 +20,11 @@ const Tag = Astro.url.pathname.replace(/\/+$/, '') === `/docs/${id}` ? 'h1' : 'h
     {kicker && <span class="dh-sep" aria-hidden="true">·</span>}
     {kicker && <span>{kicker}</span>}
   </p>
-  <Tag class="dh-title" id={`${id}-title`}>
-    <a class="dh-anchor" href={`#${id}`} aria-label={`Link to “${title}”`}>#</a>{title}
-  </Tag>
+  <div class="dh-row">
+    <!-- The anchor sits beside the heading, not inside it, so the heading's text is just the title. -->
+    <a class="dh-anchor" href={`#${id}`} aria-label={`Link to “${title}”`}>#</a>
+    <Tag class="dh-title" id={`${id}-title`}>{title}</Tag>
+  </div>
 </header>
 
 <style>
@@ -41,13 +43,17 @@ const Tag = Astro.url.pathname.replace(/\/+$/, '') === `/docs/${id}` ? 'h1' : 'h
     color: var(--signal-text);
     font-weight: 600;
   }
-  .dh-title {
+  /* The row carries the size, so the anchor's 0.55em is still relative to the title. */
+  .dh-row {
     position: relative;
     margin-top: var(--s-3);
+    font-size: clamp(2.3rem, 4.2vw, 3.6rem);
+  }
+  .dh-title {
     font-family: var(--font-display);
     font-stretch: var(--stretch-condensed);
     font-weight: 900;
-    font-size: clamp(2.3rem, 4.2vw, 3.6rem);
+    font-size: 1em;
     line-height: 0.92;
     letter-spacing: -0.005em;
   }
@@ -66,7 +72,7 @@ const Tag = Astro.url.pathname.replace(/\/+$/, '') === `/docs/${id}` ? 'h1' : 'h
     opacity: 0;
     transition: opacity var(--dur-1);
   }
-  .dh-title:hover .dh-anchor,
+  .dh-row:hover .dh-anchor,
   .dh-anchor:focus-visible {
     opacity: 1;
   }
@@ -74,11 +80,15 @@ const Tag = Astro.url.pathname.replace(/\/+$/, '') === `/docs/${id}` ? 'h1' : 'h
     color: var(--signal-text);
   }
   @media (max-width: 1240px) {
+    .dh-row {
+      display: flex;
+      align-items: flex-start;
+    }
     .dh-anchor {
       position: static;
+      flex: none;
       opacity: 1;
       padding-right: 0.3rem;
-      vertical-align: 0.35em;
     }
   }
 </style>

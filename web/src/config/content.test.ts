@@ -31,6 +31,8 @@ describe('/vs pages', () => {
   for (const c of competitors) {
     const v = vsFor(c.slug!)!;
     it(`${c.name}: is complete and honest about when to pick them`, () => {
+      // The page title is `sendm8 vs <name>: free, open-source alternative`, with no suffix.
+      expect(`sendm8 vs ${c.name}: free, open-source alternative`.length).toBeLessThanOrEqual(60);
       expect(v.description.length).toBeGreaterThanOrEqual(120);
       expect(v.description.length).toBeLessThanOrEqual(160);
       expect(v.highlights).toHaveLength(3);
@@ -54,6 +56,10 @@ describe('guides', () => {
   });
 
   for (const g of guides) {
+    it(`${g.slug}: has a title that fits in search results`, () => {
+      expect(`${g.title} · sendm8`.length).toBeLessThanOrEqual(60);
+    });
+
     it(`${g.slug}: is 400–800 words with a sound description`, () => {
       const words = guideWordCount(g);
       expect(words).toBeGreaterThanOrEqual(400);

@@ -38,6 +38,8 @@ export interface VsContent {
     cta: { label: string; href: string };
   };
   faq: VsFaq[];
+  /** In-body links to pages on the same topic, so they read as related rather than competing. */
+  related?: { label: string; href: string }[];
 }
 
 const perForm = fmt.n(limits.submissionsPerFormPerMonth);
@@ -76,6 +78,7 @@ export const vsContent: VsContent[] = [
       ],
       cta: { label: 'Read the full Formspree migration guide', href: '/docs/formspree/' },
     },
+    related: [{ label: 'Weighing up other Formspree alternatives too? See the overview', href: '/formspree-alternative/' }],
     faq: [
       { q: 'Is sendm8 free forever, or is there a paid plan I’ll eventually need?', a: `There’s no paid plan. Every account gets ${perForm} submissions a month per form on up to ${forms} forms. If you outgrow that, the code is open source and you can run your own copy.` },
       { q: 'Will switching from Formspree break my existing form fields?', a: 'Usually not. Your own field names are kept as they are, and email and _gotcha work the same way. Rename a subject field to _subject, and add _next if you used a thank-you redirect.' },

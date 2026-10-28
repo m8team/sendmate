@@ -21,7 +21,7 @@ const competitor = competitors.find((c) => c.slug === slug)!;
 const content = vsFor(slug)!;
 const others = competitors.filter((c) => c.slug !== slug);
 
-const title = `sendm8 vs ${competitor.name}: a free, open-source alternative`;
+const title = `sendm8 vs ${competitor.name}: free, open-source alternative`;
 const h1Name = competitor.name;
 const description = content.description;
 
@@ -45,7 +45,7 @@ const faqLd = {
 };
 ---
 
-<Marketing title={title} description={description}>
+<Marketing title={title} bareTitle description={description}>
   <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} />
   <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(faqLd)} />
 
@@ -108,6 +108,7 @@ const faqLd = {
       {content.switching.notes.map((n) => <li set:html={n} />)}
     </ul>
     <p><a class="link-signal" href={content.switching.cta.href}>{content.switching.cta.label} →</a></p>
+    {content.related?.map((r) => <p><a class="link-signal" href={r.href}>{r.label} →</a></p>)}
   </section>
 
   <section class="wrap vs-faq" aria-labelledby="vs-faq-title">
@@ -230,8 +231,8 @@ const faqLd = {
   .switch-code > :global(*) {
     min-width: 0;
   }
-  .vs-switch > p:last-child {
-    margin-top: var(--s-5);
+  .vs-switch > p:not(.switch-intro) {
+    margin-top: var(--s-4);
   }
   @media (max-width: 860px) {
     .switch-code {

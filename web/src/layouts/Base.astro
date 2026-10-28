@@ -4,14 +4,17 @@ import { site } from '../config/site';
 
 interface Props {
   title?: string;
+  /** Use `title` as it is, without " · sendm8" (for titles that already start with the name). */
+  bareTitle?: boolean;
   description?: string;
   noindex?: boolean;
   bodyClass?: string;
   /** Path under /public to a 1200×630 social card. Defaults to the site-wide one. */
   image?: string;
 }
-const { title, description = site.description, noindex = false, bodyClass, image = '/og/og-default.png' } = Astro.props;
-const fullTitle = title ? `${title} · sendm8` : `sendm8 — ${site.tagline} Free, open-source form backend`;
+const { title, bareTitle = false, description = site.description, noindex = false, bodyClass, image = '/og/og-default.png' } = Astro.props;
+// Kept to about 60 characters, so search results don't cut them off.
+const fullTitle = title ? (bareTitle ? title : `${title} · sendm8`) : 'sendm8 — free, open-source form backend for any HTML form';
 const canonical = new URL(Astro.url.pathname, site.url);
 const socialImage = new URL(image, site.url);
 
