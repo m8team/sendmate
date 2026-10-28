@@ -189,4 +189,36 @@ export const vsContent: VsContent[] = [
   },
 ];
 
+vsContent.push({
+  slug: 'basin',
+  description: `Basin’s free plan has 1 form, 50 submissions a month and 30-day retention. sendm8 is free and open source: up to ${forms} forms, ${perForm} submissions each.`,
+  intro: `Basin’s free plan covers one form with 50 submissions a month, keeps them for 30 days, and saves export, redirects, webhooks and chat integrations for paid plans. sendm8 gives you up to ${forms} forms with ${perForm} submissions a month each, and includes all of those free.`,
+  highlights: [
+    `${perForm} submissions a month on each of up to ${forms} forms, against Basin’s 50 on one form.`,
+    'Custom redirects, CSV export, webhooks, Discord, Slack and Telegram on the free plan.',
+    `Open source and self-hostable under ${site.license}.`,
+  ],
+  pickThemIf: [
+    'You need big uploads: Basin allows files of up to 100 MB on every plan, against sendm8’s ' + limits.fileUploadMb + ' MB.',
+    'You want reCAPTCHA or hCaptcha specifically. sendm8 uses Cloudflare Turnstile, plus its own spam scoring and AI check.',
+    'You want a paid service with a support team, and features from its higher tiers, such as signed webhooks on the Agency plan.',
+  ],
+  switching: {
+    intro: 'Change the action URL. Basin’s _gotcha honeypot works the same way, and your own field names carry over as they are.',
+    before: { code: `<form action="https://usebasin.com/f/abc123def456" method="POST">\n  <input type="text" name="_gotcha" style="display:none">\n${formBody}\n  <button>Send</button>\n</form>`, lang: 'html', filename: 'Before: Basin', highlight: [1] },
+    after: { code: `<form action="${ENDPOINT}" method="POST">\n  <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">\n${formBody}\n  <button>Send</button>\n</form>`, lang: 'html', filename: 'After: sendm8', highlight: [1] },
+    notes: [
+      'Basin sets the thank-you redirect in its dashboard. On sendm8, add a hidden <code>_next</code> field, or set a redirect URL in Form settings.',
+      'If you used Basin’s JavaScript library for AJAX, post with <code>fetch</code> and <code>Accept: application/json</code> instead, or add sendm8’s helper script with a <code>data-sendm8</code> attribute.',
+      'File inputs keep working with <code>enctype="multipart/form-data"</code>, within sendm8’s smaller size limits.',
+    ],
+    cta: { label: 'See the basic form docs', href: '/docs/basic-form/' },
+  },
+  faq: [
+    { q: 'How long does sendm8 keep submissions?', a: `Until you delete them. Spam is cleared after ${limits.spamRetentionDays} days, but real submissions stay in your inbox, where you can search and export them.` },
+    { q: 'Can I redirect visitors to my own thank-you page for free?', a: 'Yes. Add a hidden _next field pointing at a page on your site, or set a redirect URL in the form’s settings.' },
+    { q: 'Do I need an account?', a: `No. Put your email address in the form’s URL and confirm it once. Sign in when you want the dashboard, channels and ${perForm} submissions a month per form.` },
+  ],
+});
+
 export const vsFor = (slug: string) => vsContent.find((v) => v.slug === slug);

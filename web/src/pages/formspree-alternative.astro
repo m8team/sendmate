@@ -8,7 +8,7 @@ import Marketing from '../layouts/Marketing.astro';
 import Compare from '../components/home/Compare.astro';
 import CodeBlock from '../components/ui/CodeBlock.astro';
 import Icon from '../components/ui/Icon.astro';
-import { competitors, fairPoints } from '../config/compare';
+import { checkedOnLabel, competitors, fairPoints } from '../config/compare';
 import { vsFor } from '../config/vs';
 import { fmt, limits, site } from '../config/site';
 
@@ -16,19 +16,14 @@ const formspree = competitors.find((c) => c.slug === 'formspree')!;
 const vs = vsFor('formspree')!;
 const perForm = fmt.n(limits.submissionsPerFormPerMonth);
 
-/** Other options, each fact from that service's own pricing page (sources in compare.ts, plus Basin below). */
+/** Other options, each fact from that service's own pricing page (sources in compare.ts). */
 const others = [
   { name: 'FormSubmit', href: '/vs/formsubmit/', what: 'No account and no stated submission cap: your email in the URL. No dashboard; history is API-only for 30 days.' },
   { name: 'Web3Forms', href: '/vs/web3forms/', what: 'An access key by email instead of an account. Webhooks, chat apps and file uploads are on paid plans.' },
   { name: 'Getform (now Forminit)', href: '/vs/getform/', what: 'One form and 100 submissions a month free, with file uploads and an unlimited archive. Integrations and export on Pro.' },
-  {
-    name: 'Basin',
-    href: 'https://usebasin.com/pricing',
-    external: true,
-    what: 'One form and 50 submissions a month free, with 30-day retention. Redirects, export and integrations on paid plans.',
-  },
+  { name: 'Basin', href: '/vs/basin/', what: 'One form and 50 submissions a month free, with 30-day retention. Redirects, export and integrations on paid plans.' },
 ];
-const basinCheckedOn = '28 Oct 2026';
+
 
 const faq = [
   {
@@ -107,7 +102,7 @@ const faqLd = {
         others.map((o) => (
           <div>
             <dt>
-              <a class="link-signal" href={o.href} {...(o.external ? { rel: 'noopener', target: '_blank' } : {})}>
+              <a class="link-signal" href={o.href}>
                 {o.name}
               </a>
             </dt>
@@ -117,7 +112,7 @@ const faqLd = {
       }
     </dl>
     <p class="label muted fa-checked">
-      Checked {basinCheckedOn}. Sources for each are linked on its comparison page; Basin’s is its <a href="https://usebasin.com/pricing" rel="noopener">pricing page</a>.
+      Checked {checkedOnLabel}. The sources for each are linked on its comparison page.
     </p>
     <p class="fa-p">Pick Formspree itself if…</p>
     <ul class="fa-list" role="list">

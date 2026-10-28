@@ -61,9 +61,6 @@ export const us: Competitor = {
   ],
 };
 
-/** Web3Forms' pricing page refused automated reads on 28 Oct 2026, so these cells are as last confirmed. */
-const web3formsUnverified = 'As of 15 Sep 2026; their pricing page couldn’t be re-checked on 28 Oct';
-
 export const competitors: Competitor[] = [
   {
     name: 'Formspree',
@@ -104,15 +101,15 @@ export const competitors: Competitor[] = [
       { label: 'file uploads (PRO)', url: 'https://docs.web3forms.com/getting-started/pro-features/file-attachments' },
     ],
     cells: [
-      { v: '250', note: web3formsUnverified },
-      { v: 'Unlimited', tone: 'yes', note: web3formsUnverified },
+      { v: '250' },
+      { v: 'Unlimited', tone: 'yes' },
       { v: 'Verify your email for a key', tone: 'part' },
-      { v: '30-day history, CSV', tone: 'part', note: web3formsUnverified },
+      { v: '30-day history, CSV', tone: 'part' },
       { v: 'Paid plans', tone: 'no', note: 'Webhooks, Slack, Discord and Telegram are PRO' },
       { v: 'Paid plans', tone: 'no' },
       { v: 'Same domain only', tone: 'part', note: 'Other domains on paid plans' },
       { v: '—', note: 'No source or self-hosting listed' },
-      { v: '$16/mo, billed yearly', note: web3formsUnverified },
+      { v: '$16/mo, billed yearly', note: '$191 a year' },
     ],
   },
   {
@@ -156,7 +153,29 @@ export const competitors: Competitor[] = [
       { v: 'Yes', tone: 'yes', note: '100 MB storage, 25 MB a submission' },
       { v: 'Yes', tone: 'yes' },
       { v: '—', note: 'No source or self-hosting listed' },
-      { v: '$190/year', note: 'Pro, shown as $16/mo' },
+      { v: '$19/mo', note: 'Pro; or $190 billed yearly' },
+    ],
+  },
+  {
+    name: 'Basin',
+    slug: 'basin',
+    checkedOn: '2026-10-28',
+    checkedOnLabel: '28 Oct 2026',
+    sources: [
+      { label: 'pricing', url: 'https://usebasin.com/pricing' },
+      { label: 'FAQ', url: 'https://docs.usebasin.com/faq/' },
+      { label: 'redirects', url: 'https://docs.usebasin.com/creating-forms/basin-js/' },
+    ],
+    cells: [
+      { v: '50' },
+      { v: '1', tone: 'no' },
+      { v: 'No, account needed', tone: 'no' },
+      { v: '30-day retention', tone: 'part', note: 'Export from Starter' },
+      { v: 'From Growth', tone: 'no', note: 'Webhooks, Slack and Discord' },
+      { v: 'Yes', tone: 'yes', note: '100 MB storage' },
+      { v: 'Paid plans', tone: 'no' },
+      { v: '—', note: 'No source or self-hosting listed' },
+      { v: '$12.50/mo, billed yearly', note: 'Starter' },
     ],
   },
 ];
@@ -167,4 +186,5 @@ export const fairPoints = [
   { who: 'Formspree', what: 'runs a machine-learning spam filter on every plan, supports reCAPTCHA, hCaptcha and Turnstile, and free forms can post to Discord, Slack and Telegram.' },
   { who: 'Web3Forms', what: 'adds hCaptcha to free forms with no setup at all.' },
   { who: 'Getform (Forminit)', what: 'keeps an unlimited submission archive and accepts file uploads on its free plan.' },
+  { who: 'Basin', what: 'supports reCAPTCHA, hCaptcha and Turnstile, and allows files of up to 100 MB on every plan.' },
 ];
