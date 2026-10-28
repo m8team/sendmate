@@ -135,6 +135,8 @@ sendm8 is open source, all of it. The code on sendm8.com is the code on GitHub. 
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/m8team/sendmate)
 
+Prefer your own server? There’s a [Docker image](docs/self-hosting.md#docker) that runs the same Worker in workerd, with everything stored on one volume.
+
 The full walkthrough is in [docs/self-hosting.md](docs/self-hosting.md), and the webhook format is in [docs/webhooks.md](docs/webhooks.md). If we ever vanish, your forms don’t have to.
 
 ## How we stack up
@@ -148,17 +150,19 @@ Free plans only, taken from each service’s own pricing page and docs. Checked 
 
 | Free plan | **sendm8** | Formspree | Web3Forms | FormSubmit |
 |---|---|---|---|---|
-| Free submissions / month | **1,000 per form** | 50 | 250 | Unlimited |
+| Free submissions / month | **1,000 per form** | 50 | 250 | No cap stated |
 | Forms | **Up to 100** | Unlimited | Unlimited | Unlimited |
 | Works without signing up | **Yes, email in the URL** | No, account needed | Verify your email for a key | Yes, email in the URL |
 | Stored submissions + export | **Dashboard, CSV + JSON** | 30-day archive, export on paid plans | 30-day history, CSV | 30 days, API only |
 | Webhooks + chat apps | **Webhooks, Discord, Slack, Telegram** | Discord, Slack, Telegram | Paid plans | Webhooks |
 | File uploads | **5 MB a file** | Paid plans | Paid plans | Yes |
-| Custom redirect | **Yes** | Paid plans | Yes | Yes |
-| Open source, self-hostable | **Yes, AGPL-3.0** | No | Not listed | Not listed |
+| Custom redirect | **Yes** | Paid plans | Same domain only | Yes |
+| Open source, self-hostable | **Yes, AGPL-3.0** | Not listed | Not listed | Not listed |
 | Cheapest paid plan | **There isn’t one** | $15/mo | $16/mo, billed yearly | None listed |
 
-**Fair’s fair.** FormSubmit needs no account at all. Formspree runs a machine-learning spam filter on every plan, and free forms can post to Discord, Slack and Telegram. Web3Forms gives the most free submissions of the capped services, with CSV export included.
+**Fair’s fair.** FormSubmit needs no account at all. Formspree runs a machine-learning spam filter on every plan, and free forms can post to Discord, Slack and Telegram. Web3Forms adds hCaptcha to free forms with no setup.
+
+Checked against each service’s own pricing and docs on 28 Oct 2026; Web3Forms’ plan size and price are as of 15 Sep 2026, because its pricing page couldn’t be re-read. The full, sourced comparisons (Getform and Basin too) are at [sendm8.com/vs/formspree](https://sendm8.com/vs/formspree/).
 
 ## Behind the counter
 
