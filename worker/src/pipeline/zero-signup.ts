@@ -1,4 +1,4 @@
-import { and, asc, count, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
+import { and, asc, count, eq, inArray, isNotNull, isNull, lt, or, sql } from "drizzle-orm";
 import type { SessionUser } from "../app";
 import { getLimits } from "../config";
 import { getDb, type BatchItem, type BatchList, type Db, type FormRow } from "../db/client";
@@ -237,25 +237,40 @@ export async function declineZeroSignup(env: Env, token: string, now = Date.now(
 }
 
 /**
- * Moves unclaimed forms for the user's verified email into their account, including forms sent to a
- * `+tag` of it (same inbox). Signing in with that address proves ownership, so pending forms
- * activate and a previous "Not me" is undone. Forms an admin disabled stay disabled.
+ * Moves unclaimed forms into the user's account for every address they've proven they own: the
+ * verified email they signed in with, and any address they've verified in Email settings. Forms sent
+ * to a `+tag` of those (same inbox) count too. Proving ownership is what confirming would have done,
+ * so pending forms activate and a previous "Not me" is undone. Forms an admin disabled stay disabled.
  * Returns the claimed forms, and those that just opened, whose waiting messages need delivering.
  */
 export async function claimFormsForUser(env: Env, user: SessionUser): Promise<{ formIds: string[]; reopened: string[] }> {
-  const none = { formIds: [], reopened: [] };
-  if (!user.emailVerified) return none;
-  const db = getDb(env);
-  const email = user.email.toLowerCase();
-  const variants = plusVariantsPattern(email);
+  const verified = await getDb(env)
+    .select({ email: emailAddresses.email })
+    .from(emailAddresses)
+    .where(and(eq(emailAddresses.userId, user.id), isNotNull(emailAddresses.verifiedAt)))
+    .all();
+  const owned = [...(user.emailVerified ? [user.email] : []), ...verified.map((a) => a.email)];
+  return claimFormsForAddresses(env, user.id, owned);
+}
 
+/** The claiming itself, for addresses `userId` is known to own (signed in with, or verified). */
+export async function claimFormsForAddresses(env: Env, userId: string, owned: string[]): Promise<{ formIds: string[]; reopened: string[] }> {
+  const none = { formIds: [], reopened: [] };
+  const emails = [...new Set(owned.map((e) => e.trim().toLowerCase()))];
+  if (emails.length === 0) return none;
+  const db = getDb(env);
+
+  const matches = emails.flatMap((email) => {
+    const variants = plusVariantsPattern(email);
+    return [eq(forms.ownerEmail, email), ...(variants ? [sql`${forms.ownerEmail} LIKE ${variants} ESCAPE '!'`] : [])];
+  });
   const candidates = await db
     .select()
     .from(forms)
-    .where(and(isNull(forms.userId), variants ? or(eq(forms.ownerEmail, email), sql`${forms.ownerEmail} LIKE ${variants} ESCAPE '!'`) : eq(forms.ownerEmail, email)))
+    .where(and(isNull(forms.userId), or(...matches)))
     .all();
   // The LIKE only narrows the query; this decides.
-  const unclaimed = candidates.filter((f) => f.ownerEmail && reachesInboxOf(f.ownerEmail, email));
+  const unclaimed = candidates.filter((f) => f.ownerEmail && emails.some((email) => reachesInboxOf(f.ownerEmail!, email)));
   if (unclaimed.length === 0) return none;
 
   const now = Date.now();
@@ -270,7 +285,7 @@ export async function claimFormsForUser(env: Env, user: SessionUser): Promise<{ 
       db
         .select()
         .from(emailAddresses)
-        .where(and(eq(emailAddresses.userId, user.id), eq(emailAddresses.email, address)))
+        .where(and(eq(emailAddresses.userId, userId), eq(emailAddresses.email, address)))
         .get(),
     ]);
 
@@ -283,12 +298,12 @@ export async function claimFormsForUser(env: Env, user: SessionUser): Promise<{ 
       statements.push(
         db
           .update(emailAddresses)
-          .set({ userId: user.id, verifiedAt: nullAddress.verifiedAt ?? now, tokenHash: null, tokenSentAt: null })
+          .set({ userId, verifiedAt: nullAddress.verifiedAt ?? now, tokenHash: null, tokenSentAt: null })
           .where(eq(emailAddresses.id, nullAddress.id)),
       );
     } else {
       addressId = newId();
-      statements.push(db.insert(emailAddresses).values({ id: addressId, userId: user.id, email: address, verifiedAt: now, createdAt: now }));
+      statements.push(db.insert(emailAddresses).values({ id: addressId, userId, email: address, verifiedAt: now, createdAt: now }));
     }
 
     for (const form of group) {
@@ -298,7 +313,7 @@ export async function claimFormsForUser(env: Env, user: SessionUser): Promise<{ 
       statements.push(
         db
           .update(forms)
-          .set({ userId: user.id, status: reopen ? "active" : form.status, flaggedReason: declined ? null : form.flaggedReason })
+          .set({ userId, status: reopen ? "active" : form.status, flaggedReason: declined ? null : form.flaggedReason })
           .where(eq(forms.id, form.id)),
       );
     }

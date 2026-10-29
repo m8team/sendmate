@@ -1,6 +1,8 @@
 import { getDb } from "../db/client";
 import { createRouter } from "../app";
 import { consumeVerificationToken } from "../email/verification";
+import { captureError } from "../ops/errors";
+import { claimFormsForAddresses, deliverBacklog } from "../pipeline/zero-signup";
 import { escapeHtml, parseHttpUrl } from "../lib/http";
 import { renderPage, stamp } from "../pages/layout";
 
@@ -44,10 +46,19 @@ pageRoutes.post("/verify/:token", async (c) => {
       body: `${stamp("Expired")}<p>Verification links last 24 hours and work once. Send a fresh one from your sendm8 dashboard.</p>`,
     });
   }
+  // Proving the address is yours also brings in email-endpoint forms sent to it (or a +tag of it).
+  const { formIds, reopened } = await claimFormsForAddresses(c.env, address.userId!, [address.email]);
+  if (reopened.length) {
+    c.executionCtx.waitUntil(deliverBacklog(c.env, reopened).catch((error) => captureError(c.env, error, { where: "backlog delivery" })));
+  }
+  const moved =
+    formIds.length === 0
+      ? ""
+      : `<p>${formIds.length === 1 ? "A form" : `${formIds.length} forms`} sent to this address ${formIds.length === 1 ? "is" : "are"} now in your dashboard${reopened.length ? ", and anything that was waiting is on its way" : ""}.</p>`;
   return renderPage({
     title: "Email confirmed",
     heading: "Sorted. You're verified.",
-    body: `${stamp("Verified")}<p>Notifications for <strong>${escapeHtml(address.email)}</strong> will start arriving. You can close this tab.</p>`,
+    body: `${stamp("Verified")}<p>Notifications for <strong>${escapeHtml(address.email)}</strong> will start arriving. You can close this tab.</p>${moved}`,
   });
 });
 

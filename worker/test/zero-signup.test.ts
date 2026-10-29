@@ -366,6 +366,50 @@ describe("claiming", () => {
     for (const email of [theirs, sibling, victim]) expect((await formFor(email))?.userId).toBeNull();
   }, 20_000);
 
+  it("claims forms sent to another address once you verify it in your account, and delivers what waited", async () => {
+    mockFetch();
+    const siteAddress = uniqueEmail();
+    await postJson(siteAddress, { message: "a pledge from the live site" });
+    expect(await formFor(siteAddress)).toMatchObject({ userId: null, status: "pending_confirmation" });
+
+    // Signed in with a different address, the dashboard starts empty...
+    const owner = await createUser({ email: uniqueEmail() });
+    const session = await signIn(owner.id);
+    await api("/me", { headers: session.headers });
+    expect((await formFor(siteAddress))?.userId).toBeNull();
+
+    // ...until they add and verify the address the form sends to.
+    const http = mockFetch();
+    await api("/emails", { method: "POST", body: { email: siteAddress }, headers: session.headers });
+    const token = (await waitFor(async () => http.emails().find((e) => e.to[0] === siteAddress && /verify\//.test(e.text)))).text.match(/verify\/([\w-]+)/)![1];
+    const page = await SELF.fetch(`https://sendm8.test/verify/${token}`, { method: "POST" });
+    expect(page.status).toBe(200);
+    expect(await page.text()).toContain("now in your dashboard");
+
+    expect(await formFor(siteAddress)).toMatchObject({ userId: owner.id, status: "active" });
+    await waitFor(async () => http.emails().find((e) => e.to[0] === siteAddress && e.text.includes("a pledge from the live site")));
+    // One address row, owned by the user: the zero-signup one was merged into it.
+    const rows = await db().select().from(emailAddresses).where(eq(emailAddresses.email, siteAddress)).all();
+    expect(rows.map((r) => r.userId)).toEqual([owner.id]);
+  });
+
+  it("picks up forms made later for an address you've already verified, on your next visit", async () => {
+    mockFetch();
+    const owner = await createUser({ email: uniqueEmail() });
+    const extra = uniqueEmail();
+    await addAddress(owner.id, extra, true);
+    const unverified = uniqueEmail();
+    await addAddress(owner.id, unverified, false);
+
+    await postJson(extra, { message: "after verifying" });
+    await postJson(unverified.replace("@", "+x@"), { message: "not proven yet" });
+    await api("/me", { headers: (await signIn(owner.id)).headers });
+
+    expect(await formFor(extra)).toMatchObject({ userId: owner.id, status: "active" });
+    // An address that was added but never verified proves nothing.
+    expect((await formFor(unverified.replace("@", "+x@")))?.userId).toBeNull();
+  }, 20_000);
+
   it("doesn't claim for unverified emails", async () => {
     mockFetch();
     const email = uniqueEmail();
