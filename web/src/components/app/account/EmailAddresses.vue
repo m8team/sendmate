@@ -110,7 +110,7 @@ async function removeAddress(a: EmailAddressDto) {
         <p class="label muted">Recipients</p>
         <h2 id="rk-recips-title" class="h3">Addresses we can deliver to</h2>
       </div>
-      <p class="muted small">Every inbox has to say yes once, so nobody can point a form at someone else’s email. The address you signed in with is already verified.</p>
+      <p class="muted small">Every inbox has to say yes once, so nobody can point a form at someone else’s email. The address you signed in with is already verified. Verifying an address also moves any no-signup forms sent to it (<code>/f/that@address</code>) into your account.</p>
     </header>
     <ul class="recip-list" role="list" :aria-busy="loading ? 'true' : undefined">
       <li v-if="loading" class="recip" aria-hidden="true">
