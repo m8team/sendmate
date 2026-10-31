@@ -73,6 +73,23 @@ export async function aiSpamScore(env: Env, submission: Pick<SubmissionRow, "dat
 }
 
 /**
+ * The model is small and judges mostly English well, but it scored ordinary Persian and Chinese
+ * enquiries 100. So for text mostly in a non-Latin script its score is kept, and shows as suspicious,
+ * but it can't bin the message on its own. The heuristics still apply to everything.
+ */
+export function mostlyNonLatin(data: SubmissionRow["data"]): boolean {
+  const isEmail = (v: string) => /^[^\s@]+@[^\s@]+$/.test(v.trim());
+  const text = Object.values(data)
+    .flat()
+    .filter((v): v is string => typeof v === "string" && !isEmail(v))
+    .join(" ");
+  const letters = text.match(/\p{L}/gu) ?? [];
+  if (letters.length < 4) return false;
+  const latin = text.match(/\p{Script=Latin}/gu)?.length ?? 0;
+  return (letters.length - latin) / letters.length >= 0.5;
+}
+
+/**
  * Someone trying out their own form signs it with their own address, and their "is this thing on?"
  * message reads like junk to the model (one scored 95). Only a clean submission is let off: the
  * endpoint address is public, so a spammer could copy it, but links or other red flags still count.
@@ -96,7 +113,7 @@ export async function applyAiSpamCheck(
   if (ownerIsTesting(submission, ownerEmail)) return false;
   const score = await aiSpamScore(env, submission);
   if (score === null) return false;
-  const spam = score >= AI_SPAM_THRESHOLD;
+  const spam = score >= AI_SPAM_THRESHOLD && !mostlyNonLatin(submission.data);
   await getDb(env)
     .update(submissions)
     .set({

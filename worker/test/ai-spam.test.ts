@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { forms, submissions, usageDaily } from "../src/db/schema";
 import { newId } from "../src/lib/ids";
 import { dayKey } from "../src/lib/time";
-import { AI_SPAM_MODEL, aiSpamScore, ownerIsTesting, parseScore, submissionText } from "../src/pipeline/ai-spam";
+import { AI_SPAM_MODEL, aiSpamScore, mostlyNonLatin, ownerIsTesting, parseScore, submissionText } from "../src/pipeline/ai-spam";
 import { deliverBacklog, dispatchStored } from "../src/pipeline/zero-signup";
 import { addChannel, createForm, createUser, db, DISCORD_URL, getSubmission, listSubmissions, mockFetch, postJson } from "./helpers";
 
@@ -142,6 +142,39 @@ describe("AI spam scoring", () => {
     expect(await getSubmission(linkId)).toMatchObject({ status: "spam" });
     expect(await getSubmission(strangerId)).toMatchObject({ status: "spam" });
     expect(http.to("discord.com")).toHaveLength(1);
+  });
+
+  it("keeps the model's score on non-Latin messages but doesn't let it bin them alone", async () => {
+    const http = mockFetch();
+    const form = await createForm({ userId: null, ownerEmail: `fa-${crypto.randomUUID().slice(0, 8)}@example.com`, status: "active", settings: { aiSpamScoring: true } });
+    await addChannel(form.id, "discord", { webhookUrl: DISCORD_URL });
+    const meta = { ipHash: null, country: null, userAgent: null, referrer: null, special: {}, spamReasons: [] };
+    const persianId = newId();
+    const englishId = newId();
+    await db().insert(submissions).values([
+      // A real-shaped Persian enquiry: the 8B model scored these 100 in production.
+      { id: persianId, formId: form.id, data: { name: "میلاد کمالی", email: "milad@example.org", message: "درخواست تماس برای طراحی وب‌سایت و پورتال" }, meta, status: "ok", createdAt: Date.now() },
+      { id: englishId, formId: form.id, data: { message: "cheap seo backlinks casino bonus click now" }, meta, status: "ok", createdAt: Date.now() },
+    ]);
+
+    const run = vi.fn(async () => ({ response: 100 }));
+    await deliverBacklog({ ...env, AI: { run } as unknown as Ai } as Env, [form.id]);
+
+    expect(await getSubmission(persianId)).toMatchObject({ status: "ok", spamScore: 1 });
+    expect((await getSubmission(persianId))?.meta.spamReasons).toContain("ai:100");
+    expect(await getSubmission(englishId)).toMatchObject({ status: "spam" });
+    expect(http.to("discord.com")).toHaveLength(1);
+  });
+
+  it("spots text that's mostly in a non-Latin script", () => {
+    expect(mostlyNonLatin({ name: "میلاد", message: "درخواست تماس برای طراحی وب‌سایت" })).toBe(true);
+    expect(mostlyNonLatin({ message: "通道确认探测：请查 Gmail 点确认。" })).toBe(true);
+    expect(mostlyNonLatin({ message: "Здравствуйте, нужен сайт" })).toBe(true);
+    // Email addresses and Latin field names don't dilute it; a Latin message with one foreign name isn't it.
+    expect(mostlyNonLatin({ email: "averylongaddress@example.com", message: "سلام" })).toBe(true);
+    expect(mostlyNonLatin({ name: "李雷", message: "Hi, could you quote for a five-page website please?" })).toBe(false);
+    expect(mostlyNonLatin({ message: "Bonjour, je voudrais un devis" })).toBe(false);
+    expect(mostlyNonLatin({ phone: "09164203914" })).toBe(false);
   });
 
   it("only treats the owner's own address, or a +tag of the same inbox, as the owner", () => {
