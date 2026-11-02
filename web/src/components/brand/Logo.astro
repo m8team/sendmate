@@ -1,7 +1,9 @@
 ---
 /**
- * The sendm8 mark: a perforated postage stamp carrying "m8", beside the wordmark.
- * As a link it's named "sendm8, home" with visually hidden text rather than aria-label, so the name always
+ * The sendm8 mark: the favicon's tile (public/favicon.svg) stands in for the 8, so the
+ * wordmark and the tab icon are one drawing. Without the wordmark it's the tile alone.
+ * The tile keeps the favicon's exact colours in both themes, like an app icon.
+ * As a link it's named with visually hidden text rather than aria-label, so the name always
  * contains the visible wordmark (label-content-name-mismatch) and voice control users can say what they see.
  */
 interface Props {
@@ -12,78 +14,62 @@ interface Props {
 }
 const { href = '/', size = 'md', class: className, wordmark = true } = Astro.props;
 const Tag = href ? 'a' : 'span';
-const perfs: [number, number][] = [];
-for (let i = 4; i <= 36; i += 4) {
-  perfs.push([i, 0], [i, 40], [0, i], [40, i]);
-}
-const uid = `lm-${Math.random().toString(36).slice(2, 8)}`;
+const EIGHT =
+  'M31 29.3c-2.4 0-4-1.3-4-3.3 0-1.3.8-2.3 1.9-2.8-.9-.5-1.5-1.4-1.5-2.5 0-1.9 1.5-3.2 3.6-3.2s3.6 1.3 3.6 3.2c0 1.1-.6 2-1.5 2.5 1.2.5 1.9 1.5 1.9 2.8 0 2-1.6 3.3-4 3.3zm0-7.5c.7 0 1.2-.5 1.2-1.1s-.5-1.1-1.2-1.1-1.2.5-1.2 1.1.5 1.1 1.2 1.1zm0 5.3c.9 0 1.4-.5 1.4-1.3s-.6-1.3-1.4-1.3-1.4.5-1.4 1.3.5 1.3 1.4 1.3z';
 ---
 
-<Tag class:list={['logo', `logo-${size}`, className]} href={href ?? undefined}>
-  <svg class="logo-stamp" viewBox="-1 -1 42 42" aria-hidden="true">
-    <defs>
-      <mask id={uid}>
-        <rect x="-1" y="-1" width="42" height="42" fill="#fff"></rect>
-        {perfs.map(([cx, cy]) => <circle cx={cx} cy={cy} r="1.7" fill="#000" />)}
-      </mask>
-    </defs>
-    <g mask={`url(#${uid})`}>
-      <rect x="0" y="0" width="40" height="40" class="logo-stamp-bg"></rect>
-      <rect x="4.5" y="4.5" width="31" height="31" class="logo-stamp-frame" fill="none" stroke-width="1.2"></rect>
-      <text x="20" y="27.4" text-anchor="middle" class="logo-stamp-text">m8</text>
-    </g>
+<Tag class:list={['logo', `logo-${size}`, !wordmark && 'logo-mark-only', className]} href={href ?? undefined}>
+  {wordmark && <span class="logo-word">sendm</span>}
+  <svg class="logo-tile" viewBox="0 0 40 40" aria-hidden="true">
+    <rect width="40" height="40" rx="7" fill="#e23b1e"></rect>
+    <g transform="translate(20 20) scale(2.5) translate(-31.2 -23.4)"><path fill="#fff8ee" d={EIGHT}></path></g>
   </svg>
-  {wordmark && <span class="logo-word">sendm8</span>}
-  {href && <span class="sr-only">{wordmark ? ', home' : 'sendm8 home'}</span>}
+  {wordmark ? <span class="sr-only">8</span> : <span class="sr-only">sendm8</span>}
+  {href && <span class="sr-only">, home</span>}
 </Tag>
 
 <style>
   .logo {
     display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
+    align-items: baseline;
+    gap: 0.06em;
     color: var(--fg);
     text-decoration: none;
     line-height: 1;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-stretch: 66%;
+    font-weight: 900;
+    font-size: var(--logo-text, 1.85rem);
+    letter-spacing: -0.01em;
   }
-  .logo-stamp {
+  /* The tile sits on the baseline and rises to cap height, so it reads as the last letter. */
+  .logo-tile {
+    flex: none;
+    width: 0.815em;
+    height: 0.815em;
+    transform: translateY(0.035em);
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+  a.logo:hover .logo-tile {
+    transform: translateY(0.035em) rotate(-6deg);
+  }
+  .logo-mark-only .logo-tile {
     width: var(--logo-size, 2rem);
     height: var(--logo-size, 2rem);
-    transform: rotate(-6deg);
-    transition: transform var(--dur-2) var(--ease-thunk);
-  }
-  a.logo:hover .logo-stamp {
-    transform: rotate(0deg) scale(1.06);
-  }
-  .logo-stamp-bg {
-    fill: var(--signal-mark);
-  }
-  .logo-stamp-frame {
-    stroke: var(--on-signal);
-    opacity: 0.55;
-  }
-  .logo-stamp-text {
-    fill: var(--on-signal);
-    font-family: var(--font-display);
-    font-stretch: 75%;
-    font-weight: 900;
-    font-size: 17px;
-    letter-spacing: -0.5px;
-  }
-  .logo-word {
-    font-family: var(--font-display);
-    font-stretch: var(--stretch-condensed);
-    font-weight: 900;
-    font-size: var(--logo-text, 1.7rem);
-    letter-spacing: -0.01em;
-    transform: translateY(-0.04em);
+    transform: none;
   }
   .logo-sm {
     --logo-size: 1.55rem;
-    --logo-text: 1.35rem;
+    --logo-text: 1.45rem;
   }
   .logo-lg {
     --logo-size: 3rem;
-    --logo-text: 2.6rem;
+    --logo-text: 2.8rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    a.logo:hover .logo-tile {
+      transform: translateY(0.035em);
+    }
   }
 </style>
