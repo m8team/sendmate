@@ -1,0 +1,129 @@
+---
+import CodeTabs from '../ui/CodeTabs.astro';
+import CodeBlock from '../ui/CodeBlock.astro';
+import { setupTabs, ENDPOINT } from '../../config/snippets';
+import { site } from '../../config/site';
+
+// Forminit puts an "AI" tab next to its framework snippets; coding agents pick tools now, so give them the facts.
+const agentPrompt = `
+Add a working contact form to this site using sendm8 (${site.url}).
+- Set the form's action to ${ENDPOINT} and method to POST.
+- Give every input a name attribute and a visible <label>.
+- Add the honeypot: <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+- To send people to my own thank-you page, add <input type="hidden" name="_next" value="https://example.com/thanks">
+- Full docs for agents: ${site.url}/llms.txt`;
+
+const tabs = [...setupTabs(), { label: 'Prompt for your AI agent', lang: 'md', filename: 'prompt.md', code: agentPrompt }];
+
+const diff = `
+- <form action="https://formspree.io/f/xyzabcd" method="POST">
++ <form action="${ENDPOINT}" method="POST">`;
+---
+
+<section class="rs" id="setup" aria-labelledby="rs-title">
+  <div class="wrap rs-grid">
+    <div class="rs-copy">
+      <h2 id="rs-title" class="rs-h">Three steps, about a minute.</h2>
+      <ol class="rs-steps" role="list">
+        <li>
+          <p class="rs-step">Paste the line into your form.</p>
+          <p class="rs-detail">Keep your own HTML, styles and field names. Any field with a <code>name</code> comes through.</p>
+        </li>
+        <li>
+          <p class="rs-step">Send yourself a test.</p>
+          <p class="rs-detail">We email you once to check the address is really yours.</p>
+        </li>
+        <li>
+          <p class="rs-step">Click the link in that email.</p>
+          <p class="rs-detail">The test is delivered, and so is everything after it. Sign in later only if you want the dashboard.</p>
+        </li>
+      </ol>
+    </div>
+    <div class="rs-code">
+      <CodeTabs tabs={tabs} name="Setup code" />
+    </div>
+  </div>
+
+  <div class="wrap rs-switch" aria-labelledby="rs-switch-title">
+    <div class="rs-switch-copy">
+      <h3 id="rs-switch-title" class="rs-switch-h">Coming from Formspree? Change one line.</h3>
+      <p><code>_replyto</code>, <code>_next</code> and <code>_gotcha</code> work as they are, so the rest of your form stays put.</p>
+    </div>
+    <CodeBlock code={diff} lang="diff" filename="contact.html" compact />
+  </div>
+</section>
+
+<style>
+  .rs {
+    padding-block: clamp(3.5rem, 7vw, 6rem);
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .rs-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: start;
+  }
+  .rs-h {
+    font-family: var(--font-display);
+    font-weight: 850;
+    font-stretch: 72%;
+    font-size: var(--fs-h2);
+    line-height: 0.98;
+    max-width: 15ch;
+  }
+  .rs-steps {
+    margin-top: var(--s-6);
+    counter-reset: step;
+  }
+  .rs-steps li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    column-gap: var(--s-3);
+    padding-block: var(--s-4);
+    border-top: 1px solid var(--line);
+  }
+  .rs-steps li::before {
+    content: counter(step);
+    grid-row: span 2;
+    font: 900 1.6rem/1 var(--font-display);
+    font-stretch: 70%;
+    color: var(--signal-text);
+  }
+  .rs-step {
+    font: 750 var(--fs-h4) / 1.2 var(--font-display);
+    font-stretch: var(--stretch-semi);
+  }
+  .rs-detail {
+    margin-top: var(--s-1);
+    color: var(--fg-muted);
+    max-width: 44ch;
+  }
+
+  .rs-switch {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(1.5rem, 5vw, 4.5rem);
+    align-items: center;
+    margin-top: clamp(3rem, 6vw, 5rem);
+    padding-top: clamp(2rem, 4vw, 3rem);
+    border-top: 1px solid var(--line);
+  }
+  .rs-switch-h {
+    font: 800 var(--fs-h3) / 1.05 var(--font-display);
+    font-stretch: var(--stretch-semi);
+  }
+  .rs-switch-copy p {
+    margin-top: var(--s-3);
+    color: var(--fg-muted);
+    max-width: 44ch;
+  }
+
+  @media (max-width: 960px) {
+    .rs-grid,
+    .rs-switch {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

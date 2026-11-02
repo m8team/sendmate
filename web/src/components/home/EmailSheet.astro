@@ -1,0 +1,178 @@
+---
+/**
+ * The notification email, drawn in the same layout as worker/src/email/templates.ts
+ * (2px ink frame, mono field labels, a stamp in the corner), with the envelope headers
+ * a mail client shows above it. Follows the site theme, the way mail clients darken an email. Fields are filled in
+ * and kept live by the page script through the data-rd-* hooks.
+ */
+import { FORM_NAME, PLACEHOLDER_EMAIL, titleFor } from './previewLogic';
+
+interface Props {
+  id: string;
+  compact?: boolean;
+}
+const { id, compact = false } = Astro.props;
+const sample = { name: 'Sam Taylor', email: 'sam@example.com', message: 'Hi, could you quote for a five-page site? Ideally live by March.' };
+---
+
+<div class:list={['es', compact && 'es-compact']} data-rd-sheet={id}>
+  <dl class="es-env">
+    <div><dt>From</dt><dd>sendm8 &lt;notify@sendm8.com&gt;</dd></div>
+    <div><dt>To</dt><dd data-rd-to>{PLACEHOLDER_EMAIL}</dd></div>
+    <div><dt>Reply-To</dt><dd data-rd-replyto>{sample.email}</dd></div>
+    <div><dt>Subject</dt><dd class="es-subject">{titleFor()}</dd></div>
+  </dl>
+  <div class="es-frame">
+    <div class="es-top">
+      <span class="es-brand">sendm8</span>
+      <span class="es-stamp">Delivered</span>
+    </div>
+    <div class="es-body">
+      <p class="es-h">{FORM_NAME} has mail.</p>
+      <p class="es-when" data-rd-when>Mon, 02 Nov 2026 10:00:00 GMT from https://yoursite.com/contact</p>
+      <table class="es-fields">
+        <tbody>
+          <tr><th scope="row">name</th><td data-rd-field="name">{sample.name}</td></tr>
+          <tr><th scope="row">email</th><td data-rd-field="email">{sample.email}</td></tr>
+          <tr><th scope="row">message</th><td data-rd-field="message">{sample.message}</td></tr>
+        </tbody>
+      </table>
+      <span class="es-btn" aria-hidden="true">Open in sendm8</span>
+    </div>
+    <p class="es-foot">Notification settings · Report abuse</p>
+  </div>
+</div>
+
+<style>
+  /* Light: the email's own colours (templates.ts). Dark: the same roles on ink, as a mail client's dark mode would show it. */
+  .es {
+    --es-ink: #141414;
+    --es-paper: #f4efe6;
+    --es-frame: #ffffff;
+    --es-muted: #6b665e; /* 5.7:1 on the frame, 5.0:1 on paper */
+    --es-signal: #b32a10; /* stamp text, darker than the email's #e8412c so 11px text passes 4.5:1 */
+    --es-rule: #d9d2c5;
+    --es-btn-bg: #141414;
+    --es-btn-fg: #f4efe6;
+    color: var(--es-ink);
+    background: var(--es-paper);
+    border: var(--bw-strong) solid var(--line-strong);
+    box-shadow: var(--shadow-label-lg);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  :global(:root[data-theme='dark']) .es {
+    --es-ink: #f2ede2; /* 14.2:1 on the frame */
+    --es-paper: #1b1914;
+    --es-frame: #211e18;
+    --es-muted: #a39b8c; /* 6.0:1 on the frame, 6.4:1 on paper */
+    --es-signal: #ff8a6e; /* 7.2:1 on the frame */
+    --es-rule: color-mix(in srgb, #f2ede2 16%, transparent);
+    --es-btn-bg: #f2ede2;
+    --es-btn-fg: #16140f;
+  }
+  .es-env {
+    display: grid;
+    gap: 2px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--es-rule);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .es-env div {
+    display: grid;
+    grid-template-columns: 5.5em minmax(0, 1fr);
+    gap: 8px;
+  }
+  .es-env dt {
+    color: var(--es-muted);
+  }
+  .es-env dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  .es-subject {
+    font-weight: 700;
+  }
+  .es-frame {
+    margin: 16px;
+    background: var(--es-frame);
+    border: 2px solid var(--es-ink);
+  }
+  .es-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 2px solid var(--es-ink);
+    font: 700 17px/1 Arial, Helvetica, sans-serif;
+    letter-spacing: -0.02em;
+  }
+  .es-stamp {
+    border: 2px solid currentColor;
+    color: var(--es-signal);
+    padding: 3px 8px;
+    font: 700 11px/1.2 'Courier New', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .es-body {
+    padding: 22px 20px 20px;
+  }
+  .es-h {
+    font: 700 24px/1.15 Arial, Helvetica, sans-serif;
+    letter-spacing: -0.02em;
+  }
+  .es-when {
+    margin-top: 6px;
+    color: var(--es-muted);
+    font-size: 12.5px;
+    overflow-wrap: anywhere;
+  }
+  .es-fields {
+    width: 100%;
+    margin-top: 16px;
+    border-collapse: collapse;
+  }
+  .es-fields th,
+  .es-fields td {
+    padding: 9px 0;
+    border-top: 1px solid var(--es-rule);
+    vertical-align: top;
+    text-align: left;
+  }
+  .es-fields th {
+    width: 32%;
+    padding-right: 12px;
+    font: 700 11px/1.5 'Courier New', monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--es-muted);
+  }
+  .es-fields td {
+    font-size: 15px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .es-fields td:empty::before {
+    content: '(empty)';
+    color: var(--es-muted);
+  }
+  .es-btn {
+    display: inline-block;
+    margin-top: 18px;
+    background: var(--es-btn-bg);
+    color: var(--es-btn-fg);
+    padding: 11px 18px;
+    font: 700 14px/1 Arial, Helvetica, sans-serif;
+  }
+  .es-foot {
+    padding: 12px 20px;
+    border-top: 1px solid var(--es-rule);
+    font-size: 12px;
+    color: var(--es-muted);
+  }
+  .es-compact {
+    box-shadow: none;
+  }
+</style>

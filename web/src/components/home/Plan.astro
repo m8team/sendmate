@@ -1,0 +1,119 @@
+---
+import { LIMITS } from '@sendm8/shared';
+import { limits, fmt } from '../../config/site';
+
+const rows: { what: string; value: string; note?: string }[] = [
+  { what: 'Submissions', value: `${fmt.n(limits.submissionsPerFormPerMonth)} a month, per form`, note: `${fmt.n(LIMITS.submissionsPerUnclaimedFormPerMonth)} a month until you sign in and claim the form` },
+  { what: 'Forms', value: `Up to ${fmt.n(limits.forms)}` },
+  { what: 'Email notifications', value: `${limits.emailsPerDay} instant a day, then one daily digest`, note: 'Unlimited from your own domain with a Resend key' },
+  { what: 'Discord, Slack, Telegram, webhooks', value: 'Unlimited', note: `Retried at ${limits.retrySchedule.join(', ')} if your end is down` },
+  { what: 'Spam filtering', value: 'Honeypot, rate limits, heuristics, Turnstile, optional AI score', note: `Caught spam waits ${limits.spamRetentionDays} days in case it wasn’t` },
+  { what: 'File uploads', value: `${limits.fileUploadMb} MB a file, ${limits.submissionUploadMb} MB a submission` },
+  { what: 'Your data', value: 'Dashboard inbox, CSV and JSON export' },
+  { what: 'Redirects', value: 'Your own thank-you page, or our plain one' },
+  { what: 'Price', value: '$0', note: 'There isn’t a paid plan' },
+];
+---
+
+<section class="rp" id="plan" aria-labelledby="rp-title">
+  <div class="wrap rp-grid">
+    <div class="rp-copy">
+      <h2 id="rp-title" class="rp-h">One plan. This is all of it.</h2>
+      <p class="rp-lede">Everyone gets the same limits. Nothing here is a trial, and nothing is greyed out waiting for an upgrade.</p>
+      <a class="rp-link" href="/docs/">Read the docs</a>
+    </div>
+    <dl class="rp-sheet">
+      {
+        rows.map((r) => (
+          <div class="rp-row">
+            <dt>{r.what}</dt>
+            <dd>
+              <span class="rp-value">{r.value}</span>
+              {r.note && <span class="rp-note">{r.note}</span>}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>
+
+<style>
+  .rp {
+    padding-block: clamp(3.5rem, 7vw, 6rem);
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .rp-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: start;
+  }
+  .rp-copy {
+    position: sticky;
+    top: calc(var(--header-h, 4.5rem) + var(--s-5));
+  }
+  .rp-h {
+    font-family: var(--font-display);
+    font-weight: 850;
+    font-stretch: 72%;
+    font-size: var(--fs-h2);
+    line-height: 0.98;
+    max-width: 10ch;
+  }
+  .rp-lede {
+    margin-top: var(--s-4);
+    max-width: 34ch;
+    color: var(--fg-muted);
+  }
+  .rp-link {
+    display: inline-block;
+    margin-top: var(--s-4);
+    color: var(--fg);
+    font-weight: 600;
+  }
+  .rp-sheet {
+    border-top: var(--bw-strong) solid var(--line-strong);
+  }
+  .rp-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: var(--s-2) var(--s-5);
+    padding-block: var(--s-4);
+    border-bottom: 1px solid var(--line);
+  }
+  .rp-row:last-child {
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .rp-row dt {
+    font: 750 var(--fs-md) / 1.3 var(--font-display);
+    font-stretch: var(--stretch-semi);
+  }
+  .rp-row dd {
+    display: grid;
+    gap: var(--s-1);
+    margin: 0;
+  }
+  .rp-value {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+  }
+  .rp-note {
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  @media (max-width: 960px) {
+    .rp-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .rp-copy {
+      position: static;
+    }
+  }
+  @media (max-width: 560px) {
+    .rp-row {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

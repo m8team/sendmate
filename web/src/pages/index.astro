@@ -1,14 +1,16 @@
 ---
+/**
+ * The homepage. Concept: "HTML in, mail out". The page shows the trip from one line of HTML
+ * to the message that lands, and puts a checkable fact beside every claim.
+ */
 import Marketing from '../layouts/Marketing.astro';
-import LiveDemo from '../components/home/LiveDemo.vue';
+import Hero from '../components/home/Hero.astro';
+import TryIt from '../components/home/TryIt.astro';
 import Setup from '../components/home/Setup.astro';
-import Manifest from '../components/home/Manifest.astro';
-import Byok from '../components/home/Byok.astro';
-import Spam from '../components/home/Spam.astro';
-import SelfHost from '../components/home/SelfHost.astro';
-import Compare from '../components/home/Compare.astro';
-import CopyButton from '../components/ui/CopyButton.astro';
-import Icon from '../components/ui/Icon.astro';
+import Plan from '../components/home/Plan.astro';
+import Bill from '../components/home/Bill.astro';
+import RunIt from '../components/home/RunIt.astro';
+import FreePlans from '../components/home/FreePlans.astro';
 import { site } from '../config/site';
 
 const softwareLd = {
@@ -27,113 +29,82 @@ const softwareLd = {
 
 <Marketing>
   <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(softwareLd)} />
-
-  <LiveDemo client:load>
-    <div slot="headline">
-      <p class="hero-kicker">
-        <span class="priority">Free for real</span>
-        <span class="label label-lg">No server · No signup</span>
-      </p>
-      <h1 class="hero-h1">
-        <span class="hero-line">Your form’s</span>
-        <span class="hero-line">got <em>mail.</em></span>
-        <span class="hero-sub">The free, open-source form backend</span>
-      </h1>
-    </div>
-    <div slot="intro" class="hero">
-      <p class="hero-lede">
-        Point any HTML form at sendm8 and the submissions land in your inbox, Discord, Slack or wherever you like. No server to run, no signup to start, no catch.
-      </p>
-      <div class="hero-snippet">
-        <p class="label muted">The whole setup, give or take:</p>
-        <div class="endpoint">
-          <code class="endpoint-url"><span class="ep-base">&lt;form action="{site.endpointBase}</span><span class="ep-id">you@example.com</span><span class="ep-base">"&gt;</span></code>
-          <CopyButton text={`<form action="${site.endpointBase}you@example.com" method="POST">`} label="Copy" variant="outline" size="sm" />
-        </div>
-      </div>
-      <div class="hero-cta">
-        <a class="btn btn-signal btn-lg" href="/app/onboarding">Get your endpoint <Icon name="arrow-right" /></a>
-        <a class="btn btn-ghost btn-lg" href="#setup">How it works</a>
-      </div>
-    </div>
-  </LiveDemo>
-
+  <Hero />
+  <TryIt />
   <Setup />
-  <Manifest />
-  <Byok />
-  <Spam />
-  <SelfHost />
-  <Compare />
+  <Plan />
+  <Bill />
+  <RunIt />
+  <FreePlans />
 </Marketing>
 
-<style>
-  .hero-kicker {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--s-3);
-    color: var(--fg-muted);
-  }
-  .hero-h1 {
-    margin-top: var(--s-4);
-    font-family: var(--font-display);
-    font-stretch: 68%;
-    font-weight: 900;
-    font-size: clamp(4.2rem, 15.5vw, 16rem);
-    line-height: 0.8;
-    letter-spacing: -0.005em;
-    text-wrap: initial;
-  }
-  .hero-line {
-    display: block;
-    white-space: nowrap;
-  }
-  .hero-sub {
-    display: block;
-    margin-top: var(--s-4);
-    font-family: var(--font-mono, monospace);
-    font-stretch: normal;
-    font-weight: 600;
-    font-size: var(--fs-md);
-    line-height: 1.3;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-  }
-  .hero-h1 em {
-    font-style: normal;
-    color: var(--signal);
-  }
-  .hero-lede {
-    margin-top: var(--s-6);
-    max-width: 36ch;
-    font-size: var(--fs-lg);
-    line-height: 1.45;
-  }
-  .hero-snippet {
-    margin-top: var(--s-5);
-    max-width: 36rem;
-  }
-  .hero-snippet .label {
-    margin-bottom: var(--s-2);
-  }
-  .hero-cta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--s-3);
-    margin-top: var(--s-5);
-  }
-  @media (max-width: 1100px) {
-    .hero-h1 {
-      font-size: clamp(3.4rem, 19.5vw, 11rem);
-    }
-    .hero-lede {
-      margin-top: 0;
+<script>
+  import { addressFor, endpointFor, isEmail, replyToFor, snippetFor, webhookBody, type Fields } from '../components/home/previewLogic';
+  import { site } from '../config/site';
+
+  const base = site.endpointBase;
+  const $all = <T extends Element>(sel: string) => Array.from(document.querySelectorAll<T>(sel));
+
+  // ---- The endpoint line: what they type flows into the snippet, every copy button and the email's To. ----
+  const input = document.querySelector<HTMLInputElement>('#rd-email');
+  function syncEndpoint() {
+    const value = input?.value ?? '';
+    const snippet = snippetFor(base, value);
+    for (const b of $all<HTMLElement>('[data-rd-copy]')) b.dataset.copy = snippet;
+    for (const el of $all<HTMLElement>('[data-rd-endpoint-text]')) el.textContent = snippet;
+    for (const el of $all<HTMLElement>('[data-rd-to]')) el.textContent = addressFor(value);
+    if (input) {
+      input.style.width = `calc(${Math.max(8, addressFor(value).length)}ch + 2px)`;
+      input.setAttribute('aria-invalid', value.trim() !== '' && !isEmail(value) ? 'true' : 'false');
+      input.title = endpointFor(base, value);
     }
   }
-  @media (max-width: 520px) {
-    .hero-cta .btn {
-      flex: 1 1 100%;
-    }
+  input?.addEventListener('input', syncEndpoint);
+  syncEndpoint();
+
+  // ---- The try-it form: every channel preview follows the fields. ----
+  const form = document.querySelector<HTMLFormElement>('[data-rd-form]');
+  const createdAt = new Date();
+  createdAt.setSeconds(0, 0);
+  const webhookOpts = { id: '01j8x3k6v7m2q9w4e5r6t7y8u9', createdAt: createdAt.toISOString(), referrer: 'https://yoursite.com/contact' };
+
+  function readFields(): Fields {
+    const get = (n: string) => (form?.elements.namedItem(n) as HTMLInputElement | HTMLTextAreaElement | null)?.value ?? '';
+    return { name: get('name'), email: get('email'), message: get('message') };
   }
-</style>
+  function syncPreviews() {
+    const f = readFields();
+    for (const el of $all<HTMLElement>('[data-rd-field]')) {
+      const key = el.dataset.rdField as keyof Fields;
+      el.textContent = f[key].trim();
+    }
+    for (const el of $all<HTMLElement>('[data-rd-replyto]')) el.textContent = replyToFor(f) ?? '(none)';
+    for (const el of $all<HTMLElement>('[data-rd-when]')) el.textContent = `${createdAt.toUTCString()} from ${webhookOpts.referrer}`;
+    const wh = document.querySelector<HTMLElement>('[data-rd-webhook]');
+    if (wh) wh.textContent = webhookBody(f, webhookOpts);
+  }
+  form?.addEventListener('input', syncPreviews);
+  syncPreviews();
+
+  // ---- Channel tabs (WAI-ARIA tabs: arrows move, Home/End jump). ----
+  const tabs = $all<HTMLButtonElement>('.rt-tab');
+  function select(tab: HTMLButtonElement, focus = false) {
+    for (const t of tabs) {
+      const on = t === tab;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      const panel = document.getElementById(t.getAttribute('aria-controls') ?? '');
+      if (panel) panel.hidden = !on;
+    }
+    if (focus) tab.focus();
+  }
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => select(tab));
+    tab.addEventListener('keydown', (e) => {
+      const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+      if (next === undefined) return;
+      e.preventDefault();
+      select(tabs[(next + tabs.length) % tabs.length], true);
+    });
+  });
+</script>

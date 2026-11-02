@@ -1,0 +1,435 @@
+---
+import EmailSheet from './EmailSheet.astro';
+import Icon from '../ui/Icon.astro';
+import { FORM_NAME, titleFor } from './previewLogic';
+
+const sample = { name: 'Sam Taylor', email: 'sam@example.com', message: 'Hi, could you quote for a five-page site? Ideally live by March.' };
+const tabs = [
+  { id: 'discord', label: 'Discord', icon: 'discord' },
+  { id: 'slack', label: 'Slack', icon: 'slack' },
+  { id: 'webhook', label: 'Webhook', icon: 'webhook' },
+  { id: 'email', label: 'Email', icon: 'mail' },
+] as const;
+const fields = ['name', 'email', 'message'] as const;
+---
+
+<section class="rt" id="try" aria-labelledby="rt-title">
+  <div class="wrap">
+    <div class="rt-head">
+      <h2 id="rt-title" class="rt-h">Type a message. See where it lands.</h2>
+      <p class="rt-note">A preview built from what you type. Nothing is sent. Telegram gets the same fields as a plain message.</p>
+    </div>
+
+    <div class="rt-grid">
+      <form class="rt-form" data-rd-form aria-label="Example contact form" onsubmit="return false">
+        <p class="rt-form-head mono"><span>yoursite.com/contact</span></p>
+        <div class="rt-fields">
+          <label class="rt-field">
+            <span>Name</span>
+            <input name="name" autocomplete="off" value={sample.name} />
+          </label>
+          <label class="rt-field">
+            <span>Email</span>
+            <input name="email" type="email" autocomplete="off" value={sample.email} />
+          </label>
+          <label class="rt-field">
+            <span>Message</span>
+            <textarea name="message" rows="5">{sample.message}</textarea>
+          </label>
+        </div>
+      </form>
+
+      <div class="rt-out">
+        <div class="rt-tabs" role="tablist" aria-label="Where the submission goes">
+          {
+            tabs.map((t, i) => (
+              <button
+                type="button"
+                role="tab"
+                id={`rt-tab-${t.id}`}
+                aria-controls={`rt-panel-${t.id}`}
+                aria-selected={i === 0 ? 'true' : 'false'}
+                tabindex={i === 0 ? 0 : -1}
+                class="rt-tab"
+              >
+                <Icon name={t.icon} size={16} />
+                {t.label}
+              </button>
+            ))
+          }
+        </div>
+
+        <div class="rt-panel" role="tabpanel" id="rt-panel-email" aria-labelledby="rt-tab-email" hidden>
+          <EmailSheet id="try" compact />
+        </div>
+
+        <div class="rt-panel" role="tabpanel" id="rt-panel-discord" aria-labelledby="rt-tab-discord">
+          <div class="dc">
+            <div class="dc-avatar" aria-hidden="true">m8</div>
+            <div class="dc-main">
+              <p class="dc-who"><strong>sendm8</strong> <span class="dc-app">APP</span> <span class="dc-time">Today at 10:00</span></p>
+              <div class="dc-embed">
+                <p class="dc-title">{titleFor()}</p>
+                {
+                  fields.map((f) => (
+                    <div class="dc-field">
+                      <p class="dc-name">{f}</p>
+                      <p class="dc-value" data-rd-field={f}>{sample[f]}</p>
+                    </div>
+                  ))
+                }
+                <p class="dc-foot">{FORM_NAME} · sendm8</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rt-panel" role="tabpanel" id="rt-panel-slack" aria-labelledby="rt-tab-slack" hidden>
+          <div class="sl">
+            <div class="sl-avatar" aria-hidden="true">m8</div>
+            <div class="sl-main">
+              <p class="sl-who"><strong>sendm8</strong> <span class="sl-app">APP</span> <span class="sl-time">10:00</span></p>
+              <p class="sl-header">{titleFor()}</p>
+              {
+                fields.map((f) => (
+                  <div class="sl-section">
+                    <p class="sl-name">{f}</p>
+                    <p class="sl-value" data-rd-field={f}>{sample[f]}</p>
+                  </div>
+                ))
+              }
+              <p class="sl-context">{FORM_NAME} · <span class="sl-link">Open in sendm8</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rt-panel" role="tabpanel" id="rt-panel-webhook" aria-labelledby="rt-tab-webhook" hidden>
+          <div class="wh">
+            <p class="wh-req mono">
+              POST /your/endpoint<br />
+              <span>X-Sendm8-Event: submission.created</span><br />
+              <span>X-Sendm8-Signature: t=…,v1=…</span>
+            </p>
+            <pre class="wh-body mono" data-rd-webhook tabindex="0"></pre>
+            <p class="wh-note">Signed with HMAC-SHA256 and retried on failure. <a href="https://github.com/m8team/sendmate/blob/main/docs/webhooks.md" rel="noopener">Webhook docs</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .rt {
+    padding-block: clamp(3.5rem, 7vw, 6rem);
+    background: var(--bg-sunk);
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .rt-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--s-3) var(--s-6);
+  }
+  .rt-h {
+    font-family: var(--font-display);
+    font-weight: 850;
+    font-stretch: 72%;
+    font-size: var(--fs-h2);
+    line-height: 0.98;
+    max-width: 16ch;
+  }
+  .rt-note {
+    max-width: 38ch;
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .rt-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    margin-top: var(--s-7);
+    align-items: start;
+  }
+
+  .rt-form {
+    border: var(--bw-strong) solid var(--line-strong);
+    background: var(--bg-raised);
+  }
+  .rt-form-head {
+    padding: var(--s-2) var(--s-4);
+    border-bottom: 1px solid var(--line);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  .rt-fields {
+    display: grid;
+    gap: var(--s-4);
+    padding: var(--s-5) var(--s-4);
+  }
+  .rt-field {
+    display: grid;
+    gap: var(--s-2);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+  .rt-field input,
+  .rt-field textarea {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--r-1);
+    background: var(--bg);
+    color: var(--fg);
+    font: 400 1rem/1.45 var(--font-text);
+    resize: vertical;
+  }
+  .rt-field input:focus-visible,
+  .rt-field textarea:focus-visible {
+    outline: var(--bw-strong) solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .rt-tabs {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .rt-tab {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    min-height: 2.75rem;
+    padding: 0 var(--s-4);
+    margin-bottom: calc(var(--bw-strong) * -1);
+    border: var(--bw-strong) solid transparent;
+    border-bottom: 0;
+    background: none;
+    color: var(--fg-muted);
+    font: 700 0.95rem/1 var(--font-display);
+    font-stretch: var(--stretch-semi);
+    cursor: pointer;
+  }
+  .rt-tab[aria-selected='true'] {
+    color: var(--fg);
+    background: var(--bg-raised);
+    border-color: var(--line-strong);
+    border-bottom: var(--bw-strong) solid var(--bg-raised);
+  }
+  .rt-tab:focus-visible {
+    outline: var(--bw-strong) solid var(--focus-ring);
+    outline-offset: -4px;
+  }
+  .rt-panel {
+    padding: var(--s-5) 0 0;
+  }
+
+  /* Discord and Slack in their own colours, following the site theme the way both apps have light and dark themes. */
+  .dc,
+  .sl {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 14px;
+    padding: 18px;
+    border: var(--bw-strong) solid var(--line-strong);
+    font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+  }
+  .dc {
+    background: #313338;
+    color: #dbdee1;
+  }
+  .dc-avatar,
+  .sl-avatar {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e8412c;
+    color: #fff;
+    font: 800 13px/1 var(--font-display);
+  }
+  .sl-avatar {
+    border-radius: 6px;
+  }
+  .dc-who,
+  .sl-who {
+    font-size: 15px;
+  }
+  .dc-who strong {
+    color: #f2f3f5;
+  }
+  .dc-app,
+  .sl-app {
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    vertical-align: 2px;
+  }
+  .dc-app {
+    background: #5865f2;
+    color: #fff;
+  }
+  .dc-time {
+    color: #949ba4;
+    font-size: 12px;
+  }
+  .dc-embed {
+    margin-top: 6px;
+    padding: 10px 14px 12px;
+    border-left: 4px solid #e8412c;
+    border-radius: 4px;
+    background: #2b2d31;
+  }
+  .dc-title {
+    color: #f2f3f5;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .dc-field {
+    margin-top: 8px;
+    font-size: 14px;
+  }
+  .dc-name {
+    color: #f2f3f5;
+    font-weight: 700;
+  }
+  .dc-value,
+  .sl-value {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .dc-value:empty::before,
+  .sl-value:empty::before {
+    content: '(empty)';
+    font-style: italic;
+    opacity: 0.7;
+  }
+  .dc-foot {
+    margin-top: 10px;
+    color: #b5bac1;
+    font-size: 12px;
+  }
+  /* Discord's light theme */
+  :global(:root[data-theme='light']) .dc {
+    background: #ffffff;
+    color: #313338; /* 12.6:1 */
+  }
+  :global(:root[data-theme='light']) .dc-who strong,
+  :global(:root[data-theme='light']) .dc-title,
+  :global(:root[data-theme='light']) .dc-name {
+    color: #060607;
+  }
+  :global(:root[data-theme='light']) .dc-time {
+    color: #5c5e66; /* 6.5:1 */
+  }
+  :global(:root[data-theme='light']) .dc-embed {
+    background: #f2f3f5;
+  }
+  :global(:root[data-theme='light']) .dc-foot {
+    color: #4e5058; /* 7.2:1 on the embed */
+  }
+
+  .sl {
+    background: #fff;
+    color: #1d1c1d;
+    font-family: Lato, 'Helvetica Neue', Arial, sans-serif;
+  }
+  .sl-app {
+    background: #e8e8e8;
+    color: #616061;
+  }
+  .sl-time {
+    color: #616061;
+    font-size: 12px;
+  }
+  .sl-header {
+    margin-top: 6px;
+    font-size: 18px;
+    font-weight: 900;
+  }
+  .sl-section {
+    margin-top: 10px;
+    font-size: 15px;
+  }
+  .sl-name {
+    font-weight: 700;
+  }
+  .sl-context {
+    margin-top: 12px;
+    color: #616061;
+    font-size: 12px;
+  }
+  .sl-link {
+    color: #1264a3;
+  }
+  /* Slack's dark theme */
+  :global(:root[data-theme='dark']) .sl {
+    background: #1a1d21;
+    color: #d1d2d3; /* 11.2:1 */
+  }
+  :global(:root[data-theme='dark']) .sl-who strong,
+  :global(:root[data-theme='dark']) .sl-header,
+  :global(:root[data-theme='dark']) .sl-name {
+    color: #f8f8f8;
+  }
+  :global(:root[data-theme='dark']) .sl-app {
+    background: #3a3d41;
+    color: #d1d2d3;
+  }
+  :global(:root[data-theme='dark']) .sl-time,
+  :global(:root[data-theme='dark']) .sl-context {
+    color: #ababad; /* 7.4:1 */
+  }
+  :global(:root[data-theme='dark']) .sl-link {
+    color: #1d9bd1; /* 5.4:1 */
+  }
+
+  .wh {
+    border: var(--bw-strong) solid var(--line-strong);
+    background: var(--bg-raised);
+  }
+  .wh-req {
+    padding: var(--s-3) var(--s-4);
+    border-bottom: 1px solid var(--line);
+    font-size: var(--fs-xs);
+    line-height: 1.6;
+  }
+  .wh-req span {
+    color: var(--fg-muted);
+  }
+  .wh-body {
+    margin: 0;
+    padding: var(--s-4);
+    max-height: 22rem;
+    overflow: auto;
+    font-size: var(--fs-xs);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .wh-note {
+    padding: var(--s-3) var(--s-4);
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  .wh-note a {
+    color: var(--fg);
+  }
+
+  @media (max-width: 960px) {
+    .rt-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 520px) {
+    .rt-tab {
+      padding: 0 var(--s-3);
+    }
+  }
+</style>

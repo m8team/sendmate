@@ -1,0 +1,189 @@
+---
+import Icon from '../ui/Icon.astro';
+import CodeBlock from '../ui/CodeBlock.astro';
+import { site } from '../../config/site';
+
+// Plausible's Cloud vs Community Edition table is the model: say plainly who does what.
+const rows = [
+  { q: 'Who runs it', ours: 'We do', yours: 'You do, on your Cloudflare account or one Docker container' },
+  { q: 'Limits', ours: 'The plan above', yours: 'Whatever you set in one config file' },
+  { q: 'Cost', ours: '$0', yours: '$0 on Cloudflare’s free plan, more if you raise the limits past it' },
+  { q: 'Updates', ours: 'Every deploy, automatically', yours: 'Pull and redeploy when you like' },
+  { q: 'Where submissions live', ours: 'Our Cloudflare account', yours: 'Yours' },
+  { q: 'Email sending', ours: 'Our sender, or your Resend key', yours: 'Your Resend key' },
+];
+
+const terminal = `
+git clone ${site.repo}
+cd sendmate && npm install
+npx wrangler d1 create sendm8
+npm run deploy`;
+---
+
+<section class="rr" id="self-host" aria-labelledby="rr-title">
+  <div class="wrap">
+    <div class="rr-head">
+      <h2 id="rr-title" class="rr-h">Or run your own copy.</h2>
+      <p class="rr-lede">
+        Every line running on sendm8.com is on GitHub under {site.license}. Same code, no hidden edition. Here’s the honest difference between using ours and running yours.
+      </p>
+    </div>
+
+    <div class="rr-scroll">
+      <table class="rr-table">
+        <thead>
+          <tr>
+            <td></td>
+            <th scope="col">sendm8.com</th>
+            <th scope="col">Your copy</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            rows.map((r) => (
+              <tr>
+                <th scope="row">{r.q}</th>
+                <td data-label="sendm8.com">{r.ours}</td>
+                <td data-label="Your copy">{r.yours}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rr-do">
+      <div class="rr-actions">
+        <a class="btn btn-outline btn-lg" href={site.deployUrl} rel="noopener" target="_blank">
+          <Icon name="cloudflare" size={20} /> Deploy to Cloudflare
+        </a>
+        <a class="rr-link" href={site.repo} rel="noopener">
+          <Icon name="github" size={18} /> Read the source
+        </a>
+        <a class="rr-link" href={`${site.repo}/blob/main/docs/self-hosting.md`} rel="noopener">Self-hosting guide</a>
+      </div>
+      <CodeBlock code={terminal} lang="bash" filename="terminal" compact />
+    </div>
+  </div>
+</section>
+
+<style>
+  .rr {
+    padding-block: clamp(3.5rem, 7vw, 6rem);
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .rr-head {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--s-4) clamp(2rem, 5vw, 4.5rem);
+    align-items: end;
+  }
+  .rr-h {
+    font-family: var(--font-display);
+    font-weight: 850;
+    font-stretch: 72%;
+    font-size: var(--fs-h2);
+    line-height: 0.98;
+  }
+  .rr-lede {
+    max-width: 52ch;
+    color: var(--fg-muted);
+  }
+  .rr-scroll {
+    margin-top: var(--s-7);
+  }
+  .rr-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .rr-table th,
+  .rr-table td {
+    padding: var(--s-3) var(--s-4) var(--s-3) 0;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+  .rr-table thead th {
+    font: 850 var(--fs-h3) / 1 var(--font-display);
+    font-stretch: 72%;
+    padding-bottom: var(--s-3);
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .rr-table thead td {
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .rr-table tbody th {
+    width: 24%;
+    font: 750 var(--fs-md) / 1.3 var(--font-display);
+    font-stretch: var(--stretch-semi);
+  }
+  .rr-table tbody td {
+    width: 38%;
+  }
+  .rr-do {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--s-5) clamp(2rem, 5vw, 4.5rem);
+    align-items: center;
+    margin-top: var(--s-7);
+  }
+  .rr-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3) var(--s-5);
+  }
+  .rr-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--fg);
+    font-weight: 600;
+  }
+  @media (max-width: 960px) {
+    .rr-head,
+    .rr-do {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  /* Narrow screens: each question becomes a small block with both answers labelled. */
+  @media (max-width: 640px) {
+    .rr-table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+    .rr-table,
+    .rr-table tbody,
+    .rr-table tr,
+    .rr-table th,
+    .rr-table td {
+      display: block;
+      width: auto !important;
+    }
+    .rr-table tr {
+      padding-block: var(--s-3);
+      border-bottom: 1px solid var(--line);
+    }
+    .rr-table tbody th,
+    .rr-table tbody td {
+      padding: 0;
+      border: 0;
+    }
+    .rr-table tbody td {
+      display: grid;
+      grid-template-columns: 7.5rem minmax(0, 1fr);
+      gap: var(--s-3);
+      margin-top: var(--s-2);
+    }
+    .rr-table tbody td::before {
+      content: attr(data-label);
+      font: 500 var(--fs-2xs) / 1.6 var(--font-mono);
+      letter-spacing: var(--track-label);
+      text-transform: uppercase;
+      color: var(--fg-muted);
+    }
+  }
+</style>

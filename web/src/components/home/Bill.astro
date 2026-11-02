@@ -1,0 +1,175 @@
+---
+import { LIMITS } from '@sendm8/shared';
+import { fmt } from '../../config/site';
+
+// Every cap quoted here is enforced in packages/shared/src/limits.ts, sized to the providers' free tiers.
+const GB = 1024 * 1024 * 1024;
+const MB = 1024 * 1024;
+const lines = [
+  { item: 'Cloudflare Workers', does: 'Runs every endpoint and the dashboard', cap: 'Free plan' },
+  { item: 'Cloudflare D1', does: 'Stores submissions', cap: `Watched against the free ${LIMITS.databaseMaxBytes / MB} MB` },
+  { item: 'Cloudflare R2', does: 'Holds file uploads', cap: `Hard stop at ${LIMITS.storageTotalBytes / GB} GB, under the free 10 GB` },
+  { item: 'Workers AI', does: 'Optional spam scoring', cap: `${fmt.n(LIMITS.aiSpamChecksPerDay)} checks a day, inside the free allowance` },
+  { item: 'Resend', does: 'Sends notification emails', cap: `${LIMITS.systemEmailsPerDay} a day on the free plan. Extras wait for the digest` },
+];
+---
+
+<section class="rb" id="free" aria-labelledby="rb-title">
+  <div class="wrap rb-grid">
+    <div class="rb-copy">
+      <h2 id="rb-title" class="rb-h">The hosting bill is $0.00.</h2>
+      <p>
+        That’s why it’s free. sendm8 is built to fit inside free plans. Every limit on this page sits below what Cloudflare and Resend give away, so busy days turn into a digest email, not an invoice. When usage gets close to a ceiling, the Worker sheds load and alerts us before it could cost anything.
+      </p>
+      <p>That isn’t a promotion with an end date. It’s how the thing is built, and the limits are in the code for anyone to check.</p>
+      <a class="rb-link" href="https://github.com/m8team/sendmate/blob/main/packages/shared/src/limits.ts" rel="noopener">See the limits in the source</a>
+    </div>
+
+    <div class="rb-bill" role="group" aria-labelledby="rb-bill-title">
+      <p id="rb-bill-title" class="rb-bill-h">Hosting, every month since launch</p>
+      <table class="rb-table">
+        <caption class="sr-only">What sendm8 runs on and what each part costs a month</caption>
+        <thead>
+          <tr><th scope="col">Service</th><th scope="col" class="rb-num">Cost</th></tr>
+        </thead>
+        <tbody>
+          {
+            lines.map((l) => (
+              <tr>
+                <th scope="row">
+                  <span class="rb-item">{l.item}</span>
+                  <span class="rb-does">{l.does}. {l.cap}.</span>
+                </th>
+                <td class="rb-num mono">$0.00</td>
+              </tr>
+            ))
+          }
+        </tbody>
+        <tfoot>
+          <tr><th scope="row">Total</th><td class="rb-num mono rb-total">$0.00</td></tr>
+        </tfoot>
+      </table>
+      <p class="rb-fine">Not counting the domain name.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .rb {
+    padding-block: clamp(3.5rem, 7vw, 6rem);
+    background: var(--inv-bg);
+    color: var(--inv-fg);
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+    --fg: var(--inv-fg);
+    --fg-muted: var(--inv-fg-muted);
+    --line: var(--inv-line);
+    --line-strong: var(--paper-100);
+    --signal-text: var(--red-300);
+    --focus-ring: var(--paper-100);
+  }
+  .rb-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: start;
+  }
+  .rb-h {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-stretch: 70%;
+    font-size: clamp(2.8rem, 6vw, 5.6rem);
+    line-height: 0.95;
+    max-width: 10ch;
+  }
+  .rb-copy p {
+    margin-top: var(--s-4);
+    max-width: 52ch;
+    color: var(--fg-muted);
+  }
+  .rb-copy p:first-of-type {
+    margin-top: var(--s-6);
+    color: var(--fg);
+    font-size: var(--fs-lg);
+    line-height: 1.5;
+  }
+  .rb-link {
+    display: inline-block;
+    margin-top: var(--s-4);
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .rb-bill {
+    border: var(--bw-strong) solid var(--line-strong);
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+  .rb-bill-h {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .rb-table {
+    width: 100%;
+    margin-top: var(--s-4);
+    border-collapse: collapse;
+  }
+  .rb-table th,
+  .rb-table td {
+    padding-block: var(--s-3);
+    text-align: left;
+    vertical-align: top;
+    font-weight: 400;
+  }
+  .rb-table thead th {
+    padding-top: 0;
+    font: 500 var(--fs-2xs) / 1.3 var(--font-mono);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    border-bottom: 1px solid var(--line);
+  }
+  .rb-table tbody tr + tr th,
+  .rb-table tbody tr + tr td {
+    border-top: 1px dashed var(--line);
+  }
+  .rb-item {
+    display: block;
+    font: 750 var(--fs-md) / 1.3 var(--font-display);
+    font-stretch: var(--stretch-semi);
+  }
+  .rb-does {
+    display: block;
+    margin-top: 2px;
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .rb-num {
+    text-align: right !important;
+    white-space: nowrap;
+    padding-left: var(--s-4);
+  }
+  .rb-table tfoot th,
+  .rb-table tfoot td {
+    border-top: var(--bw-strong) solid var(--line-strong);
+    padding-top: var(--s-4);
+    font: 850 var(--fs-h3) / 1 var(--font-display);
+    font-stretch: 72%;
+  }
+  .rb-total {
+    font-family: var(--font-mono) !important;
+    font-size: var(--fs-h3) !important;
+    color: var(--signal-text);
+  }
+  .rb-fine {
+    margin-top: var(--s-3);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  @media (max-width: 960px) {
+    .rb-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

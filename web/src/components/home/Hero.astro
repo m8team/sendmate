@@ -1,0 +1,240 @@
+---
+import Icon from '../ui/Icon.astro';
+import EmailSheet from './EmailSheet.astro';
+import { site, limits, fmt } from '../../config/site';
+import { PLACEHOLDER_EMAIL } from './previewLogic';
+
+const snippet = `<form action="${site.endpointBase}${PLACEHOLDER_EMAIL}" method="POST">`;
+---
+
+<section class="rh" aria-labelledby="rh-title">
+  <div class="wrap rh-grid">
+    <div class="rh-copy">
+      <h1 id="rh-title" class="rh-h">A form backend in one line of&nbsp;HTML.</h1>
+      <p class="rh-lede">
+        Point your form at sendm8 and every submission arrives by email, Discord, Slack, Telegram or webhook. It’s free, and there’s no paid plan waiting behind it.
+      </p>
+
+      <div class="line" data-rd-line>
+        <label class="line-label label label-lg" for="rd-email">Type your email to make it yours</label>
+        <div class="line-box">
+          <code class="line-code"
+            ><span class="line-fixed">&lt;form action="{site.endpointBase}</span><input
+              id="rd-email"
+              class="line-input"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              spellcheck="false"
+              placeholder={PLACEHOLDER_EMAIL}
+              style={`width: calc(${PLACEHOLDER_EMAIL.length}ch + 2px)`}
+            /><span class="line-fixed">"</span><span class="line-method">method="POST"&gt;</span></code
+          >
+        </div>
+        <div class="line-actions">
+          <button type="button" class="btn btn-signal btn-lg copy-btn" data-copy={snippet} data-rd-copy>
+            <span class="copy-idle"><Icon name="copy" size={18} /><span>Copy the line</span></span>
+            <span class="copy-done" aria-hidden="true"><Icon name="check" size={18} /><span>Copied</span></span>
+          </button>
+          <p class="line-next">Paste it into your form, send yourself a test, click the link we email you. <a href="#setup">See the steps</a></p>
+        </div>
+      </div>
+
+      <ul class="rh-facts mono" role="list">
+        <li>{fmt.n(limits.submissionsPerFormPerMonth)} submissions a month, per form</li>
+        <li>No account to start</li>
+        <li><a href={site.repo} rel="noopener">Open source, {site.license}</a></li>
+      </ul>
+    </div>
+
+    <figure class="rh-mail">
+      <EmailSheet id="hero" />
+      <figcaption class="rh-cap">The email you get, in the same layout the real one uses.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .rh {
+    padding-block: clamp(2.5rem, 6vw, 5.5rem) clamp(3rem, 7vw, 6rem);
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .rh-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+  }
+  .rh-h {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-stretch: 70%;
+    font-size: clamp(3rem, 7.4vw, 7.25rem);
+    line-height: 0.88;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+  }
+  .rh-lede {
+    margin-top: var(--s-5);
+    max-width: 46ch;
+    font-size: var(--fs-lg);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  .line {
+    margin-top: var(--s-6);
+  }
+  .line-label {
+    display: block;
+    margin-bottom: var(--s-2);
+    color: var(--fg-muted);
+  }
+  .line-box {
+    border: var(--bw-strong) solid var(--line-strong);
+    background: var(--bg-raised);
+    padding: var(--s-4) var(--s-4);
+  }
+  .line-code {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    row-gap: var(--s-1);
+    font-family: var(--font-mono);
+    font-size: clamp(0.95rem, 1.35vw, 1.15rem);
+    line-height: 1.5;
+    padding: 0;
+    background: none;
+    border: 0;
+    white-space: normal;
+  }
+  .line-fixed {
+    white-space: pre;
+  }
+  .line-fixed:first-child {
+    white-space: pre;
+  }
+  .line-method {
+    flex-basis: 100%;
+    padding-left: 6ch;
+    white-space: pre;
+  }
+  .line-input {
+    min-width: 8ch;
+    max-width: 100%;
+    padding: 0 0.1ch;
+    box-sizing: content-box;
+    border: 0;
+    border-bottom: var(--bw-strong) solid var(--signal);
+    background: var(--signal-wash);
+    color: var(--signal-text);
+    font: inherit;
+    font-weight: 600;
+  }
+  .line-input::placeholder {
+    color: var(--signal-text);
+    opacity: 0.75;
+  }
+  .line-input:focus-visible {
+    outline: var(--bw-strong) solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .line-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3) var(--s-5);
+    margin-top: var(--s-4);
+  }
+  .line-next {
+    flex: 1 1 22ch;
+    max-width: 40ch;
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .line-next a {
+    color: var(--fg);
+  }
+
+  .rh-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-1) 0;
+    margin-top: var(--s-6);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  .rh-facts li:not(:last-child)::after {
+    content: '/';
+    margin-inline: 0.75em;
+    color: var(--fg-subtle);
+  }
+  .rh-facts a {
+    color: inherit;
+  }
+
+  .rh-mail {
+    margin: 0;
+  }
+  .rh-cap {
+    margin-top: var(--s-3);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+
+  /* One entrance: the headline, then the email lands. */
+  @media (prefers-reduced-motion: no-preference) {
+    .rh-copy > * {
+      animation: rh-rise 520ms var(--ease-out) both;
+    }
+    .rh-copy > :nth-child(2) {
+      animation-delay: 60ms;
+    }
+    .rh-copy > :nth-child(3) {
+      animation-delay: 120ms;
+    }
+    .rh-copy > :nth-child(4) {
+      animation-delay: 180ms;
+    }
+    .rh-mail {
+      animation: rh-land 640ms var(--ease-out) 260ms both;
+    }
+  }
+  @keyframes rh-rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+  @keyframes rh-land {
+    from {
+      opacity: 0;
+      transform: translateY(24px) rotate(-1.2deg);
+    }
+  }
+
+  @media (max-width: 960px) {
+    .rh-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .rh-mail {
+      max-width: 34rem;
+    }
+  }
+  @media (max-width: 520px) {
+    .line-box {
+      padding: var(--s-3);
+    }
+    .line-code {
+      font-size: 0.82rem;
+    }
+    .line-method {
+      padding-left: 2ch;
+    }
+    .line-actions .btn {
+      flex: 1 1 100%;
+    }
+  }
+</style>

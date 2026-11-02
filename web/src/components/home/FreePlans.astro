@@ -1,0 +1,149 @@
+---
+import { rows, us, competitors, checkedOnLabel, checkedOn } from '../../config/compare';
+import { site } from '../../config/site';
+
+const cols = [us, ...competitors];
+const mark = { yes: 'Yes', part: 'Partly', no: 'No, or paid only' } as const;
+---
+
+<section class="rc" id="compare" aria-labelledby="rc-title">
+  <div class="wrap">
+    <div class="rc-head">
+      <h2 id="rc-title" class="rc-h">Free plans, side by side.</h2>
+      <p class="rc-note">
+        Taken from each service’s own pricing page and docs on <time datetime={checkedOn}>{checkedOnLabel}</time>. Plans change; if one of these is out of date, <a href={`${site.repo}/issues`}>tell us</a>.
+        Sources and the full write-ups are on the <a href="/formspree-alternative/">comparison pages</a>.
+      </p>
+    </div>
+
+    <div class="rc-scroll" role="region" aria-labelledby="rc-title" tabindex="0">
+      <table class="rc-table">
+        <thead>
+          <tr>
+            <td></td>
+            {cols.map((c, i) => <th scope="col" class:list={[i === 0 && 'is-us']}>{c.name}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {
+            rows.map((row, r) => (
+              <tr>
+                <th scope="row">{row}</th>
+                {cols.map((c, i) => {
+                  const cell = c.cells[r];
+                  return (
+                    <td class:list={[i === 0 && 'is-us', cell.tone && `t-${cell.tone}`]}>
+                      {cell.tone && <span class={`rc-mark m-${cell.tone}`} title={mark[cell.tone]} aria-hidden="true" />}
+                      <span>{cell.v}</span>
+                      {cell.note && <span class="rc-cellnote">{cell.note}</span>}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="rc-legend"><span><i class="rc-mark m-yes"></i>Yes</span><span><i class="rc-mark m-part"></i>Partly</span><span><i class="rc-mark m-no"></i>No, or paid only</span></p>
+  </div>
+</section>
+
+<style>
+  .rc {
+    padding-block: clamp(3.5rem, 7vw, 6rem);
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .rc-head {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--s-4) clamp(2rem, 5vw, 4.5rem);
+    align-items: end;
+  }
+  .rc-h {
+    font-family: var(--font-display);
+    font-weight: 850;
+    font-stretch: 72%;
+    font-size: var(--fs-h2);
+    line-height: 0.98;
+    max-width: 11ch;
+  }
+  .rc-note {
+    max-width: 56ch;
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .rc-note a {
+    color: var(--fg);
+  }
+  .rc-scroll {
+    margin-top: var(--s-7);
+    overflow-x: auto;
+  }
+  .rc-table {
+    width: 100%;
+    min-width: 62rem;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .rc-table th,
+  .rc-table td {
+    padding: var(--s-3) var(--s-3);
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+  .rc-table thead th,
+  .rc-table thead td {
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+    font: 800 var(--fs-md) / 1.2 var(--font-display);
+    font-stretch: var(--stretch-semi);
+  }
+  .rc-table tbody th {
+    width: 15%;
+    font-weight: 650;
+  }
+  .rc-table .is-us {
+    background: var(--bg-raised);
+  }
+  .rc-table thead .is-us {
+    box-shadow: inset 0 4px 0 var(--signal);
+  }
+  .rc-table td {
+    line-height: 1.4;
+  }
+  .rc-cellnote {
+    display: block;
+    margin-top: 2px;
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  /* Shape and label, never colour alone: a filled square, a half, an empty one. */
+  .rc-mark {
+    display: inline-block;
+    width: 0.62em;
+    height: 0.62em;
+    margin-right: 0.45em;
+    border: 1.5px solid var(--fg);
+    vertical-align: 0.02em;
+  }
+  .m-yes {
+    background: var(--fg);
+  }
+  .m-part {
+    background: linear-gradient(90deg, var(--fg) 50%, transparent 50%);
+  }
+  .rc-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-5);
+    margin-top: var(--s-4);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  @media (max-width: 960px) {
+    .rc-head {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
