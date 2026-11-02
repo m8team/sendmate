@@ -6,9 +6,9 @@
 </a>
 
 <p align="center">
-  <b>The free, open-source form backend.</b><br>
-  Point any HTML form at sendm8 and the submissions land in your inbox, Discord, Slack or wherever you like.<br>
-  No server to run, no signup to start, no catch.
+  <b>A form backend in one line of HTML.</b><br>
+  Point any HTML form at sendm8 and submissions land in your inbox, Discord, Slack, Telegram or your own webhook.<br>
+  Open source, and yours to self-host.
 </p>
 
 <p align="center">
@@ -32,6 +32,7 @@
 </p>
 
 <p align="center"><img src=".github/assets/waves.svg" alt="" width="100%" height="28"></p>
+
 
 ## The 30-second setup
 
@@ -70,7 +71,7 @@
 </picture>
 
 **Everything’s included. Declared value: nothing.**<br>
-No feature grid, no locked padlock icons. Here’s the full manifest, the same for everyone.
+Every feature and every limit. There’s one plan, so this is all of it.
 
 | No. | Contents | Qty / limit | Value |
 |:---|:---|:---|---:|
@@ -127,7 +128,7 @@ Spam isn’t deleted straight away. It waits in your spam folder for 30 days, an
   <img align="right" src=".github/assets/barcode-light.png" alt="SM8-OPEN-SOURCE" width="200">
 </picture>
 
-sendm8 is open source, all of it. The code on sendm8.com is the code on GitHub. There’s no “enterprise edition” hiding the good bits.
+Every line running on sendm8.com is in this repo. Fork it, change it, run it on your own Cloudflare account.
 
 - One Worker and one D1 database
 - Fits Cloudflare’s free plan, with usage alerts and load shedding built in
