@@ -61,6 +61,12 @@ import { site } from '../config/site';
       document.title = 'Thanks · ' + name;
     }
 
+    // The form is new and its owner hasn't confirmed their address yet: stored, not yet delivered.
+    if (q.get('pending') === '1') {
+      root.querySelector('[data-ty-body]').textContent =
+        'It’s saved safely. This form is new, so it’ll be passed on as soon as whoever runs the site confirms their email address.';
+    }
+
     var t = new Date();
     root.querySelector('[data-ty-time]').textContent =
       String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0');

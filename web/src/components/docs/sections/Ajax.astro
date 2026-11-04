@@ -143,7 +143,9 @@ const statusRows = [
   </div>
   <div class="prose">
     <p>
-      <code>ok</code> is always there, so checking it is enough. The <code>id</code> is the submission’s id in your dashboard. On failure, <code>error.message</code> is a plain-English sentence you can show to your visitor as it is, and <code>error.code</code> (like <code>quota_exceeded</code> or <code>rate_limited</code>) stays the same for your code to check.
+      <code>ok</code> is always there, so checking it is enough. The <code>id</code> is the submission’s id in your dashboard. On an
+      <a href="/docs/zero-signup/">email endpoint</a> that hasn’t been confirmed yet, there’s also <code>"pending": "confirmation"</code> and a
+      <code>message</code> saying when the confirmation link was emailed: the submission is stored, but nothing is delivered until it’s clicked. On failure, <code>error.message</code> is a plain-English sentence you can show to your visitor as it is, and <code>error.code</code> (like <code>quota_exceeded</code> or <code>rate_limited</code>) stays the same for your code to check.
     </p>
     <p>
       When the problem is a particular field, there’s also an <code>errors</code> array with one entry per field, shaped like Formspree’s, so you can

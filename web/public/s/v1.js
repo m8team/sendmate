@@ -135,6 +135,8 @@
         setBusy(form, false);
         var body = r.body || {};
         if (body.ok === true) {
+          // For the developer, not the visitor: why nothing has arrived in the owner's inbox yet.
+          if (body.pending && body.message && window.console) console.info('sendm8: ' + body.message);
           var detail = { id: body.id, next: body.next, response: body };
           if (emit(form, 'sendm8:success', detail)) {
             form.reset();
