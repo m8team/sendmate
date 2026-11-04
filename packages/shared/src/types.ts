@@ -65,6 +65,10 @@ export interface SubmitSuccess {
   ok: true;
   id: string;
   next?: string;
+  /** Set while the form waits for its owner to confirm: the submission is stored but not yet delivered. */
+  pending?: "confirmation";
+  /** Plain-English explanation to go with `pending`. */
+  message?: string;
 }
 
 /** A problem with one submitted field, e.g. an `email` that isn't an email address. */

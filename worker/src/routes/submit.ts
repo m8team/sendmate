@@ -22,7 +22,7 @@ import { invalidFields, SubmitError } from "../pipeline/errors";
 import { parseSubmission, type ParsedSubmission } from "../pipeline/parse";
 import { assessSpam, disposableDomain, submitterEmail, SUSPICIOUS_SCORE } from "../pipeline/spam";
 import { validateFields } from "../pipeline/validate";
-import { claimZeroSignupSlot, dispatchStored, newZeroSignupForm, zeroSignupInserts } from "../pipeline/zero-signup";
+import { claimZeroSignupSlot, dispatchStored, newZeroSignupForm, pendingConfirmationNote, zeroSignupInserts } from "../pipeline/zero-signup";
 
 export const submitRoutes = createRouter();
 
@@ -216,6 +216,7 @@ submitRoutes.post("/:formId", async (c) => {
     const next = resolveRedirect(parsed.special._next ?? parsed.special._redirect, form, submittingHost);
     const challenge = needsChallenge(env, form, json, status, verdict.score);
     if (challenge) status = "pending_challenge";
+    let pending: string | null = null;
 
     // Under load, spam isn't worth a D1 write.
     const store = !verdict.drop && !(shedding && status === "spam");
@@ -272,6 +273,8 @@ submitRoutes.post("/:formId", async (c) => {
         throw error;
       }
 
+      // Read before dispatch runs, since dispatch may send the confirmation and move its timestamp.
+      if (status === "ok") pending = await pendingConfirmationNote(env, form, now);
       if (status === "ok") {
         c.executionCtx.waitUntil(dispatchStored(env, form, id, c.req.header("referer") ?? null).catch((error) => captureError(env, error, { where: "dispatch", formId, submissionId: id })));
       }
@@ -280,7 +283,7 @@ submitRoutes.post("/:formId", async (c) => {
     }
 
     if (challenge) return c.redirect(new URL(`/c/${id}`, env.APP_URL).toString(), 303);
-    return success(c, form, id, next);
+    return success(c, form, id, next, pending);
   } catch (error) {
     if (error instanceof SubmitError) return failure(c, json, form, error);
     c.executionCtx.waitUntil(captureError(c.env, error, { where: "submit", formId: form?.id }));
@@ -321,12 +324,16 @@ export function thanksUrl(appUrl: string, referer: string | undefined): string {
   return thanks.toString();
 }
 
-function success(c: Ctx, form: FormRow, id: string, next: string | undefined): Response {
+function success(c: Ctx, form: FormRow, id: string, next: string | undefined, pending: string | null): Response {
   if (wantsJson(c.req.raw)) {
-    const body: SubmitSuccess = { ok: true, id, ...(next ? { next } : {}) };
+    const body: SubmitSuccess = { ok: true, id, ...(next ? { next } : {}), ...(pending ? { pending: "confirmation" as const, message: pending } : {}) };
     return c.json(body, 200, corsHeaders(c, form));
   }
-  return c.redirect(next ?? thanksUrl(c.env.APP_URL, c.req.header("referer")), 303);
+  if (next) return c.redirect(next, 303);
+  const thanks = new URL(thanksUrl(c.env.APP_URL, c.req.header("referer")));
+  // The default thank-you page says the message will be passed on once the site is set up.
+  if (pending) thanks.searchParams.set("pending", "1");
+  return c.redirect(thanks.toString(), 303);
 }
 
 function failure(c: Ctx, json: boolean, form: FormRow | undefined, error: SubmitError): Response {

@@ -69,6 +69,33 @@ export async function zeroSignupInserts(db: Db, form: FormRow): Promise<BatchIte
   return statements;
 }
 
+/** `hello@enerlattice.com` → `h…@enerlattice.com`: enough for the owner to recognise, not enough to harvest. */
+export function maskEmail(email: string): string {
+  const at = email.lastIndexOf("@");
+  return at > 0 ? `${email[0]}…${email.slice(at)}` : "…";
+}
+
+const utcTime = (ms: number) => `${new Date(ms).toISOString().slice(11, 16)} UTC`;
+
+/**
+ * What to tell whoever just posted to a form that's waiting for its owner to confirm. Without this,
+ * a developer testing with curl sees `ok: true` every time and can't tell why nothing arrives.
+ * Call it before the submission's own dispatch runs: it predicts what that dispatch will do.
+ */
+export async function pendingConfirmationNote(env: Env, form: FormRow, now = Date.now()): Promise<string | null> {
+  if (form.status !== "pending_confirmation" || !form.ownerEmail) return null;
+  const address = await unclaimedAddress(getDb(env), form.ownerEmail);
+  const to = maskEmail(form.ownerEmail);
+  const sentAt = address?.tokenSentAt ?? null;
+  if (sentAt === null || sentAt < now - CONFIRM_COOLDOWN_MS) {
+    return `Stored. Delivery starts once the owner confirms: we're emailing a confirmation link to ${to} now. If it doesn't arrive, check spam.`;
+  }
+  return (
+    `Stored. Delivery starts once the owner clicks the confirmation link we emailed ${to} at ${utcTime(sentAt)}. ` +
+    `Check spam. We send one link per 24 hours, so the next can go after ${utcTime(sentAt + CONFIRM_COOLDOWN_MS)}.`
+  );
+}
+
 /** Sends the one-off confirmation email, at most once per 24 hours per address. */
 export async function sendOwnerConfirmation(env: Env, form: FormRow, referrer: string | null, now = Date.now()): Promise<boolean> {
   const db = getDb(env);

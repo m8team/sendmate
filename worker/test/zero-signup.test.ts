@@ -97,6 +97,45 @@ describe("first submission to an email endpoint", () => {
     expect(await listSubmissions(form!.id)).toHaveLength(3);
   });
 
+  it("tells whoever posts that delivery waits on the owner's confirmation, without revealing the address", async () => {
+    type Pending = { ok: true; id: string; pending?: string; message?: string };
+    const http = mockFetch();
+    const email = uniqueEmail();
+    const masked = `${email[0]}…@zero-signup.dev`;
+
+    const first = await (await postJson(email, { message: "first" })).json<Pending>();
+    expect(first).toMatchObject({ ok: true, pending: "confirmation" });
+    expect(first.message).toContain(`emailing a confirmation link to ${masked} now`);
+
+    await confirmationToken(http, email);
+    const form = (await formFor(email))!;
+    const sentAt = (await db().select().from(emailAddresses).where(eq(emailAddresses.email, email)).get())!.tokenSentAt!;
+    const hhmm = (ms: number) => new Date(ms).toISOString().slice(11, 16);
+
+    // Later posts, by address or by form id, say when the link went and when the next one can.
+    for (const endpoint of [email, form.id]) {
+      const later = await (await postJson(endpoint, { message: "again" })).json<Pending>();
+      expect(later.pending).toBe("confirmation");
+      expect(later.message).toContain(`we emailed ${masked} at ${hhmm(sentAt)} UTC`);
+      expect(later.message).toContain(`next can go after ${hhmm(sentAt + 24 * 3600_000)} UTC`);
+      expect(later.message).not.toContain(email);
+    }
+
+    // A browser post lands on the thank-you page, worded for a form that isn't live yet.
+    const page = await postForm(email, { message: "from a browser" });
+    expect(new URL(page.headers.get("location")!).searchParams.get("pending")).toBe("1");
+
+    // Once confirmed, nothing is pending.
+    const { token } = await confirmationToken(http, email);
+    await postConfirm(token, "confirm");
+    const live = await (await postJson(email, { message: "live" })).json<Pending>();
+    expect(live).toEqual({ ok: true, id: live.id });
+    const livePage = await postForm(email, { message: "live, from a browser" });
+    expect(new URL(livePage.headers.get("location")!).searchParams.has("pending")).toBe(false);
+    // Let those deliveries finish here, so they don't land in the next test's mailbox.
+    await waitFor(async () => http.emails().find((e) => e.text.includes("live, from a browser")));
+  }, 20_000);
+
   it("doesn't create anything for honeypot hits or invalid addresses", async () => {
     const http = mockFetch();
     const email = uniqueEmail();
