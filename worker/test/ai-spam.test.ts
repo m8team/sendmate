@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { forms, submissions, usageDaily } from "../src/db/schema";
 import { newId } from "../src/lib/ids";
 import { dayKey } from "../src/lib/time";
-import { AI_SPAM_MODEL, aiSpamScore, mostlyNonLatin, ownerIsTesting, parseScore, submissionText } from "../src/pipeline/ai-spam";
+import { AI_SPAM_MODEL, aiMayNotBinAlone, aiSpamScore, mostlyNonLatin, ownerIsTesting, parseScore, submissionText } from "../src/pipeline/ai-spam";
 import { deliverBacklog, dispatchStored } from "../src/pipeline/zero-signup";
 import { addChannel, createForm, createUser, db, DISCORD_URL, getSubmission, listSubmissions, mockFetch, postJson } from "./helpers";
 
@@ -151,7 +151,17 @@ describe("AI spam scoring", () => {
     const meta = { ipHash: null, country: null, userAgent: null, referrer: null, special: {}, spamReasons: [] };
     const persianId = newId();
     const englishId = newId();
+    const botId = newId();
     await db().insert(submissions).values([
+      // Shaped like the form-spam bots on a live site: a made-up Latin name on a Russian message.
+      {
+        id: botId,
+        formId: form.id,
+        data: { name: "Brianric", company: "google", email: "bot@list.ru", telephone: "89185917559", interest: "Software development", message: "Реальные отзывы клиентов и продвижение сайта в поисковых системах по низкой цене, пишите нам" },
+        meta,
+        status: "ok",
+        createdAt: Date.now(),
+      },
       // A real-shaped Persian enquiry: the 8B model scored these 100 in production.
       { id: persianId, formId: form.id, data: { name: "میلاد کمالی", email: "milad@example.org", message: "درخواست تماس برای طراحی وب‌سایت و پورتال" }, meta, status: "ok", createdAt: Date.now() },
       { id: englishId, formId: form.id, data: { message: "cheap seo backlinks casino bonus click now" }, meta, status: "ok", createdAt: Date.now() },
@@ -163,7 +173,20 @@ describe("AI spam scoring", () => {
     expect(await getSubmission(persianId)).toMatchObject({ status: "ok", spamScore: 1 });
     expect((await getSubmission(persianId))?.meta.spamReasons).toContain("ai:100");
     expect(await getSubmission(englishId)).toMatchObject({ status: "spam" });
+    expect(await getSubmission(botId)).toMatchObject({ status: "spam" });
     expect(http.to("discord.com")).toHaveLength(1);
+  });
+
+  it("only spares non-Latin messages whose sender's name is in the same kind of script", () => {
+    const russian = "Реальные отзывы клиентов и продвижение сайта в поисковых системах";
+    // Spared: the name matches the message, or there's no name to compare.
+    expect(aiMayNotBinAlone({ name: "میلاد کمالی", message: "درخواست تماس برای طراحی وب‌سایت و پورتال" })).toBe(true);
+    expect(aiMayNotBinAlone({ "Your name": "Иван Петров", message: russian })).toBe(true);
+    expect(aiMayNotBinAlone({ message: "通道确认探测：请查 Gmail 点确认。" })).toBe(true);
+    // Not spared: a Latin bot name on foreign text, or a Latin message to begin with.
+    expect(aiMayNotBinAlone({ name: "Brianric", company: "google", message: russian })).toBe(false);
+    expect(aiMayNotBinAlone({ Name: "JamesAnorn", message: russian })).toBe(false);
+    expect(aiMayNotBinAlone({ name: "Robertkat", message: "Xin chào, chúng tôi cung cấp dịch vụ SEO giá rẻ" })).toBe(false);
   });
 
   it("spots text that's mostly in a non-Latin script", () => {

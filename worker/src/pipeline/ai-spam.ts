@@ -72,21 +72,42 @@ export async function aiSpamScore(env: Env, submission: Pick<SubmissionRow, "dat
   }
 }
 
-/**
- * The model is small and judges mostly English well, but it scored ordinary Persian and Chinese
- * enquiries 100. So for text mostly in a non-Latin script its score is kept, and shows as suspicious,
- * but it can't bin the message on its own. The heuristics still apply to everything.
- */
+/** Share of letters in `text` that aren't Latin script, or null when there are too few to judge. */
+function nonLatinShare(text: string): number | null {
+  const letters = text.match(/\p{L}/gu) ?? [];
+  if (letters.length < 4) return null;
+  const latin = text.match(/\p{Script=Latin}/gu)?.length ?? 0;
+  return (letters.length - latin) / letters.length;
+}
+
 export function mostlyNonLatin(data: SubmissionRow["data"]): boolean {
   const isEmail = (v: string) => /^[^\s@]+@[^\s@]+$/.test(v.trim());
   const text = Object.values(data)
     .flat()
     .filter((v): v is string => typeof v === "string" && !isEmail(v))
     .join(" ");
-  const letters = text.match(/\p{L}/gu) ?? [];
-  if (letters.length < 4) return false;
-  const latin = text.match(/\p{Script=Latin}/gu)?.length ?? 0;
-  return (letters.length - latin) / letters.length >= 0.5;
+  return (nonLatinShare(text) ?? 0) >= 0.5;
+}
+
+/** Field names forms use for the sender's name, in a few languages. */
+const NAME_FIELD = /^(full[ _-]?)?name$|^(first|last)[ _-]?name$|^(your[ _-]?)?name$|^naam$|^nombre$|^nom$|^navn$|^namn$|^имя$/i;
+
+/**
+ * The model is small and judges mostly English well, but it scored ordinary Persian and Chinese
+ * enquiries 100. So for text mostly in a non-Latin script its score is kept, and shows as suspicious,
+ * but it can't bin the message on its own. The heuristics still apply to everything.
+ *
+ * Not when a Latin-script name sits on a non-Latin message, though: that's what form-spam bots send
+ * ("Brianric", "google", Russian text). Real senders write their name in their own script.
+ */
+export function aiMayNotBinAlone(data: SubmissionRow["data"]): boolean {
+  if (!mostlyNonLatin(data)) return false;
+  const names = Object.entries(data)
+    .filter(([key]) => NAME_FIELD.test(key.trim()))
+    .flatMap(([, value]) => value)
+    .join(" ");
+  const nameShare = nonLatinShare(names);
+  return nameShare === null || nameShare >= 0.5;
 }
 
 /**
@@ -113,7 +134,7 @@ export async function applyAiSpamCheck(
   if (ownerIsTesting(submission, ownerEmail)) return false;
   const score = await aiSpamScore(env, submission);
   if (score === null) return false;
-  const spam = score >= AI_SPAM_THRESHOLD && !mostlyNonLatin(submission.data);
+  const spam = score >= AI_SPAM_THRESHOLD && !aiMayNotBinAlone(submission.data);
   await getDb(env)
     .update(submissions)
     .set({
