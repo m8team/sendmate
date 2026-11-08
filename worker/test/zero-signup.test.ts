@@ -167,6 +167,12 @@ describe("first submission to an email endpoint", () => {
     await db().update(submissions).set({ status: "spam" }).where(eq(submissions.formId, (await formFor(onlySpam))!.id));
     await ageConfirmation(onlySpam, 4 * day);
 
+    // Only scripts posted (no website behind it): how sendm8 gets misused to message strangers.
+    const scriptOnly = uniqueEmail();
+    await postJson(scriptOnly, { message: "Hello support, please look up my account" });
+    await confirmationToken(http, scriptOnly);
+    await ageConfirmation(scriptOnly, 4 * day);
+
     const before = http.emails().length;
     expect(await sendConfirmationReminders(env)).toBe(1);
     const reminders = http.emails().slice(before);

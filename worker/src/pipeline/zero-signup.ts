@@ -9,7 +9,7 @@ import { zeroSignupConfirmEmail, zeroSignupReminderEmail } from "../email/templa
 import { findByToken } from "../email/verification";
 import { deleteSubmissionFiles, submissionsWithFiles } from "../files/storage";
 import { sha256Hex } from "../lib/crypto";
-import { plusVariantsPattern, reachesInboxOf } from "../lib/email-address";
+import { plusVariantsPattern, reachesInboxOf, undeliverableDomain } from "../lib/email-address";
 import { parseHttpUrl } from "../lib/http";
 import { newFormId, newId } from "../lib/ids";
 import { decryptJson, encryptJson, randomToken } from "../lib/secrets";
@@ -17,6 +17,7 @@ import { dayKey } from "../lib/time";
 import { urls } from "../lib/urls";
 import { withQueryBudget } from "../lib/query-budget";
 import { AI_CHECK_QUERIES, applyAiSpamCheck } from "./ai-spam";
+import { disposableDomain } from "./spam";
 import { deliverSubmission, type EmailChannelConfig } from "./deliver";
 import { deliverMany, QUERIES_PER_DELIVERY } from "./deliver-many";
 
@@ -123,6 +124,13 @@ export async function sendConfirmationReminders(outerEnv: Env, now = Date.now(),
      JOIN submissions s ON s.form_id = f.id AND s.status = 'ok'
      WHERE a.user_id IS NULL AND a.verified_at IS NULL AND a.reminded_at IS NULL
        AND a.token_sent_at BETWEEN ?1 AND ?2
+       -- Only when a real website sent something: not just scripts, which is how sendm8 gets misused
+       -- to message strangers (a support inbox, throwaway addresses).
+       AND EXISTS (SELECT 1 FROM submissions w JOIN forms g ON g.id = w.form_id
+                   WHERE g.owner_email = a.email AND g.user_id IS NULL AND g.status = 'pending_confirmation' AND w.status = 'ok'
+                     AND json_extract(w.meta, '$.referrer') LIKE 'http%'
+                     AND json_extract(w.meta, '$.referrer') NOT LIKE '%localhost%'
+                     AND json_extract(w.meta, '$.referrer') NOT LIKE '%127.0.0.1%')
      GROUP BY a.id
      ORDER BY a.token_sent_at
      LIMIT ?3`,
@@ -133,6 +141,8 @@ export async function sendConfirmationReminders(outerEnv: Env, now = Date.now(),
   const db = getDb(env);
   let sent = 0;
   for (const row of results) {
+    // Endpoints made before throwaway and reserved domains were refused still exist; never remind them.
+    if (disposableDomain(row.email) || undeliverableDomain(row.email)) continue;
     if (!budget.has(QUERIES_PER_REMINDER)) break;
     if (!(await claimSystemEmail(env.DB, getLimits(env), "account", null, now))) break;
     const token = randomToken();
