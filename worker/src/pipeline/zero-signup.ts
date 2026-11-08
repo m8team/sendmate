@@ -5,7 +5,7 @@ import { getDb, type BatchItem, type BatchList, type Db, type FormRow } from "..
 import { channels, emailAddresses, forms, submissions } from "../db/schema";
 import { claimCounter, claimSystemEmail } from "../email/budget";
 import { sendSystemEmail } from "../email/sender";
-import { zeroSignupConfirmEmail } from "../email/templates";
+import { zeroSignupConfirmEmail, zeroSignupReminderEmail } from "../email/templates";
 import { findByToken } from "../email/verification";
 import { deleteSubmissionFiles, submissionsWithFiles } from "../files/storage";
 import { sha256Hex } from "../lib/crypto";
@@ -94,6 +94,71 @@ export async function pendingConfirmationNote(env: Env, form: FormRow, now = Dat
     `Stored. Delivery starts once the owner clicks the confirmation link we emailed ${to} at ${utcTime(sentAt)}. ` +
     `Check spam. We send one link per 24 hours, so the next can go after ${utcTime(sentAt + CONFIRM_COOLDOWN_MS)}.`
   );
+}
+
+const REMIND_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
+/** Older than this and the owner has clearly moved on; a reminder would just be noise. */
+const REMIND_WITHIN_MS = 30 * 24 * 60 * 60 * 1000;
+const REMINDERS_PER_RUN = 5;
+/** Queries one reminder can spend: reserve, email budget (up to 2), and the send's own bookkeeping. */
+const QUERIES_PER_REMINDER = 4;
+
+/**
+ * Once, and only once, nudges an email endpoint's owner whose confirmation went unanswered for three
+ * days while real submissions wait. A third of endpoints were sitting unconfirmed, some with genuine
+ * messages, usually because the one confirmation went to spam. Safe by construction: it only reaches
+ * addresses we've already emailed, never twice (`reminded_at`), and inside the system-email budget.
+ */
+export async function sendConfirmationReminders(outerEnv: Env, now = Date.now(), budget = withQueryBudget(outerEnv, getLimits(outerEnv).queriesPerInvocation)): Promise<number> {
+  if (!budget.has(1 + QUERIES_PER_REMINDER)) return 0;
+  const env = budget.env;
+  const { results } = await env.DB.prepare(
+    `SELECT a.id, a.email, a.token_sent_at AS sentAt,
+            count(s.id) AS waiting,
+            (SELECT json_extract(x.meta, '$.referrer') FROM submissions x JOIN forms g ON g.id = x.form_id
+              WHERE g.owner_email = a.email AND g.user_id IS NULL AND json_extract(x.meta, '$.referrer') IS NOT NULL
+              ORDER BY x.id DESC LIMIT 1) AS referrer
+     FROM email_addresses a
+     JOIN forms f ON f.owner_email = a.email AND f.user_id IS NULL AND f.status = 'pending_confirmation'
+     JOIN submissions s ON s.form_id = f.id AND s.status = 'ok'
+     WHERE a.user_id IS NULL AND a.verified_at IS NULL AND a.reminded_at IS NULL
+       AND a.token_sent_at BETWEEN ?1 AND ?2
+     GROUP BY a.id
+     ORDER BY a.token_sent_at
+     LIMIT ?3`,
+  )
+    .bind(now - REMIND_WITHIN_MS, now - REMIND_AFTER_MS, REMINDERS_PER_RUN)
+    .all<{ id: string; email: string; sentAt: number; waiting: number; referrer: string | null }>();
+
+  const db = getDb(env);
+  let sent = 0;
+  for (const row of results) {
+    if (!budget.has(QUERIES_PER_REMINDER)) break;
+    if (!(await claimSystemEmail(env.DB, getLimits(env), "account", null, now))) break;
+    const token = randomToken();
+    const tokenHash = await sha256Hex(token);
+    // Conditional, so two overlapping runs can't both send it.
+    const reserved = await db
+      .update(emailAddresses)
+      .set({ tokenHash, tokenSentAt: now, remindedAt: now })
+      .where(and(eq(emailAddresses.id, row.id), isNull(emailAddresses.remindedAt), isNull(emailAddresses.verifiedAt)))
+      .returning({ id: emailAddresses.id })
+      .get();
+    if (!reserved) continue;
+    const result = await sendSystemEmail(env, {
+      to: [row.email],
+      ...zeroSignupReminderEmail({
+        email: row.email,
+        site: parseHttpUrl(row.referrer)?.hostname ?? null,
+        waiting: row.waiting,
+        confirmUrl: urls.confirmForm(env.APP_URL, token),
+        firstSentAt: row.sentAt,
+      }),
+      idempotencyKey: `remind:${row.id}`,
+    });
+    if (result.ok) sent++;
+  }
+  return sent;
 }
 
 /** Sends the one-off confirmation email, at most once per 24 hours per address. */

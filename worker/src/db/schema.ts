@@ -102,6 +102,8 @@ export const emailAddresses = sqliteTable(
     verifiedAt: integer("verified_at"),
     tokenHash: text("token_hash"),
     tokenSentAt: integer("token_sent_at"),
+    /** When the one reminder about an unconfirmed email endpoint went out. Never more than one. */
+    remindedAt: integer("reminded_at"),
     createdAt: integer("created_at").notNull(),
   },
   (t) => [uniqueIndex("email_addresses_user_email_idx").on(t.userId, t.email), index("email_addresses_token_idx").on(t.tokenHash)],

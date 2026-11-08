@@ -13,6 +13,7 @@ import { QUERIES_PER_DELIVERY } from "./pipeline/deliver-many";
 import { purgeOldErrors } from "./ops/errors";
 import { sendDueDigests } from "./pipeline/digest";
 import { sendSpamSummaries } from "./pipeline/spam-summary";
+import { sendConfirmationReminders } from "./pipeline/zero-signup";
 
 export const RETRY_CRON = "*/5 * * * *";
 export const HOURLY_CRON = "0 * * * *";
@@ -84,5 +85,7 @@ export async function handleScheduled(controller: ScheduledController, env: Env)
     if (new Date(now).getUTCHours() === CLEANUP_HOUR_UTC) await cleanup(env, now, budget);
     // Last: it's the least urgent, and whatever doesn't fit waits for the next hour.
     await sendSpamSummaries(env, now, budget);
+    // A nudge for email endpoints whose one confirmation went unanswered while messages wait.
+    await sendConfirmationReminders(env, now, budget);
   }
 }

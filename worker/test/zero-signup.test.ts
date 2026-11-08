@@ -4,9 +4,9 @@ import { env } from "cloudflare:workers";
 import { and, eq, isNull } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getLimits } from "../src/config";
-import { channels, emailAddresses, forms, usageDaily } from "../src/db/schema";
+import { channels, emailAddresses, forms, submissions, usageDaily } from "../src/db/schema";
 import { dayKey } from "../src/lib/time";
-import { DECLINED_REASON, sendOwnerConfirmation } from "../src/pipeline/zero-signup";
+import { DECLINED_REASON, sendConfirmationReminders, sendOwnerConfirmation } from "../src/pipeline/zero-signup";
 import { addAddress, api, createUser, db, getSubmission, listSubmissions, mockFetch, postForm, postJson, signIn, waitFor } from "./helpers";
 
 type Data<T> = { data: T };
@@ -135,6 +135,57 @@ describe("first submission to an email endpoint", () => {
     // Let those deliveries finish here, so they don't land in the next test's mailbox.
     await waitFor(async () => http.emails().find((e) => e.text.includes("live, from a browser")));
   }, 20_000);
+
+  it("sends one reminder when a confirmation goes unanswered for 3 days while messages wait, and never another", async () => {
+    const http = mockFetch();
+    const day = 24 * 3600_000;
+    const ageConfirmation = async (email: string, ms: number) =>
+      db().update(emailAddresses).set({ tokenSentAt: Date.now() - ms }).where(eq(emailAddresses.email, email));
+
+    // Waiting 4 days, with a real message from a live site: this one gets reminded.
+    const waiting = uniqueEmail();
+    await postForm(waiting, { message: "a real enquiry" }, { referer: "https://wedding-rsvp.dev/" });
+    await confirmationToken(http, waiting);
+    await ageConfirmation(waiting, 4 * day);
+
+    // Too recent, too old, declined, or only spam waiting: none of these.
+    const recent = uniqueEmail();
+    await postJson(recent, { message: "hi" });
+    await confirmationToken(http, recent);
+    await ageConfirmation(recent, 1 * day);
+    const stale = uniqueEmail();
+    await postJson(stale, { message: "hi" });
+    await confirmationToken(http, stale);
+    await ageConfirmation(stale, 40 * day);
+    const declined = uniqueEmail();
+    await postJson(declined, { message: "hi" });
+    await postConfirm((await confirmationToken(http, declined)).token, "decline");
+    await ageConfirmation(declined, 4 * day);
+    const onlySpam = uniqueEmail();
+    await postJson(onlySpam, { message: "hi" });
+    await confirmationToken(http, onlySpam);
+    await db().update(submissions).set({ status: "spam" }).where(eq(submissions.formId, (await formFor(onlySpam))!.id));
+    await ageConfirmation(onlySpam, 4 * day);
+
+    const before = http.emails().length;
+    expect(await sendConfirmationReminders(env)).toBe(1);
+    const reminders = http.emails().slice(before);
+    expect(reminders.map((e) => e.to[0])).toEqual([waiting]);
+    expect(reminders[0]!.subject).toBe("Still waiting: 1 message on wedding-rsvp.dev");
+    expect(reminders[0]!.text).toContain("only reminder");
+
+    // Never a second one, even days later.
+    await ageConfirmation(waiting, 5 * day);
+    expect(await sendConfirmationReminders(env)).toBe(0);
+
+    // The reminder's link confirms the form and delivers what waited. (Links last 24 hours, so undo
+    // the ageing above that proved no second reminder.)
+    await ageConfirmation(waiting, 0);
+    const token = reminders[0]!.text.match(/\/confirm\/([\w-]+)/)![1]!;
+    await postConfirm(token, "confirm");
+    expect((await formFor(waiting))?.status).toBe("active");
+    await waitFor(async () => http.emails().find((e) => e.to[0] === waiting && e.text.includes("a real enquiry")));
+  }, 30_000);
 
   it("doesn't create anything for honeypot hits or invalid addresses", async () => {
     const http = mockFetch();

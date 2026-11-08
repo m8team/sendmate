@@ -127,6 +127,26 @@ export function zeroSignupConfirmEmail(opts: { email: string; site: string | nul
   };
 }
 
+/** The one reminder for an email endpoint whose confirmation went unanswered while messages wait. */
+export function zeroSignupReminderEmail(opts: { email: string; site: string | null; waiting: number; confirmUrl: string; firstSentAt: number }): RenderedEmail {
+  const from = opts.site ? ` on ${opts.site}` : "";
+  const waiting = opts.waiting === 1 ? "1 message is" : `${opts.waiting} messages are`;
+  const when = new Date(opts.firstSentAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: "UTC" });
+  return {
+    subject: `Still waiting: ${opts.waiting === 1 ? "1 message" : `${opts.waiting} messages`}${from}`,
+    html: layout({
+      preheader: `${waiting} waiting. Confirm to receive them. This is the only reminder.`,
+      stampLabel: "Reminder",
+      heading: "Your form's post is piling up.",
+      body: `<p style="margin:0 0 16px;">On ${escapeHtml(when)} we asked whether <strong>${escapeHtml(opts.email)}</strong> should get submissions from a form${escapeHtml(from)}. We haven't heard back, and ${escapeHtml(waiting)} waiting.</p>
+<p style="margin:0 0 24px;">${button(opts.confirmUrl, "Confirm and deliver")}</p>
+<p style="margin:0 0 12px;color:${MUTED};font-size:13px;">Not yours? Open the link and choose <strong>Not me</strong>, and the form stops for good.</p>`,
+      footer: "This is the only reminder we'll send about this form. The link expires in 24 hours.",
+    }),
+    text: `Your form's post is piling up.\n\nOn ${when} we asked whether ${opts.email} should get submissions from a form${from}. We haven't heard back, and ${waiting} waiting.\n\nConfirm (or say it's not you): ${opts.confirmUrl}\n\nThis is the only reminder we'll send about this form.\n`,
+  };
+}
+
 export function verificationEmail(opts: { email: string; verifyUrl: string }): RenderedEmail {
   return {
     subject: "Confirm your email for sendm8",

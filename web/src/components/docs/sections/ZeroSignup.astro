@@ -68,7 +68,8 @@ const zeroSignupCode = `
     <p>
       To stop people using sendm8 to spam random inboxes, we send at most one confirmation email to an address every{' '}
       {limits.confirmationCooldownHours} hours, and we don’t resend it while it’s waiting. Can’t find it? Check your spam folder first. If it’s really
-      gone, submit the form again once {limits.confirmationCooldownHours} hours have passed.
+      gone, submit the form again once {limits.confirmationCooldownHours} hours have passed. If messages are waiting and three days go by without an
+      answer, we send one reminder, and only one.
     </p>
   </Callout>
 
