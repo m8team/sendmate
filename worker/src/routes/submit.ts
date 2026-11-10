@@ -108,6 +108,12 @@ submitRoutes.post("/:formId", async (c) => {
         `Email endpoints need an address you own. Anyone can read ${throwaway} inboxes, so they can't receive submissions.`,
       );
     }
+    // No page on sendm8 itself posts to an email endpoint (the homepage demo doesn't send), so a request
+    // claiming to come from our own site is a script with a forged Referer, probing whether sendm8
+    // will email addresses of its choosing.
+    if (zeroSignupEmail && requestHost(c.req.raw) === new URL(env.APP_URL).hostname.toLowerCase()) {
+      throw new SubmitError(400, "invalid_origin", "Email endpoints take submissions from your own site, not from sendm8.");
+    }
     // Reserved domains (example.com, *.test…) can't receive mail: the confirmation would only bounce.
     const reserved = zeroSignupEmail ? undeliverableDomain(zeroSignupEmail) : null;
     if (reserved) {

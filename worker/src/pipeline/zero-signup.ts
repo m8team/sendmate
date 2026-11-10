@@ -130,12 +130,14 @@ export async function sendConfirmationReminders(outerEnv: Env, now = Date.now(),
                    WHERE g.owner_email = a.email AND g.user_id IS NULL AND g.status = 'pending_confirmation' AND w.status = 'ok'
                      AND json_extract(w.meta, '$.referrer') LIKE 'http%'
                      AND json_extract(w.meta, '$.referrer') NOT LIKE '%localhost%'
-                     AND json_extract(w.meta, '$.referrer') NOT LIKE '%127.0.0.1%')
+                     AND json_extract(w.meta, '$.referrer') NOT LIKE '%127.0.0.1%'
+                     -- sendm8's own pages never post to email endpoints; claiming to is a forged Referer.
+                     AND json_extract(w.meta, '$.referrer') NOT LIKE ?4)
      GROUP BY a.id
      ORDER BY a.token_sent_at
      LIMIT ?3`,
   )
-    .bind(now - REMIND_WITHIN_MS, now - REMIND_AFTER_MS, REMINDERS_PER_RUN)
+    .bind(now - REMIND_WITHIN_MS, now - REMIND_AFTER_MS, REMINDERS_PER_RUN, `%://${new URL(env.APP_URL).hostname}%`)
     .all<{ id: string; email: string; sentAt: number; waiting: number; referrer: string | null }>();
 
   const db = getDb(env);

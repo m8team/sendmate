@@ -7,7 +7,7 @@ import { getLimits } from "../src/config";
 import { channels, emailAddresses, forms, submissions, usageDaily } from "../src/db/schema";
 import { dayKey } from "../src/lib/time";
 import { DECLINED_REASON, sendConfirmationReminders, sendOwnerConfirmation } from "../src/pipeline/zero-signup";
-import { addAddress, api, createUser, db, getSubmission, listSubmissions, mockFetch, postForm, postJson, signIn, waitFor } from "./helpers";
+import { addAddress, api, createForm, createUser, db, getSubmission, listSubmissions, mockFetch, postForm, postJson, signIn, waitFor } from "./helpers";
 
 type Data<T> = { data: T };
 
@@ -173,6 +173,16 @@ describe("first submission to an email endpoint", () => {
     await confirmationToken(http, scriptOnly);
     await ageConfirmation(scriptOnly, 4 * day);
 
+    // A "website" that claims to be sendm8 itself is a forged Referer: never reminded either.
+    const forged = uniqueEmail();
+    await postJson(forged, { message: "probe" });
+    await confirmationToken(http, forged);
+    await db()
+      .update(submissions)
+      .set({ meta: { ipHash: null, country: null, userAgent: "Mozilla/5.0", referrer: `https://sendm8.test/f/${forged}`, special: {}, spamReasons: [] } })
+      .where(eq(submissions.formId, (await formFor(forged))!.id));
+    await ageConfirmation(forged, 4 * day);
+
     const before = http.emails().length;
     expect(await sendConfirmationReminders(env)).toBe(1);
     const reminders = http.emails().slice(before);
@@ -192,6 +202,25 @@ describe("first submission to an email endpoint", () => {
     expect((await formFor(waiting))?.status).toBe("active");
     await waitFor(async () => http.emails().find((e) => e.to[0] === waiting && e.text.includes("a real enquiry")));
   }, 30_000);
+
+  it("refuses email-endpoint posts that claim to come from sendm8 itself, a forged Referer", async () => {
+    const http = mockFetch();
+    const forgedHeaders: Record<string, string>[] = [{ referer: "https://sendm8.test/f/x" }, { origin: "https://sendm8.test" }];
+    for (const headers of forgedHeaders) {
+      const email = uniqueEmail();
+      const res = await postJson(email, { name: "Kuroko", subject: "sendm8 -> target", message: "delivery check" }, headers);
+      expect(res.status).toBe(400);
+      expect((await res.json<{ error: { code: string } }>()).error.code).toBe("invalid_origin");
+      expect(await formFor(email)).toBeUndefined();
+    }
+    await new Promise((r) => setTimeout(r, 50));
+    expect(http.emails()).toHaveLength(0);
+
+    // The dashboard's own test send, from sendm8 to a form id, still works.
+    const owner = await createUser();
+    const form = await createForm({ userId: owner.id });
+    expect((await postJson(form.id, { message: "onboarding test" }, { referer: "https://sendm8.test/app/onboarding/" })).status).toBe(200);
+  });
 
   it("doesn't create anything for honeypot hits or invalid addresses", async () => {
     const http = mockFetch();
