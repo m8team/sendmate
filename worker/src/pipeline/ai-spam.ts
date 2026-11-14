@@ -111,6 +111,22 @@ export function aiMayNotBinAlone(data: SubmissionRow["data"]): boolean {
 }
 
 /**
+ * A sign-up made of short structured answers (a raffle entry, a booking request): name, phone, ticket
+ * count, a few choices. There's no free text for the model to judge, and it scored a genuine company
+ * lead 95 on exactly that. Spared only when four or more fields are all short, none has a link, and
+ * nothing else (the heuristics, a missing browser) already looked wrong.
+ */
+export function looksStructured(submission: Pick<SubmissionRow, "data" | "meta">): boolean {
+  if (submission.meta.spamReasons.length > 0) return false;
+  const values = Object.values(submission.data)
+    .flat()
+    .map((v) => String(v).trim())
+    .filter((v) => v && !/^[^\s@]+@[^\s@]+$/.test(v));
+  if (Object.keys(submission.data).length < 4) return false;
+  return values.every((v) => v.length <= 80 && !/https?:\/\/|www\./i.test(v));
+}
+
+/**
  * Someone trying out their own form signs it with their own address, and their "is this thing on?"
  * message reads like junk to the model (one scored 95). Only a clean submission is let off: the
  * endpoint address is public, so a spammer could copy it, but links or other red flags still count.
@@ -134,7 +150,7 @@ export async function applyAiSpamCheck(
   if (ownerIsTesting(submission, ownerEmail)) return false;
   const score = await aiSpamScore(env, submission);
   if (score === null) return false;
-  const spam = score >= AI_SPAM_THRESHOLD && !aiMayNotBinAlone(submission.data);
+  const spam = score >= AI_SPAM_THRESHOLD && !aiMayNotBinAlone(submission.data) && !looksStructured(submission);
   await getDb(env)
     .update(submissions)
     .set({

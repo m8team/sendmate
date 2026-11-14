@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { forms, submissions, usageDaily } from "../src/db/schema";
 import { newId } from "../src/lib/ids";
 import { dayKey } from "../src/lib/time";
-import { AI_SPAM_MODEL, aiMayNotBinAlone, aiSpamScore, mostlyNonLatin, ownerIsTesting, parseScore, submissionText } from "../src/pipeline/ai-spam";
+import { AI_SPAM_MODEL, aiMayNotBinAlone, aiSpamScore, looksStructured, mostlyNonLatin, ownerIsTesting, parseScore, submissionText } from "../src/pipeline/ai-spam";
 import { deliverBacklog, dispatchStored } from "../src/pipeline/zero-signup";
 import { addChannel, createForm, createUser, db, DISCORD_URL, getSubmission, listSubmissions, mockFetch, postJson } from "./helpers";
 
@@ -175,6 +175,41 @@ describe("AI spam scoring", () => {
     expect(await getSubmission(englishId)).toMatchObject({ status: "spam" });
     expect(await getSubmission(botId)).toMatchObject({ status: "spam" });
     expect(http.to("discord.com")).toHaveLength(1);
+  });
+
+  it("doesn't let the model bin a sign-up made only of short structured answers", async () => {
+    const http = mockFetch();
+    const form = await createForm({ userId: null, ownerEmail: `st-${crypto.randomUUID().slice(0, 8)}@example.com`, status: "active", settings: { aiSpamScoring: true } });
+    await addChannel(form.id, "discord", { webhookUrl: DISCORD_URL });
+    const meta = { ipHash: null, country: null, userAgent: null, referrer: null, special: {}, spamReasons: [] };
+    const raffleId = newId();
+    const botId = newId();
+    const linkId = newId();
+    const raffle = { Nombre: "Nicolas Uribe", Celular: "3105551234", email: "nicolas@example.org", Boletas: "2", Factura: "Sí (enlace en el correo)", "Interés solar en": "Empresa", "Pago mensual energía": "Más de $10 millones", "Quiere conocer": "—", "Cuándo contactar": "Este mes" };
+    await db().insert(submissions).values([
+      { id: raffleId, formId: form.id, data: raffle, meta, status: "ok", createdAt: Date.now() },
+      // A lead-gen bot writes a pitch, so it isn't spared.
+      { id: botId, formId: form.id, data: { name: "Opal Enos", company: "CENTRE", phone: "568258658", email: "x@leadgen.example", message: "We help businesses like yours get more leads every month with our proven outreach system, reply for a free audit and sample results" }, meta, status: "ok", createdAt: Date.now() },
+      // Same shape as the raffle entry, but with a link in it.
+      { id: linkId, formId: form.id, data: { ...raffle, Factura: "https://spam.example/offer" }, meta, status: "ok", createdAt: Date.now() },
+    ]);
+
+    await deliverBacklog({ ...env, AI: { run: vi.fn(async () => ({ response: 95 })) } as unknown as Ai } as Env, [form.id]);
+    expect(await getSubmission(raffleId)).toMatchObject({ status: "ok", spamScore: 0.95 });
+    expect(await getSubmission(botId)).toMatchObject({ status: "spam" });
+    expect(await getSubmission(linkId)).toMatchObject({ status: "spam" });
+    expect(http.to("discord.com")).toHaveLength(1);
+  });
+
+  it("recognises a structured sign-up, and nothing that has free text, links or earlier red flags", () => {
+    const meta = { ipHash: null, country: null, userAgent: null, referrer: null, special: {}, spamReasons: [] as string[] };
+    const four = { a: "Ana", b: "300 555 1234", c: "Sí", d: "Casa" };
+    expect(looksStructured({ data: four, meta })).toBe(true);
+    expect(looksStructured({ data: { ...four, e: "ana@example.org" }, meta })).toBe(true);
+    expect(looksStructured({ data: { a: "Ana", b: "Hi", c: "x" }, meta })).toBe(false); // too few fields
+    expect(looksStructured({ data: { ...four, d: "word ".repeat(20) }, meta })).toBe(false); // free text
+    expect(looksStructured({ data: { ...four, d: "see www.example.org" }, meta })).toBe(false); // a link
+    expect(looksStructured({ data: four, meta: { ...meta, spamReasons: ["no_browser"] } })).toBe(false); // already suspicious
   });
 
   it("only spares non-Latin messages whose sender's name is in the same kind of script", () => {
