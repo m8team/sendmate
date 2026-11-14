@@ -23,9 +23,14 @@ function describe(error: unknown): { name: string; message: string; stack?: stri
   }
 }
 
-/** Errors nobody can act on: cross-origin scripts, browser extensions, a harmless Chrome warning. */
+/**
+ * Errors nobody can act on: cross-origin scripts, browser extensions, a harmless Chrome warning.
+ * "Object Not Found Matching Id:1, MethodName:update, ParamCount:4" is a browser extension's own error
+ * (it has no stack of ours); it showed up on the sign-in page from Chrome on Windows.
+ */
 export function isNoise(message: string, stack?: string) {
   if (!message.trim() || /^Script error\.?$/i.test(message.trim()) || /ResizeObserver loop/i.test(message)) return true;
+  if (/^Object Not Found Matching Id:\d+, MethodName:\w+, ParamCount:\d+$/.test(message.trim())) return true;
   return /(chrome|moz|safari(-web)?)-extension:\/\//i.test(`${message}\n${stack ?? ''}`);
 }
 

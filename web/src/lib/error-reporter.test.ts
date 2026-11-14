@@ -48,6 +48,11 @@ describe('createErrorReporter', () => {
     expect(report(new Error('ResizeObserver loop completed with undelivered notifications.'))).toBe(false);
     expect(isNoise('boom', 'at chrome-extension://abc/content.js:1:1')).toBe(true);
     expect(isNoise('boom')).toBe(false);
+    // A browser extension's error, seen on the sign-in page.
+    expect(report(new Error('Object Not Found Matching Id:1, MethodName:update, ParamCount:4'))).toBe(false);
+    expect(isNoise('Object Not Found Matching Id:12, MethodName:get, ParamCount:2')).toBe(true);
+    // Only that exact shape: a real error that happens to mention an id is still ours to see.
+    expect(isNoise('Object Not Found Matching Id:1 in our own cache')).toBe(false);
     expect(send).not.toHaveBeenCalled();
   });
 });
