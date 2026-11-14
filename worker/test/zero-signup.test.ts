@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getLimits } from "../src/config";
 import { channels, emailAddresses, forms, submissions, usageDaily } from "../src/db/schema";
 import { dayKey } from "../src/lib/time";
-import { DECLINED_REASON, sendConfirmationReminders, sendOwnerConfirmation } from "../src/pipeline/zero-signup";
+import { DECLINED_REASON, realWebsite, sendConfirmationReminders, sendOwnerConfirmation } from "../src/pipeline/zero-signup";
 import { addAddress, api, createForm, createUser, db, getSubmission, listSubmissions, mockFetch, postForm, postJson, signIn, waitFor } from "./helpers";
 
 type Data<T> = { data: T };
@@ -183,6 +183,12 @@ describe("first submission to an email endpoint", () => {
       .where(eq(submissions.formId, (await formFor(forged))!.id));
     await ageConfirmation(forged, 4 * day);
 
+    // A referrer on a reserved domain (how fldubai.com's test slipped through) isn't a real site either.
+    const fakeSite = uniqueEmail();
+    await postForm(fakeSite, { message: "Note with a link" }, { referer: "https://demo-shop.example/contact" });
+    await confirmationToken(http, fakeSite);
+    await ageConfirmation(fakeSite, 4 * day);
+
     const before = http.emails().length;
     expect(await sendConfirmationReminders(env)).toBe(1);
     const reminders = http.emails().slice(before);
@@ -220,6 +226,16 @@ describe("first submission to an email endpoint", () => {
     const owner = await createUser();
     const form = await createForm({ userId: owner.id });
     expect((await postJson(form.id, { message: "onboarding test" }, { referer: "https://sendm8.test/app/onboarding/" })).status).toBe(200);
+  });
+
+  it("only counts a genuine public website as a reason to remind", () => {
+    expect(realWebsite("https://www.ramenrun.org/", "sendm8.com")).toBe("www.ramenrun.org");
+    // Picks the first real one out of several.
+    expect(realWebsite("http://localhost:5173/,https://demo-shop.example/x,https://mdh-jo.com/contact", "sendm8.com")).toBe("mdh-jo.com");
+    for (const fake of ["http://localhost:3000/", "http://127.0.0.1:8765/", "https://example.com/", "https://shop.example/", "https://page.test/", "https://sendm8.com/f/x@y.com", "not a url", ""]) {
+      expect(realWebsite(fake, "sendm8.com"), fake).toBeNull();
+    }
+    expect(realWebsite(null, "sendm8.com")).toBeNull();
   });
 
   it("doesn't create anything for honeypot hits or invalid addresses", async () => {

@@ -10,7 +10,7 @@ import { findByToken } from "../email/verification";
 import { deleteSubmissionFiles, submissionsWithFiles } from "../files/storage";
 import { sha256Hex } from "../lib/crypto";
 import { plusVariantsPattern, reachesInboxOf, undeliverableDomain } from "../lib/email-address";
-import { parseHttpUrl } from "../lib/http";
+import { isLocalHost, parseHttpUrl } from "../lib/http";
 import { newFormId, newId } from "../lib/ids";
 import { decryptJson, encryptJson, randomToken } from "../lib/secrets";
 import { dayKey } from "../lib/time";
@@ -97,6 +97,20 @@ export async function pendingConfirmationNote(env: Env, form: FormRow, now = Dat
   );
 }
 
+/**
+ * The first referrer that's a genuine public website, as a hostname. Not localhost, not an address you
+ * can't send to (example.com, *.example, *.test…), and not sendm8 itself: all of those are free to forge.
+ */
+export function realWebsite(referrers: string | null, ownHost: string): string | null {
+  for (const referrer of (referrers ?? "").split(",")) {
+    const host = parseHttpUrl(referrer.trim())?.hostname.toLowerCase();
+    if (!host || isLocalHost(host) || host === ownHost.toLowerCase()) continue;
+    if (undeliverableDomain(`x@${host}`)) continue;
+    return host;
+  }
+  return null;
+}
+
 const REMIND_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
 /** Older than this and the owner has clearly moved on; a reminder would just be noise. */
 const REMIND_WITHIN_MS = 30 * 24 * 60 * 60 * 1000;
@@ -116,9 +130,9 @@ export async function sendConfirmationReminders(outerEnv: Env, now = Date.now(),
   const { results } = await env.DB.prepare(
     `SELECT a.id, a.email, a.token_sent_at AS sentAt,
             count(s.id) AS waiting,
-            (SELECT json_extract(x.meta, '$.referrer') FROM submissions x JOIN forms g ON g.id = x.form_id
-              WHERE g.owner_email = a.email AND g.user_id IS NULL AND json_extract(x.meta, '$.referrer') IS NOT NULL
-              ORDER BY x.id DESC LIMIT 1) AS referrer
+            (SELECT group_concat(DISTINCT json_extract(x.meta, '$.referrer')) FROM submissions x JOIN forms g ON g.id = x.form_id
+              WHERE g.owner_email = a.email AND g.user_id IS NULL AND g.status = 'pending_confirmation' AND x.status = 'ok'
+                AND json_extract(x.meta, '$.referrer') LIKE 'http%') AS referrers
      FROM email_addresses a
      JOIN forms f ON f.owner_email = a.email AND f.user_id IS NULL AND f.status = 'pending_confirmation'
      JOIN submissions s ON s.form_id = f.id AND s.status = 'ok'
@@ -137,14 +151,18 @@ export async function sendConfirmationReminders(outerEnv: Env, now = Date.now(),
      ORDER BY a.token_sent_at
      LIMIT ?3`,
   )
-    .bind(now - REMIND_WITHIN_MS, now - REMIND_AFTER_MS, REMINDERS_PER_RUN, `%://${new URL(env.APP_URL).hostname}%`)
-    .all<{ id: string; email: string; sentAt: number; waiting: number; referrer: string | null }>();
+    // The SQL only prefilters; realWebsite() below decides, so a reserved domain can't pass as a site.
+    .bind(now - REMIND_WITHIN_MS, now - REMIND_AFTER_MS, 25, `%://${new URL(env.APP_URL).hostname}%`)
+    .all<{ id: string; email: string; sentAt: number; waiting: number; referrers: string | null }>();
 
   const db = getDb(env);
   let sent = 0;
   for (const row of results) {
+    if (sent >= REMINDERS_PER_RUN) break;
     // Endpoints made before throwaway and reserved domains were refused still exist; never remind them.
     if (disposableDomain(row.email) || undeliverableDomain(row.email)) continue;
+    const site = realWebsite(row.referrers, new URL(env.APP_URL).hostname);
+    if (!site) continue;
     if (!budget.has(QUERIES_PER_REMINDER)) break;
     if (!(await claimSystemEmail(env.DB, getLimits(env), "account", null, now))) break;
     const token = randomToken();
@@ -161,7 +179,7 @@ export async function sendConfirmationReminders(outerEnv: Env, now = Date.now(),
       to: [row.email],
       ...zeroSignupReminderEmail({
         email: row.email,
-        site: parseHttpUrl(row.referrer)?.hostname ?? null,
+        site,
         waiting: row.waiting,
         confirmUrl: urls.confirmForm(env.APP_URL, token),
         firstSentAt: row.sentAt,
