@@ -11,6 +11,8 @@ export default defineConfig({
       miniflare: {
         r2Buckets: ["FILES"],
         bindings: {
+          // Tests run on the defaults, whatever override wrangler.jsonc sets for the deployment.
+          LIMITS_JSON: "",
           ALERT_WEBHOOK_URL: "https://alerts.example.com/hook",
           TEST_MIGRATIONS: await readD1Migrations(path.join(import.meta.dirname, "migrations")),
           APP_URL: "https://sendm8.test",

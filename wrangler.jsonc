@@ -66,6 +66,9 @@
   "vars": {
     // Optional JSON overrides for packages/shared/src/limits.ts, e.g. after upgrading to Resend Pro:
     // "LIMITS_JSON": "{\"systemEmailsPerDay\": 1600}"
-    "LIMITS_JSON": ""
+    // TEMPORARY (14 Nov 2026): no-account forms keep 200 submissions a month instead of 100, because a real
+    // campaign (ferragro.com's raffle) hit the cap before its owner had signed in. Remove once they have, or
+    // once owners are warned before the cap. Forks that pull this file inherit it: blank it to go back.
+    "LIMITS_JSON": "{\"submissionsPerUnclaimedFormPerMonth\": 200}"
   }
 }
