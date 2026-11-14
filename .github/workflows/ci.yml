@@ -47,3 +47,11 @@ jobs:
         working-directory: web
       - run: npm run build
         working-directory: web
+
+  # The Docker image (docs/self-hosting.md#docker): builds it and checks it serves, hides its internal
+  # routes, and keeps data across a restart, so a change that breaks it is caught here.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: bash scripts/docker-smoke.sh
