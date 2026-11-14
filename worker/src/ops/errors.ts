@@ -198,7 +198,7 @@ function errorAlert(report: ErrorReport, reason: "new" | "regressed" | "mileston
     title,
     description: `**${plain(report.name, 100)}**: ${plain(report.message, 500)}${stack ? `\n\`\`\`\n${stack.slice(0, 1500)}\n\`\`\`` : ""}`,
     fields: Object.entries(context).flatMap(([name, value]) => (value ? [{ name, value: plain(value, 200) }] : [])),
-    path: "/app/admin#ad-errors",
+    path: "/app/admin#office-errors",
   };
 }
 

@@ -127,6 +127,53 @@ export function zeroSignupConfirmEmail(opts: { email: string; site: string | nul
   };
 }
 
+/** Tells a no-account form's owner they're near, or at, the monthly cap, and how signing in lifts it. */
+export function limitWarningEmail(opts: {
+  email: string;
+  site: string | null;
+  used: number;
+  limit: number;
+  level: 80 | 100;
+  accountLimit: number;
+  instantPerDay: number;
+  digestHourUtc: number;
+  signInUrl: string;
+}): RenderedEmail {
+  const where = opts.site ? ` on ${opts.site}` : "";
+  const full = opts.level === 100;
+  const hour = `${String(opts.digestHourUtc).padStart(2, "0")}:00 UTC`;
+  const heading = full ? "Your form has hit its monthly limit." : "Your form is getting popular.";
+  const lead = full
+    ? `Your sendm8 form${where} has used all ${opts.limit} of its free submissions this month, so new submissions are being turned away until the 1st, or until you sign in.`
+    : `Your sendm8 form${where} has used ${opts.used} of the ${opts.limit} free submissions a form without an account gets each month. At ${opts.limit}, new submissions are turned away.`;
+  const fix = `Signing in with <strong>${escapeHtml(opts.email)}</strong> is free, takes a minute (Google or GitHub), and lifts the limit to ${opts.accountLimit.toLocaleString("en-GB")} a month. Your form moves into a dashboard with all its submissions, search and CSV export, and can post to Discord, Slack, Telegram or a webhook too.`;
+  const emails = `Without an account, only ${opts.instantPerDay} instant emails go out a day. The rest arrive in one digest at ${hour}.`;
+  return {
+    subject: full ? `Your form${where} has hit its monthly limit` : `Your form${where} has used ${opts.used} of ${opts.limit} free submissions`,
+    html: layout({
+      preheader: full ? "New submissions are being turned away. Signing in lifts the limit." : "Sign in to lift the limit before it runs out.",
+      stampLabel: full ? "Limit reached" : "Heads up",
+      heading,
+      body: `<p style="margin:0 0 16px;">${escapeHtml(lead)}</p>
+<p style="margin:0 0 16px;">${fix}</p>
+<p style="margin:0 0 24px;color:${MUTED};font-size:13px;">${escapeHtml(emails)}</p>
+<p style="margin:0 0 24px;">${button(opts.signInUrl, "Sign in and lift the limit")}</p>
+<p style="margin:0;color:${MUTED};font-size:13px;">Can't sign in with that address? Sign in with another, then add it under Email &amp; BYOK. Once it's verified, the form moves in.</p>`,
+      footer: "We send this at most twice per form per month: once near the limit, once at it.",
+    }),
+    text: `${heading}
+
+${lead}
+
+Sign in with ${opts.email} (free, Google or GitHub) to lift the limit to ${opts.accountLimit.toLocaleString("en-GB")} a month, and get a dashboard with search and CSV export: ${opts.signInUrl}
+
+${emails}
+
+Can't sign in with that address? Sign in with another, then add it under Email & BYOK.
+`,
+  };
+}
+
 /** The one reminder for an email endpoint whose confirmation went unanswered while messages wait. */
 export function zeroSignupReminderEmail(opts: { email: string; site: string | null; waiting: number; confirmUrl: string; firstSentAt: number }): RenderedEmail {
   const from = opts.site ? ` on ${opts.site}` : "";

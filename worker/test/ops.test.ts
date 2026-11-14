@@ -49,12 +49,12 @@ function brokenEnv(message: string): Env {
 describe("alert formatting", () => {
   it("builds a Discord embed that can't ping anyone", () => {
     const body = JSON.parse(
-      alertBody(HOOK, { kind: "form_flagged", title: "Form flagged", description: "@everyone look", fields: [{ name: "Form", value: "Bank_Login (abc)" }], path: "/app/admin#ad-reports" }, "https://sendm8.test", 0, true),
+      alertBody(HOOK, { kind: "form_flagged", title: "Form flagged", description: "@everyone look", fields: [{ name: "Form", value: "Bank_Login (abc)" }], path: "/app/admin#office-reports" }, "https://sendm8.test", 0, true),
     );
     expect(body.allowed_mentions).toEqual({ parse: [] });
     expect(body.embeds[0]).toMatchObject({
       title: "🚩 Form flagged",
-      url: "https://sendm8.test/app/admin#ad-reports",
+      url: "https://sendm8.test/app/admin#office-reports",
       fields: [{ name: "Form", value: "Bank\\_Login (abc)", inline: true }],
       footer: { text: expect.stringContaining("muted until midnight UTC") },
     });

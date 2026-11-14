@@ -13,6 +13,7 @@ import { QUERIES_PER_DELIVERY } from "./pipeline/deliver-many";
 import { purgeOldErrors } from "./ops/errors";
 import { sendDueDigests } from "./pipeline/digest";
 import { sendSpamSummaries } from "./pipeline/spam-summary";
+import { sendLimitWarnings } from "./pipeline/limit-warnings";
 import { sendConfirmationReminders } from "./pipeline/zero-signup";
 
 export const RETRY_CRON = "*/5 * * * *";
@@ -87,5 +88,7 @@ export async function handleScheduled(controller: ScheduledController, env: Env)
     await sendSpamSummaries(env, now, budget);
     // A nudge for email endpoints whose one confirmation went unanswered while messages wait.
     await sendConfirmationReminders(env, now, budget);
+    // And a warning to no-account forms nearing their monthly cap, so campaigns aren't cut off unannounced.
+    await sendLimitWarnings(env, now, budget);
   }
 }

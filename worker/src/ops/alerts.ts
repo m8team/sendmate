@@ -8,14 +8,14 @@ import { dayKey } from "../lib/time";
  * Every kind has a daily cap so a spam wave or a flood of errors can't bury the channel.
  */
 
-export type AlertKind = "usage" | "error" | "signup" | "heard_from" | "form_created" | "form_flagged" | "submission_held" | "system_email_failing";
+export type AlertKind = "usage" | "error" | "signup" | "heard_from" | "form_created" | "form_flagged" | "submission_held" | "system_email_failing" | "form_near_limit";
 
 export interface OpsAlert {
   kind: AlertKind;
   title: string;
   description?: string;
   fields?: { name: string; value: string }[];
-  /** Dashboard path to act on it, e.g. "/app/admin#ad-reports". */
+  /** Dashboard path to act on it, e.g. "/app/admin#office-reports". */
   path?: string;
   /** Only the first alert with this key is sent per `dedupeWindow`. */
   dedupeKey?: string;
@@ -33,6 +33,7 @@ const STYLE: Record<AlertKind, { emoji: string; colour: number }> = {
   form_flagged: { emoji: "🚩", colour: 0xcc3117 },
   submission_held: { emoji: "✋", colour: 0xe0a100 },
   system_email_failing: { emoji: "📭", colour: 0xcc3117 },
+  form_near_limit: { emoji: "📈", colour: 0xe0a100 },
 };
 
 /** Usage alerts are already once per metric, threshold and day, so they skip the daily cap. */

@@ -48,7 +48,7 @@ export function alertHeardFrom(env: AlertEnv, user: { name: string }, source: He
     kind: "heard_from",
     title: `${plain(user.name || "Someone", 60)} found sendm8 via ${HEARD_FROM_LABELS[source].toLowerCase()}`,
     ...(detail && { description: `“${plain(detail, 200)}”` }),
-    path: "/app/admin#ad-growth",
+    path: "/app/admin#office-growth",
   });
 }
 
@@ -76,7 +76,7 @@ export function alertFormFlagged(env: AlertEnv, form: Pick<FormRow, "id" | "name
       { name: "Reporters", value: String(reporters) },
       { name: "Latest reason", value: reason },
     ],
-    path: "/app/admin#ad-reports",
+    path: "/app/admin#office-reports",
     dedupeKey: form.id,
   });
 }
@@ -91,7 +91,7 @@ export function alertSubmissionHeld(env: AlertEnv, form: Pick<FormRow, "id" | "n
       ? `It asks for \`${plain(why.slice("sensitive_field:".length), 60)}\`, which phishing forms collect. Nothing was delivered.`
       : "The form is flagged, so nothing was delivered.",
     fields: [{ name: "Form", value: form.userId ? `${plain(form.name, 100)} (${form.id})` : form.id }],
-    path: "/app/admin#ad-reports",
+    path: "/app/admin#office-reports",
     dedupeKey: form.id,
   });
 }
@@ -106,4 +106,21 @@ export function systemEmailFailingAlert(error: string) {
     dedupeKey: "resend",
     dedupeWindow: "hour" as const,
   };
+}
+
+/** A no-account form is close to (or at) its monthly cap: a good moment to reach out to its owner. */
+export function alertFormNearLimit(env: AlertEnv, form: Pick<FormRow, "id" | "ownerEmail">, usage: { used: number; limit: number; level: 80 | 100; site: string | null }) {
+  notifyOpsLater(env, {
+    kind: "form_near_limit",
+    title: usage.level === 100 ? "No-account form hit its monthly limit" : "No-account form nearing its monthly limit",
+    description: "Its owner has been emailed to sign in. A personal note could help.",
+    fields: [
+      { name: "Form", value: form.id },
+      { name: "Owner", value: maskEmail(form.ownerEmail) },
+      { name: "Used", value: `${usage.used} of ${usage.limit}` },
+      ...(usage.site ? [{ name: "Site", value: plain(usage.site, 100) }] : []),
+    ],
+    dedupeKey: `${form.id}:${usage.level}`,
+    dedupeWindow: "day",
+  });
 }
