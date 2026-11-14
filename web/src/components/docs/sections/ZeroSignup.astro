@@ -5,7 +5,7 @@
 import CodeBlock from '../../ui/CodeBlock.astro';
 import Callout from '../Callout.astro';
 import DocsSection from './DocsSection.astro';
-import { site, limits } from '../../../config/site';
+import { site, limits, fmt } from '../../../config/site';
 
 const zeroSignupCode = `
 <form action="${site.endpointBase}you@example.com" method="POST">
@@ -61,6 +61,14 @@ const zeroSignupCode = `
       Submissions go to the address in the URL, and that has to be you, the site owner. sendm8 isn’t a way to email your users: invitations, receipts and
       password resets need an email API like <a href="https://resend.com">Resend</a>. Throwaway inboxes such as <code>yopmail.com</code> can’t be used,
       because anyone can read them, and neither can reserved test domains like <code>example.com</code>, which can’t receive mail at all.
+    </p>
+  </Callout>
+
+  <Callout title="Limits without an account" kind="warn">
+    <p>
+      A form with no account keeps {limits.submissionsPerUnclaimedForm} submissions a month, and only {limits.emailsPerDay} instant emails go out a day: the rest arrive in one
+      digest at {String(limits.digestHourUtc).padStart(2, '0')}:00 UTC. We email you when a form passes 80% of its monthly limit, and again when it reaches it. Signing in with the same
+      address lifts the limit to {fmt.n(limits.submissionsPerFormPerMonth)} and puts every submission in your dashboard as it arrives.
     </p>
   </Callout>
 

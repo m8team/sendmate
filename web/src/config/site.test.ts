@@ -9,6 +9,7 @@ describe('marketing limits match the Worker', () => {
     expect(limits).toMatchObject({
       emailsPerDay: LIMITS.instantEmailsPerUserPerDay,
       submissionsPerFormPerMonth: LIMITS.submissionsPerFormPerMonth,
+      submissionsPerUnclaimedForm: LIMITS.submissionsPerUnclaimedFormPerMonth,
       forms: LIMITS.maxFormsPerUser,
       fileUploadMb: LIMITS.maxFileBytes / 1024 / 1024,
       submissionUploadMb: LIMITS.maxUploadBytes / 1024 / 1024,

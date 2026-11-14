@@ -272,6 +272,8 @@ Key facts:
 
 - Endpoint: \`POST ${site.endpointBase}{formId}\`, or \`POST ${site.endpointBase}{email}\` with no account (the owner confirms once by email).
 - Send \`Accept: application/json\` to get JSON back. Success: \`{ "ok": true, "id": "…" }\`. Failure: \`{ "ok": false, "error": { "code": "…", "message": "…" } }\` with a 4xx or 5xx status.
+- On a \`/f/{email}\` endpoint the owner hasn't confirmed yet, success also has \`"pending": "confirmation"\` and a \`message\` saying when the confirmation link was emailed (address masked): the submission is stored but not delivered until it's clicked. One link is sent per 24 hours, plus one reminder after three days if messages are waiting.
+- Email endpoints refuse posts that claim to come from sendm8.com itself (\`400 invalid_origin\`), and forms without an account have a lower monthly submission cap than signed-in ones (lifted when the owner signs in with the same address); the owner is emailed as they near it.
 - Special fields match Formspree: \`_replyto\` (or \`email\`), \`_subject\`, \`_next\`, \`_gotcha\`, \`_cc\`.
 - React apps: \`npm install @sendm8/react\`. Same \`useForm\` and \`ValidationError\` as \`@formspree/react\`, field errors included. Also render one \`<ValidationError>\` without a \`field\`, for errors that aren't about a field.
 - Submissions go to the form's owner. sendm8 is not an API for emailing other people: in \`/f/{email}\` the address is the owner's, never a recipient's, and throwaway domains (yopmail, mailinator…) and reserved ones (example.com, *.test…) are refused. For invitations, receipts or password resets, use an email API such as Resend.

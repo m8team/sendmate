@@ -38,6 +38,8 @@ export const limits = {
   emailsPerDay: LIMITS.instantEmailsPerUserPerDay,
   /** Stored submissions per form, per calendar month (hosted). */
   submissionsPerFormPerMonth: LIMITS.submissionsPerFormPerMonth,
+  /** The same for a form with no account (an email endpoint nobody has signed in to claim). */
+  submissionsPerUnclaimedForm: LIMITS.submissionsPerUnclaimedFormPerMonth,
   /** Forms per account. */
   forms: LIMITS.maxFormsPerUser,
   /** Discord / Slack / Telegram / webhook deliveries. Infinity renders as "Unlimited". */
