@@ -321,6 +321,9 @@ export async function confirmZeroSignup(env: Env, token: string, now = Date.now(
   const db = getDb(env);
   const address = await findByToken(db, token, now);
   if (!address || address.userId !== null) return null;
+  // Endpoints made before throwaway and reserved domains were refused still exist. Anyone can read a
+  // throwaway inbox, so confirming one proves nothing.
+  if (disposableDomain(address.email) || undeliverableDomain(address.email)) return null;
 
   const pending = await db
     .select({ id: forms.id })
@@ -378,7 +381,8 @@ export async function claimFormsForUser(env: Env, user: SessionUser): Promise<{ 
 /** The claiming itself, for addresses `userId` is known to own (signed in with, or verified). */
 export async function claimFormsForAddresses(env: Env, userId: string, owned: string[]): Promise<{ formIds: string[]; reopened: string[] }> {
   const none = { formIds: [], reopened: [] };
-  const emails = [...new Set(owned.map((e) => e.trim().toLowerCase()))];
+  // Owning a throwaway or reserved-domain address proves nothing, so it never claims or opens a form.
+  const emails = [...new Set(owned.map((e) => e.trim().toLowerCase()))].filter((e) => !disposableDomain(e) && !undeliverableDomain(e));
   if (emails.length === 0) return none;
   const db = getDb(env);
 

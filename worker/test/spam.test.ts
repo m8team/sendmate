@@ -19,6 +19,16 @@ describe("disposable addresses", () => {
     expect(disposableDomain("BOT@Inbox.Mailinator.com")).toBe("mailinator.com");
     expect(disposableDomain("someone@yopmail.fr")).toBe("yopmail.fr");
     expect(disposableDomain("alex@moreno.dev")).toBeNull();
+    // The domain a prober used, which the list missed, and the rest of that provider's family.
+    expect(disposableDomain("x@guerrillamailblock.com")).toBe("guerrillamailblock.com");
+    expect(disposableDomain("x@guerrillamail.net")).toBe("guerrillamail.net");
+    expect(disposableDomain("x@mail.tm")).toBe("mail.tm");
+    // Provider names as a label's start catch domains the list has never seen.
+    expect(disposableDomain("x@guerrillamail-new.xyz")).toBe("guerrillamail-new.xyz");
+    expect(disposableDomain("x@tempmail.dev")).toBe("tempmail.dev");
+    expect(disposableDomain("x@inbox.mailinator-new.org")).toBe("inbox.mailinator-new.org");
+    // ...but not businesses that merely resemble them.
+    for (const fine of ["a@templatemail.com", "a@mailchimp.com", "a@gmail.com", "a@tempo.io", "a@guerrilla-marketing.co"]) expect(disposableDomain(fine), fine).toBeNull();
     // Not a trailing-substring match: a real company whose domain ends in the same letters.
     expect(disposableDomain("hi@nottempmail.com")).toBeNull();
     expect(disposableDomain(null)).toBeNull();

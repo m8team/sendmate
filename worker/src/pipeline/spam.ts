@@ -68,9 +68,16 @@ const DISPOSABLE_DOMAINS = new Set([
   "fakeinbox.com",
   "getairmail.com",
   "getnada.com",
+  "dropmail.me",
+  "emailfake.com",
   "grr.la",
+  "guerrillamail.biz",
   "guerrillamail.com",
+  "guerrillamail.de",
   "guerrillamail.info",
+  "guerrillamail.net",
+  "guerrillamail.org",
+  "guerrillamailblock.com",
   "harakirimail.com",
   "inboxbear.com",
   "incognitomail.com",
@@ -78,14 +85,17 @@ const DISPOSABLE_DOMAINS = new Set([
   "mailcatch.com",
   "maildrop.cc",
   "mailinator.com",
+  "mail.tm",
   "mailnesia.com",
   "mintemail.com",
   "mohmal.com",
   "moakt.com",
   "mytemp.email",
+  "pokemail.net",
   "sharklasers.com",
   "spam4.me",
   "spamgourmet.com",
+  "tempr.email",
   "temp-mail.io",
   "temp-mail.org",
   "tempail.com",
@@ -98,6 +108,13 @@ const DISPOSABLE_DOMAINS = new Set([
   "yopmail.fr",
 ]);
 
+/**
+ * The big throwaway providers each run many domains (Guerrilla Mail alone has a dozen, and a new one
+ * got past the list), so a domain with a label that starts with one of their names is treated as
+ * theirs. Starting, not containing: a real company called "nottempmail" isn't caught.
+ */
+const DISPOSABLE_BRANDS = ["guerrillamail", "sharklasers", "mailinator", "yopmail", "10minutemail", "tempmail", "temp-mail", "trashmail", "throwawaymail", "fakeinbox", "getnada", "dispostable"];
+
 /** The throwaway provider behind an address, or null. Subdomains count (inbox.mailinator.com). */
 export function disposableDomain(email: string | null | undefined): string | null {
   const domain = email?.split("@")[1]?.trim().toLowerCase().replace(/\.$/, "");
@@ -105,7 +122,7 @@ export function disposableDomain(email: string | null | undefined): string | nul
   for (const known of DISPOSABLE_DOMAINS) {
     if (domain === known || domain.endsWith(`.${known}`)) return known;
   }
-  return null;
+  return domain.split(".").some((label) => DISPOSABLE_BRANDS.some((brand) => label.startsWith(brand))) ? domain : null;
 }
 
 /**

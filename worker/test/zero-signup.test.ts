@@ -551,6 +551,32 @@ describe("claiming", () => {
     expect((await formFor(unverified.replace("@", "+x@")))?.userId).toBeNull();
   }, 20_000);
 
+  it("never confirms or claims an endpoint on a throwaway or reserved domain, even one made before they were refused", async () => {
+    const http = mockFetch();
+    const { sha256Hex } = await import("../src/lib/crypto");
+    const legacy = async (address: string) => {
+      const token = `legacy-${crypto.randomUUID()}`;
+      const form = await createForm({ userId: null, ownerEmail: address, status: "pending_confirmation" });
+      await db().insert(emailAddresses).values({ id: crypto.randomUUID(), userId: null, email: address, tokenHash: await sha256Hex(token), tokenSentAt: Date.now(), createdAt: Date.now() });
+      return { form, token, address };
+    };
+    const stuck = [await legacy(`old${counter++}@guerrillamailblock.com`), await legacy(`old${counter++}@yopmail.com`)];
+
+    // The confirmation link is refused as if it had expired, and the form stays shut.
+    for (const { token, address } of stuck) {
+      expect((await postConfirm(token, "confirm")).status, address).toBe(400);
+      expect((await formFor(address))?.status, address).toBe("pending_confirmation");
+    }
+    // Signing in with such an address (an account made on a throwaway inbox) claims nothing either.
+    const owner = await createUser({ email: stuck[0]!.address });
+    await api("/me", { headers: (await signIn(owner.id)).headers });
+    expect(await formFor(stuck[0]!.address)).toMatchObject({ userId: null, status: "pending_confirmation" });
+    // And new posts to those endpoints are refused outright, with nothing emailed.
+    expect((await postJson(stuck[0]!.address, { message: "hi" })).status).toBe(400);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(http.emails().filter((e) => stuck.some((x) => x.address === e.to[0]))).toHaveLength(0);
+  });
+
   it("doesn't claim for unverified emails", async () => {
     mockFetch();
     const email = uniqueEmail();
