@@ -12,7 +12,7 @@ Cloudflare forks the repo into your GitHub account, creates the D1 database, ask
 - **Required:** `BETTER_AUTH_SECRET`, `IP_HASH_SECRET` and `ENCRYPTION_KEY`. Generate each with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
 - **For sign-in:** a GitHub OAuth app (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`). Its callback is `{your URL}/api/auth/callback/github`.
 - **For emails:** `RESEND_API_KEY` and `EMAIL_FROM`, with the sending domain verified in Resend. Without a key, emails are only logged.
-- **Everything else is optional:** `APP_URL`, `ADMIN_EMAILS`, Google sign-in, Turnstile, and `ALERT_WEBHOOK_URL`.
+- **Everything else is optional:** `APP_URL`, `ADMIN_EMAILS`, Google sign-in, Turnstile, `ALERT_WEBHOOK_URL`, and `RESEND_WEBHOOK_SECRET` (bounce handling).
 
 `APP_URL` can stay blank at first. The Worker adopts the first URL it's visited on, so you can create the OAuth app once you know the URL. **Set `APP_URL` explicitly when you add a custom domain.**
 
@@ -39,7 +39,7 @@ npx wrangler secret put EMAIL_FROM          # e.g. "Forms <notify@example.com>"
 npx wrangler secret put RESEND_API_KEY
 npx wrangler secret put GITHUB_CLIENT_ID
 npx wrangler secret put GITHUB_CLIENT_SECRET
-# optional: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, ADMIN_EMAILS, TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, ALERT_WEBHOOK_URL
+# optional: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, ADMIN_EMAILS, TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, ALERT_WEBHOOK_URL, RESEND_WEBHOOK_SECRET
 ```
 
 `DEV_LOGIN` is for local development only. **Never** set it in production (it's ignored anyway unless both `APP_URL` and the request are `http://localhost`).
@@ -142,6 +142,15 @@ The platform ceilings live there too, set for the free plan. If you move to Work
 | 10 ms CPU/request | OAuth-only login, capped body sizes, small cron batches |
 | 100 Resend emails/day | 10 instant emails per account per day, then a daily digest. BYOK Resend keys bypass it entirely. |
 | 10 GB R2 | Per-account and platform-wide byte caps (9 GB hard stop) |
+
+## Bounces and complaints
+
+When an email to an address hard-bounces (the mailbox doesn't exist) or the recipient marks it as spam, sending there again only damages your sender reputation. Resend can tell sendm8 about both, and sendm8 then stops emailing that address: confirmations, reminders, warnings, digests and notifications. It also tags the address as **Bounced** in the dashboard, and posts to `ALERT_WEBHOOK_URL` so you can reach the person another way.
+
+1. In Resend, open **Webhooks** and add an endpoint at `https://your-domain/api/webhooks/resend`, with the events **email.bounced** and **email.complained**.
+2. Copy the endpoint's signing secret (it starts `whsec_`) and set it: `npx wrangler secret put RESEND_WEBHOOK_SECRET`.
+
+Only hard bounces count. Soft ones (a full mailbox, a server outage) can recover, so they're ignored. Without the secret the endpoint answers 404, and requests with a missing, wrong or stale signature are refused.
 
 ## Admin
 
