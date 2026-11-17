@@ -11,6 +11,8 @@ interface OptionalBindings {
   FILES?: R2Bucket;
   /** Discord/Slack-compatible webhook that receives free-tier usage alerts (set as a secret). */
   ALERT_WEBHOOK_URL?: string;
+  /** Signing secret (whsec_…) of the Resend webhook that reports bounces. Bounce handling is off without it. */
+  RESEND_WEBHOOK_SECRET?: string;
   /** Workers AI, for optional per-form AI spam scoring. */
   AI?: Ai;
 }

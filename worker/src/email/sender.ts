@@ -3,6 +3,7 @@ import { decryptSecret } from "../lib/secrets";
 import { notifyOps } from "../ops/alerts";
 import { systemEmailFailingAlert } from "../ops/events";
 import { sendWithResend, type EmailMessage, type SendResult } from "./resend";
+import { suppressedAmong } from "./suppression";
 
 export type OutgoingEmail = Omit<EmailMessage, "from">;
 
@@ -13,6 +14,15 @@ type SystemSenderEnv = Pick<Env, "RESEND_API_KEY" | "EMAIL_FROM" | "APP_URL"> & 
  * If Resend rejects the key or sending domain, the operator is alerted (at most hourly).
  */
 export async function sendSystemEmail(env: SystemSenderEnv, message: OutgoingEmail): Promise<SendResult> {
+  // Never email an address that hard-bounced or complained: it only hurts the sender's reputation.
+  if (env.DB) {
+    const blocked = await suppressedAmong(env.DB, message.to);
+    if (blocked.size) {
+      const to = message.to.filter((a) => !blocked.has(a.trim().toLowerCase()));
+      if (to.length === 0) return { ok: false, error: "suppressed: this address bounced or complained before", retryable: false, keyRejected: false };
+      message = { ...message, to };
+    }
+  }
   if (!env.RESEND_API_KEY) {
     console.log(`[email:dev] to=${message.to.join(",")} subject="${message.subject}"\n${message.text}`);
     return { ok: true, id: "dev-logged" };

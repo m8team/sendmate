@@ -11,7 +11,7 @@ import { alertFormNearLimit } from "../ops/events";
 const SCOPE = "limit_warning";
 const WARN_AT = 0.8;
 const PER_RUN = 5;
-const QUERIES_PER_WARNING = 4;
+const QUERIES_PER_WARNING = 5;
 
 interface Row {
   id: string;
@@ -41,6 +41,7 @@ export async function sendLimitWarnings(outerEnv: Env, now = Date.now(), budget:
      FROM forms f
      JOIN usage_daily u ON u.scope = 'form' AND u.scope_id = f.id AND u.day >= ?1
      WHERE f.user_id IS NULL AND f.status = 'active' AND f.owner_email IS NOT NULL
+       AND NOT EXISTS (SELECT 1 FROM email_suppressions z WHERE z.email = lower(f.owner_email))
      GROUP BY f.id
      HAVING sum(u.submissions) >= ?2
      ORDER BY sum(u.submissions) DESC

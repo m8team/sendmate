@@ -124,3 +124,18 @@ export function alertFormNearLimit(env: AlertEnv, form: Pick<FormRow, "id" | "ow
     dedupeWindow: "day",
   });
 }
+
+/** An address bounced or complained, so we've stopped emailing it. If it's a real person, reach them another way. */
+export function alertEmailSuppressed(env: AlertEnv, address: string, reason: "bounce" | "complaint", detail: string | null) {
+  notifyOpsLater(env, {
+    kind: "email_suppressed",
+    title: reason === "bounce" ? "An address bounced" : "Someone marked our email as spam",
+    description: "We've stopped emailing it. If it belongs to a real user, reach them another way.",
+    fields: [
+      { name: "Address", value: maskEmail(address) },
+      ...(detail ? [{ name: "Why", value: plain(detail, 200) }] : []),
+    ],
+    dedupeKey: address.toLowerCase(),
+    dedupeWindow: "day",
+  });
+}

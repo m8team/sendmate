@@ -64,6 +64,13 @@
       "when": 1794174357111,
       "tag": "0008_confirm_reminder",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1794907565966,
+      "tag": "0009_email_suppressions",
+      "breakpoints": true
     }
   ]
 }

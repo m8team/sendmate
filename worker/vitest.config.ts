@@ -13,6 +13,8 @@ export default defineConfig({
         bindings: {
           // Tests run on the defaults, whatever override wrangler.jsonc sets for the deployment.
           LIMITS_JSON: "",
+          // whsec_ + base64("test-webhook-secret-bytes-0123456789"), as Resend would hand out.
+          RESEND_WEBHOOK_SECRET: "whsec_dGVzdC13ZWJob29rLXNlY3JldC1ieXRlcy0wMTIzNDU2Nzg5",
           ALERT_WEBHOOK_URL: "https://alerts.example.com/hook",
           TEST_MIGRATIONS: await readD1Migrations(path.join(import.meta.dirname, "migrations")),
           APP_URL: "https://sendm8.test",

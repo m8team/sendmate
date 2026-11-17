@@ -16,6 +16,7 @@ import { fileRoutes } from "./routes/files";
 import { pageRoutes } from "./routes/pages";
 import { reportRoutes } from "./routes/report";
 import { submitRoutes } from "./routes/submit";
+import { webhookRoutes } from "./routes/webhooks";
 
 const app = createRouter();
 
@@ -24,6 +25,8 @@ app.on(["GET", "POST"], "/api/auth/*", (c) => getAuth(c.env).handler(c.req.raw))
 app.route("/api/dev", devRoutes);
 // Public, so it's mounted before /api, whose middleware requires a signed-in user.
 app.route("/api/errors", clientErrorRoutes);
+// Signed by the sender, not a signed-in user, so also before /api.
+app.route("/api/webhooks", webhookRoutes);
 app.route("/api", apiRoutes);
 app.route("/f", submitRoutes);
 app.route("/c", challengeRoutes);

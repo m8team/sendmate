@@ -109,6 +109,18 @@ export const emailAddresses = sqliteTable(
   (t) => [uniqueIndex("email_addresses_user_email_idx").on(t.userId, t.email), index("email_addresses_token_idx").on(t.tokenHash)],
 );
 
+/**
+ * Addresses we've stopped emailing: a hard bounce (the mailbox doesn't exist) or a spam complaint,
+ * reported by Resend's webhook. Sending to them again only hurts the sender's reputation.
+ */
+export const emailSuppressions = sqliteTable("email_suppressions", {
+  /** Lowercased. */
+  email: text("email").primaryKey(),
+  reason: text("reason").$type<"bounce" | "complaint">().notNull(),
+  detail: text("detail"),
+  createdAt: integer("created_at").notNull(),
+});
+
 export const channels = sqliteTable(
   "channels",
   {

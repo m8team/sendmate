@@ -8,7 +8,7 @@ import { dayKey } from "../lib/time";
  * Every kind has a daily cap so a spam wave or a flood of errors can't bury the channel.
  */
 
-export type AlertKind = "usage" | "error" | "signup" | "heard_from" | "form_created" | "form_flagged" | "submission_held" | "system_email_failing" | "form_near_limit";
+export type AlertKind = "usage" | "error" | "signup" | "heard_from" | "form_created" | "form_flagged" | "submission_held" | "system_email_failing" | "form_near_limit" | "email_suppressed";
 
 export interface OpsAlert {
   kind: AlertKind;
@@ -34,6 +34,7 @@ const STYLE: Record<AlertKind, { emoji: string; colour: number }> = {
   submission_held: { emoji: "✋", colour: 0xe0a100 },
   system_email_failing: { emoji: "📭", colour: 0xcc3117 },
   form_near_limit: { emoji: "📈", colour: 0xe0a100 },
+  email_suppressed: { emoji: "📪", colour: 0xe0a100 },
 };
 
 /** Usage alerts are already once per metric, threshold and day, so they skip the daily cap. */

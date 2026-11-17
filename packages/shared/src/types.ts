@@ -219,6 +219,8 @@ export interface EmailAddressDto {
   /** When the last verification email went out (resends have a cooldown). */
   verificationSentAt: number | null;
   createdAt: number;
+  /** We've stopped emailing this address after a hard bounce or a spam complaint. */
+  bounced?: boolean;
 }
 
 export interface EmailSettingsDto {

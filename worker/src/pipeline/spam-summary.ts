@@ -22,7 +22,7 @@ const PER_RUN = 5;
 /** Binned below this score: a close call, worth a second look. */
 export const CLOSE_CALL_SCORE = 0.95;
 /** One send: the email budget claim and the "sent" marker. */
-const QUERIES_PER_SEND = 3;
+const QUERIES_PER_SEND = 4;
 
 interface Row {
   formId: string;

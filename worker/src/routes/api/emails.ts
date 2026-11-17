@@ -5,6 +5,7 @@ import { createRouter, type SessionUser } from "../../app";
 import { getLimits } from "../../config";
 import { getDb, type Db } from "../../db/client";
 import { emailAddresses } from "../../db/schema";
+import { suppressedAmong } from "../../email/suppression";
 import { RESEND_COOLDOWN_MS, sendVerification, type VerificationResult } from "../../email/verification";
 import { ApiError, notFound, readJson } from "../../lib/api-error";
 import { newId } from "../../lib/ids";
@@ -53,7 +54,9 @@ emailRoutes.get("/", async (c) => {
   const user = c.get("user");
   await ensureAccountAddress(db, user);
   const rows = await db.select().from(emailAddresses).where(eq(emailAddresses.userId, user.id)).orderBy(asc(emailAddresses.createdAt)).all();
-  return c.json({ data: rows.map(toDto) });
+  // Addresses we've stopped emailing after a hard bounce or complaint, so the dashboard can say so.
+  const stopped = await suppressedAmong(c.env.DB, rows.map((r) => r.email));
+  return c.json({ data: rows.map((r) => ({ ...toDto(r), bounced: stopped.has(r.email.toLowerCase()) })) });
 });
 
 emailRoutes.post("/", async (c) => {

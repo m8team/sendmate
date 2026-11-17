@@ -4,6 +4,7 @@ import { getLimits } from "../config";
 import { getDb, type BatchItem, type BatchList, type Db, type FormRow } from "../db/client";
 import { channels, emailAddresses, forms, submissions } from "../db/schema";
 import { claimCounter, claimSystemEmail } from "../email/budget";
+import { isSuppressed } from "../email/suppression";
 import { sendSystemEmail } from "../email/sender";
 import { zeroSignupConfirmEmail, zeroSignupReminderEmail } from "../email/templates";
 import { findByToken } from "../email/verification";
@@ -116,7 +117,7 @@ const REMIND_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
 const REMIND_WITHIN_MS = 30 * 24 * 60 * 60 * 1000;
 const REMINDERS_PER_RUN = 5;
 /** Queries one reminder can spend: reserve, email budget (up to 2), and the send's own bookkeeping. */
-const QUERIES_PER_REMINDER = 4;
+const QUERIES_PER_REMINDER = 5;
 
 /**
  * Once, and only once, nudges an email endpoint's owner whose confirmation went unanswered for three
@@ -137,6 +138,7 @@ export async function sendConfirmationReminders(outerEnv: Env, now = Date.now(),
      JOIN forms f ON f.owner_email = a.email AND f.user_id IS NULL AND f.status = 'pending_confirmation'
      JOIN submissions s ON s.form_id = f.id AND s.status = 'ok'
      WHERE a.user_id IS NULL AND a.verified_at IS NULL AND a.reminded_at IS NULL
+       AND NOT EXISTS (SELECT 1 FROM email_suppressions z WHERE z.email = a.email)
        AND a.token_sent_at BETWEEN ?1 AND ?2
        -- Only when a real website sent something: not just scripts, which is how sendm8 gets misused
        -- to message strangers (a support inbox, throwaway addresses).
@@ -196,6 +198,8 @@ export async function sendOwnerConfirmation(env: Env, form: FormRow, referrer: s
   const db = getDb(env);
   const address = await unclaimedAddress(db, form.ownerEmail!);
   if (!address || address.verifiedAt) return false;
+  // A hard bounce means nothing we send there arrives: don't spend a confirmation (or the cooldown) on it.
+  if (await isSuppressed(env.DB, address.email)) return false;
 
   const token = randomToken();
   const tokenHash = await sha256Hex(token);
