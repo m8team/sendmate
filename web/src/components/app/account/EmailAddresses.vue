@@ -121,7 +121,8 @@ async function removeAddress(a: EmailAddressDto) {
         <span class="recip-icon" aria-hidden="true"><Icon name="mail" :size="18" /></span>
         <span class="recip-email mono">{{ r.email }}</span>
         <span class="recip-status">
-          <span v-if="r.verified" class="tag tag-ok">Verified{{ r.verifiedAt ? ` ${sinceLabel(r.verifiedAt)}` : '' }}{{ isLogin(r) ? ' · your login' : '' }}</span>
+          <span v-if="r.bounced" class="tag tag-signal" title="Mail to this address bounced, or it was reported as spam, so we've stopped sending to it.">Bounced: we've stopped emailing it</span>
+          <span v-else-if="r.verified" class="tag tag-ok">Verified{{ r.verifiedAt ? ` ${sinceLabel(r.verifiedAt)}` : '' }}{{ isLogin(r) ? ' · your login' : '' }}</span>
           <span v-else class="tag tag-warn">Waiting for a click</span>
         </span>
         <span class="recip-action">
