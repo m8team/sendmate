@@ -115,9 +115,29 @@ export async function fingerprint(report: Pick<ErrorReport, "source" | "name" | 
   return (await sha256Hex(parts.join("|"))).slice(0, 32);
 }
 
+/**
+ * The messages of an error's causes, innermost last. Drizzle wraps a D1 failure as "Failed query: …" and keeps
+ * D1's own reason (overloaded, reset, constraint…) only as the cause.
+ */
+function causeMessages(error: Error): string[] {
+  const causes: string[] = [];
+  let cause: unknown = error.cause;
+  while (cause !== undefined && cause !== null && causes.length < 3) {
+    causes.push(cause instanceof Error ? `${cause.name || "Error"}: ${cause.message}` : String(cause));
+    cause = cause instanceof Error ? cause.cause : undefined;
+  }
+  return causes;
+}
+
 /** Turns anything thrown into a report. */
 export function describeError(error: unknown): Pick<ErrorReport, "name" | "message" | "stack"> {
-  if (error instanceof Error) return { name: error.name || "Error", message: error.message || String(error), stack: error.stack ?? null };
+  if (error instanceof Error) {
+    const message = error.message || String(error);
+    const causes = causeMessages(error).map((c) => `Caused by ${c}`);
+    if (!causes.length) return { name: error.name || "Error", message, stack: error.stack ?? null };
+    // Causes first, so a long query can't push the actual reason past what an alert shows.
+    return { name: error.name || "Error", message: [...causes, message].join("\n"), stack: error.stack ?? null };
+  }
   if (typeof error === "string") return { name: "Error", message: error, stack: null };
   let message: string;
   try {

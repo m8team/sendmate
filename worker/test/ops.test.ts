@@ -158,6 +158,14 @@ describe("error scrubbing and grouping", () => {
     circular.self = circular;
     expect(describeError(circular).message).toBe("[object Object]");
   });
+
+  it("leads with the cause, so a wrapped D1 failure says why it failed", () => {
+    const d1 = new Error("D1_ERROR: Network connection lost.");
+    const wrapped = new Error(`Failed query: select "id" from "submissions" where ${"x".repeat(2_000)}`, { cause: d1 });
+    const { message } = describeError(wrapped);
+    expect(message.startsWith("Caused by Error: D1_ERROR: Network connection lost.\nFailed query: select")).toBe(true);
+    expect(describeError(new Error("outer", { cause: "a string" })).message).toBe("Caused by a string\nouter");
+  });
 });
 
 describe("error tracking", () => {
