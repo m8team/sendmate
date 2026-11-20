@@ -80,7 +80,8 @@ export async function sendDueDigests(
     for (const delivery of submission.deliveries) {
       if (delivery.status !== "digest") continue;
       const address = addressById.get(recipientByChannel.get(delivery.channelId) ?? "");
-      if (!address?.verifiedAt || submission.status !== "ok" || !(form.userId || form.ownerEmail)) {
+      // A form disabled after these were queued (e.g. suspended for abuse) sends nothing more.
+      if (!address?.verifiedAt || submission.status !== "ok" || form.status === "disabled" || !(form.userId || form.ownerEmail)) {
         setStatus(submission.id, delivery.channelId, { status: "skipped", error: address ? "not_deliverable" : "recipient_removed" });
         continue;
       }

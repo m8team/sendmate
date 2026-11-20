@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getLimits } from "../src/config";
 import { retryDueDeliveries, cleanup } from "../src/cron";
-import { submissions, usageDaily, userSettings } from "../src/db/schema";
+import { forms, submissions, usageDaily, userSettings } from "../src/db/schema";
 import { claimSystemEmail } from "../src/email/budget";
 import { encryptSecret } from "../src/lib/secrets";
 import { dayKey } from "../src/lib/time";
@@ -197,6 +197,17 @@ describe("digests", () => {
     await sendDueDigests(env, row.digestAt! + 1);
     expect(resend.emails()).toHaveLength(0);
     expect((await getSubmission(row.id))?.digestAt).toBe(row.digestAt);
+  });
+
+  it("sends nothing queued for a form that was disabled after the fact", async () => {
+    const resend = mockResend();
+    const { form, address } = await setup({ notifyMode: "digest" });
+    const row = await submitAndSettle(form.id, { message: "queued before the form was suspended" });
+    await db().update(forms).set({ status: "disabled" }).where(eq(forms.id, form.id));
+
+    await sendDueDigests(env, row.digestAt! + 1);
+    expect(resend.emails().filter((e) => e.to[0] === address.email)).toHaveLength(0);
+    expect((await getSubmission(row.id))?.deliveries[0]).toMatchObject({ status: "skipped" });
   });
 });
 
