@@ -56,6 +56,22 @@ const SPAM_PHRASES = [
 const URL_PATTERN = /\bhttps?:\/\/|\bwww\./gi;
 
 /**
+ * The "your item sold, verify to get paid" scam that marketplace sellers get. A group tested it through
+ * sendm8 into their own inbox (20 Nov 2026), and the AI check was down, so nothing caught it. It needs all
+ * parts: a link, and a payment or shipping lure with a marketplace (in the text, the subject or the reply-to
+ * domain), or two different lures (some copies name no marketplace at all). A buyer asking about a Vinted
+ * listing has no lure; a customer asking about a shipping label has only one.
+ */
+const MARKETPLACE = /\b(vinted|poshmark|depop|etsy|ebay|olx|marktplaats|wallapop|leboncoin|kleinanzeigen|mercari|subito|facebook marketplace)\b/i;
+const PAYMENT_LURES = [
+  /\b(funds?|payment|money)\b.{0,40}\b(reserved|on hold|pending|held|waiting|released?)\b/i,
+  /\bpending balance\b/i,
+  /\bshipping label\b/i,
+  /\b(verify|confirm|complete)\b.{0,30}\b(profile|account|identity|details|card)\b|\bprofile check\b/i,
+  /\breceive (your )?(payment|funds|money)\b|\bsold and (is )?paid\b/i,
+];
+
+/**
  * Throwaway inbox providers. Someone with a real question rarely writes from one, and bots often do.
  * It's a nudge, not a verdict: on its own it never reaches the spam line.
  */
@@ -217,6 +233,13 @@ export function assessSpam(parsed: ParsedSubmission, settings: FormSettings, opt
   if (phraseHits) {
     score += Math.min(0.5, phraseHits * 0.25);
     reasons.push(`phrases:${phraseHits}`);
+  }
+
+  const posingAs = [text, special._subject ?? "", special._replyto?.split("@")[1] ?? ""];
+  const lures = PAYMENT_LURES.filter((pattern) => pattern.test(text)).length;
+  if (urlCount > 0 && (lures >= 2 || (lures === 1 && posingAs.some((part) => MARKETPLACE.test(part))))) {
+    score += 0.8;
+    reasons.push("marketplace_phish");
   }
 
   const longest = values.reduce((a, b) => (b.length > a.length ? b : a), "");

@@ -108,3 +108,26 @@ describe("scoring a submission", () => {
     expect(assessSpam(parsed({ ...real, password: "hunter2" }), {}, browser)).toMatchObject({ status: "held", reasons: ["sensitive_field:password"] });
   });
 });
+
+describe("marketplace phishing", () => {
+  const lure =
+    "Hi there! Good news: Order #VT-748292 sold and is paid, with funds safely reserved in your pending balance. We just need a quick profile check before releasing your shipping label. Complete it here: http://a29.at/";
+
+  it("bins the sold-and-paid lure when it names a marketplace or poses as one in the reply-to", () => {
+    expect(assessSpam(parsed({ message: `Vinted: ${lure}` }), {}, browser)).toMatchObject({ status: "spam", reasons: ["marketplace_phish"] });
+    const posing = assessSpam(parsed({ email: "sender@example.com", message: lure }, { _replyto: "notify@poshmark.com" }), {}, browser);
+    expect(posing.status).toBe("spam");
+    expect(posing.reasons).toContain("marketplace_phish");
+    // Some copies name no marketplace at all; two different lures and a link are enough.
+    expect(assessSpam(parsed({ email: "sender@example.com", message: lure }), {}, browser).status).toBe("spam");
+  });
+
+  it("leaves buyers, shops and link-free messages alone", () => {
+    // A buyer asking about a listing: a marketplace and a link, but no lure.
+    expect(assessSpam(parsed({ ...real, message: "Is the jacket on your Vinted still available? https://www.vinted.co.uk/items/123" }), {}, browser).reasons).toEqual([]);
+    // A shop customer: a lure-ish phrase and a link, but no marketplace.
+    expect(assessSpam(parsed({ ...real, message: "My shipping label didn't print, can you resend it? https://myshop.test/orders/9" }), {}, browser).reasons).toEqual([]);
+    // No link: nowhere to send the victim.
+    expect(assessSpam(parsed({ ...real, message: "Vinted says my funds are pending, is that normal for your shop?" }), {}, browser).reasons).toEqual([]);
+  });
+});
