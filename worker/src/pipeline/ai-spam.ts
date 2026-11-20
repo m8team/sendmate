@@ -9,11 +9,13 @@ import { captureError } from "../ops/errors";
 import { submitterEmail } from "./spam";
 
 /**
- * Small enough to stay inside the free allowance (~0.8 neurons a check, so the daily cap of
- * aiSpamChecksPerDay costs under a tenth of it), big enough to tell a complaint from a sales pitch.
- * The 3B model it replaced answered "83" to almost everything, genuine messages included.
+ * Cloudflare retired the 8B model this used on 20 Nov 2026. On 134 past submissions this one caught the
+ * same bot spam, scored every genuine one 0-10, and stopped flagging ordinary Persian and Chinese
+ * enquiries. It costs about twice as much per check (~1.6 neurons), still well inside the free allowance at the
+ * aiSpamChecksPerDay cap. Llama 4 Scout missed repeat bot spam; Gemma 4 spends its few tokens thinking.
+ * The 3B model before the 8B answered "83" to almost everything, genuine messages included.
  */
-export const AI_SPAM_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8";
+export const AI_SPAM_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 /**
  * Only a confident model answer bins a submission on its own. A genuine "I'd like to collaborate"
  * enquiry to a freelancer's portfolio scored exactly 80 in production, while real spam scores 95-100,
