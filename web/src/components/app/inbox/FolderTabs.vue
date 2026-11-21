@@ -52,25 +52,28 @@ function onKey(e: KeyboardEvent) {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.4rem 0.45rem;
-  border: 1px solid transparent;
-  border-radius: var(--r-1);
+  padding: 0.3rem 0.55rem;
+  border: 0;
+  border-radius: var(--r-2);
   background: transparent;
   color: var(--fg-muted);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--fs-sm);
+  font-weight: 500;
 }
 .tab:hover {
   color: var(--fg);
-  border-color: var(--line);
+  background: var(--bg-sunk);
 }
 .tab[aria-selected='true'] {
-  background: var(--fg);
-  color: var(--bg);
+  background: var(--bg-deep);
+  color: var(--fg);
+  font-weight: 600;
 }
 .tab-n {
-  font-size: var(--fs-2xs);
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
   font-weight: 500;
-  opacity: 0.8;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
 }
 </style>

@@ -97,10 +97,10 @@ describe('tabKeyTarget', () => {
 
 describe('copy', () => {
   it('explains empty folders and empty searches', () => {
-    expect(emptyCopy('inbox', '', 'https://sendm8.com/f/abc').body).toContain('sendm8.com/f/abc, it lands here');
-    expect(emptyCopy('spam', 'ada', '').body).toBe('No spam post matches “ada”. Try a name, an email or a word from the message.');
-    expect(emptyCopy('all', 'ada', '').body.startsWith('No post matches')).toBe(true);
-    expect(emptyCopy('unread', '', '').title).toBe('All caught up.');
+    expect(emptyCopy('inbox', '', 'https://sendm8.com/f/abc').body).toContain('sendm8.com/f/abc, it shows up here');
+    expect(emptyCopy('spam', 'ada', '').body).toBe('No spam submissions match “ada”. Try a name, an email or a word from the message.');
+    expect(emptyCopy('all', 'ada', '').body.startsWith('No submissions match')).toBe(true);
+    expect(emptyCopy('unread', '', '').title).toBe('All caught up');
   });
 
   it('says what an export will contain', () => {

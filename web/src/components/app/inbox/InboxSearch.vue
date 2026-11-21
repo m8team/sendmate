@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** Search post or tracking numbers. The parent debounces; this just holds the text and the focus. */
+/** Search submissions (contents or ID). The parent debounces; this just holds the text and the focus. */
 import { ref } from 'vue';
 import Icon from '../../ui/Icon.vue';
 
@@ -17,7 +17,7 @@ defineExpose({ input, clear });
 <template>
   <div class="search">
     <label for="inbox-search" class="sr-only">Search submissions</label>
-    <Icon name="search" :size="18" class="search-ico" />
+    <Icon name="search" :size="16" class="search-ico" />
     <input
       id="inbox-search"
       ref="input"
@@ -26,7 +26,7 @@ defineExpose({ input, clear });
       type="search"
       autocomplete="off"
       spellcheck="false"
-      placeholder="Search post or tracking no."
+      placeholder="Search submissions"
     />
     <kbd v-if="!query" class="kbd search-kbd" aria-hidden="true">/</kbd>
     <button v-else type="button" class="search-clear" aria-label="Clear search" @click="clear"><Icon name="x" :size="16" /></button>
@@ -46,8 +46,8 @@ defineExpose({ input, clear });
   pointer-events: none;
 }
 .search-input {
-  min-height: 2.5rem;
-  padding: 0.45rem 2.4rem 0.45rem 2.2rem;
+  padding-left: 2rem;
+  padding-right: 2.2rem;
   font-size: var(--fs-sm);
 }
 .search-input::-webkit-search-cancel-button {

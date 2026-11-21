@@ -18,8 +18,7 @@ defineProps<{ icon: IconName; title: string }>();
 
 <style scoped>
 .banner {
-  margin: var(--s-3) clamp(1rem, 2.5vw, 2rem) 0;
-  padding: 0.75rem 1rem;
+  margin: var(--s-3) clamp(1rem, 2.5vw, 1.5rem) 0;
 }
 .banner-body {
   display: flex;

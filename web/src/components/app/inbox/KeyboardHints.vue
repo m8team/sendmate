@@ -7,7 +7,7 @@
     <span><kbd class="kbd">j</kbd><kbd class="kbd">k</kbd> move</span>
     <span><kbd class="kbd">↵</kbd> open</span>
     <span><kbd class="kbd">s</kbd> star</span>
-    <span><kbd class="kbd">x</kbd> pick</span>
+    <span><kbd class="kbd">x</kbd> select</span>
     <span><kbd class="kbd">/</kbd> search</span>
   </p>
 </template>
@@ -17,7 +17,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem 0.8rem;
-  padding: 0.55rem var(--s-3);
+  padding: 0.45rem var(--s-3);
   border-top: 1px solid var(--line);
   font-size: var(--fs-2xs);
   color: var(--fg-muted);

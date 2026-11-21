@@ -28,16 +28,15 @@ const emit = defineEmits<{ undo: []; dismiss: [] }>();
   padding: 0.45rem 0.45rem 0.45rem 0.8rem;
   background: var(--fg);
   color: var(--bg);
-  border: 2px solid var(--line-strong);
-  box-shadow: var(--shadow-label);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  animation: undo-in var(--dur-3) var(--ease-thunk);
+  border-radius: var(--r-2);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.18);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  animation: undo-in var(--dur-3) var(--ease-out);
 }
 @keyframes undo-in {
   from {
-    transform: translateY(10px) rotate(-1.5deg);
+    transform: translateY(8px);
     opacity: 0;
   }
 }
@@ -49,10 +48,9 @@ const emit = defineEmits<{ undo: []; dismiss: [] }>();
   white-space: nowrap;
 }
 .undo-btn {
-  --btn-bg: var(--accent);
-  --btn-fg: var(--on-accent);
-  --btn-border: var(--accent);
-  --btn-shadow: var(--bg);
+  --btn-bg: var(--bg);
+  --btn-fg: var(--fg);
+  --btn-border: var(--bg);
 }
 .undo-x {
   display: grid;

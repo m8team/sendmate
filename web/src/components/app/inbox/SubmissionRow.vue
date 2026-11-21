@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** One letter in the list: pick checkbox, sender, preview, tracking number, status chip and star. */
+/** One submission in the list: select checkbox, sender, preview, status chip and star. */
 import { computed } from 'vue';
 import Icon from '../../ui/Icon.vue';
 import type { Submission } from '../../../lib/api/types';
@@ -30,17 +30,16 @@ const chip = computed(() => rowChip(props.s));
         <span v-if="unread" class="row-dot" aria-hidden="true"></span>
         <span v-if="unread" class="sr-only">Unread.</span>
         <span class="row-from">{{ sender(s) }}</span>
-        <time class="row-time mono" :datetime="isoDate(s.createdAt)">{{ ago(s.createdAt, now) }}</time>
+        <time class="row-time" :datetime="isoDate(s.createdAt)">{{ ago(s.createdAt, now) }}</time>
       </span>
       <span class="row-prev">{{ preview(s) || '(no message)' }}</span>
-      <span class="row-foot">
-        <span class="row-track mono">{{ s.tracking }}</span>
-        <span v-if="s.files.length" class="row-clip"><Icon name="paperclip" :size="14" label="Has attachment" /></span>
-        <span v-if="chip" class="chip mono" :class="chip.cls">{{ chip.text }}</span>
+      <span v-if="s.files.length || chip" class="row-foot">
+        <span v-if="s.files.length" class="row-clip"><Icon name="paperclip" :size="13" label="Has attachment" /></span>
+        <span v-if="chip" class="chip" :class="chip.cls">{{ chip.text }}</span>
       </span>
     </button>
     <button type="button" class="row-star" :aria-pressed="s.starred" :aria-label="`Star submission from ${sender(s)}`" @click="emit('star')">
-      <Icon name="star" :size="18" />
+      <Icon name="star" :size="16" />
     </button>
   </li>
 </template>
@@ -52,37 +51,47 @@ const chip = computed(() => rowChip(props.s));
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: start;
   border-bottom: 1px solid var(--line);
-  background: var(--bg-sunk);
   transition: background-color var(--dur-1);
 }
 .row:hover {
-  background: color-mix(in srgb, var(--bg-raised) 60%, var(--bg-sunk));
+  background: var(--bg-sunk);
 }
 .row.is-open {
-  background: var(--bg);
-  box-shadow: inset 4px 0 0 var(--signal);
+  background: var(--bg-sunk);
+  box-shadow: inset 2px 0 0 var(--fg);
 }
 .row.is-sel {
-  background: color-mix(in srgb, var(--accent) 22%, var(--bg-sunk));
+  background: color-mix(in srgb, var(--fg) 7%, var(--bg));
 }
 .row-check {
-  margin: 0.95rem 0 0 0.85rem;
+  margin: 0.8rem 0 0 0.8rem;
   position: relative;
   z-index: 1;
+}
+/* On mouse screens the checkbox waits until you hover or start selecting. */
+@media (hover: hover) and (pointer: fine) {
+  .row-check {
+    opacity: 0;
+  }
+  .row:hover .row-check,
+  .row.is-sel .row-check,
+  .row-check:focus-visible {
+    opacity: 1;
+  }
 }
 /* 24px minimum touch target on phones and tablets. */
 @media (pointer: coarse) {
   .row-check {
     width: 1.5rem;
     height: 1.5rem;
-    margin: 0.75rem 0 0 0.7rem;
+    margin: 0.65rem 0 0 0.7rem;
   }
 }
 .row-main {
   display: grid;
-  gap: 0.2rem;
+  gap: 0.15rem;
   min-width: 0;
-  padding: 0.75rem 0.4rem 0.75rem 0.65rem;
+  padding: 0.6rem 0.3rem 0.6rem 0.6rem;
   border: 0;
   background: transparent;
   text-align: left;
@@ -101,10 +110,10 @@ const chip = computed(() => rowChip(props.s));
 .row-dot {
   flex: none;
   align-self: center;
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.4rem;
+  height: 0.4rem;
   border-radius: 50%;
-  background: var(--signal);
+  background: var(--fg);
 }
 .row-from {
   flex: 1;
@@ -114,18 +123,17 @@ const chip = computed(() => rowChip(props.s));
   white-space: nowrap;
   font-size: var(--fs-sm);
   font-weight: 500;
+  color: var(--fg-muted);
 }
 .is-unread .row-from {
-  font-weight: 700;
+  font-weight: 650;
+  color: var(--fg);
 }
 .row-time {
   flex: none;
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
   color: var(--fg-muted);
-}
-.is-unread .row-time {
-  color: var(--fg);
-  font-weight: 600;
 }
 .row-prev {
   display: -webkit-box;
@@ -133,8 +141,11 @@ const chip = computed(() => rowChip(props.s));
   -webkit-box-orient: vertical;
   overflow: hidden;
   font-size: var(--fs-xs);
-  line-height: 1.4;
+  line-height: 1.45;
   color: var(--fg-muted);
+}
+.is-unread .row-prev {
+  color: var(--fg);
 }
 .is-blocked .row-from,
 .is-blocked .row-prev {
@@ -143,28 +154,21 @@ const chip = computed(() => rowChip(props.s));
 .row-foot {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  margin-top: 0.15rem;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
   min-width: 0;
-}
-.row-track {
-  font-size: 0.65rem;
-  letter-spacing: 0.03em;
-  color: var(--fg-subtle);
-  white-space: nowrap;
 }
 .row-clip {
   display: inline-flex;
   color: var(--fg-muted);
 }
 .chip {
-  padding: 0.05rem 0.35rem;
-  font-size: 0.625rem;
+  padding: 0 0.35rem;
+  border-radius: var(--r-2);
+  font-size: var(--fs-2xs);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  line-height: 1.5;
   white-space: nowrap;
-  border: 1px solid currentColor;
 }
 .chip-spam {
   color: var(--signal-text);
@@ -178,10 +182,11 @@ const chip = computed(() => rowChip(props.s));
 .row-star {
   display: grid;
   place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 2rem;
+  height: 2rem;
   margin: 0.35rem 0.3rem 0 0;
   border: 0;
+  border-radius: var(--r-2);
   background: transparent;
   color: var(--fg-subtle);
 }
@@ -193,21 +198,16 @@ const chip = computed(() => rowChip(props.s));
 }
 .row-star[aria-pressed='true'] svg {
   fill: var(--accent);
-}
-.row-star svg {
-  transition: transform var(--dur-2) var(--ease-thunk);
-}
-.row-star[aria-pressed='true'] svg {
-  transform: rotate(-12deg) scale(1.08);
+  stroke: color-mix(in srgb, var(--accent) 60%, var(--fg));
 }
 
 @media (max-width: 720px) {
   .row.is-open {
     box-shadow: none;
-    background: var(--bg-sunk);
+    background: transparent;
   }
   .row-main {
-    padding-block: 0.9rem;
+    padding-block: 0.8rem;
   }
   .row-prev {
     font-size: var(--fs-sm);

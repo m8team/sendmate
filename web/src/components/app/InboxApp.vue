@@ -1,11 +1,12 @@
 <script setup lang="ts">
 /**
- * The inbox for one form: pigeonhole label and banners on top, then the list pane
+ * The inbox for one form: a one-line header and banners on top, then the list pane
  * (folders, search, bulk bar, rows) beside the detail pane. On phones the detail is a full-screen sheet.
  * State and behaviour live in the composables under ./inbox; this file wires them to the view.
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import type { Channel, Form } from '../../lib/api/types';
+import Icon from '../ui/Icon.vue';
 import InboxDetail from './InboxDetail.vue';
 import BulkBar from './inbox/BulkBar.vue';
 import FolderTabs from './inbox/FolderTabs.vue';
@@ -81,7 +82,7 @@ onBeforeUnmount(() => window.clearInterval(clock));
 </script>
 
 <template>
-  <div ref="rootEl" class="inbox" :class="{ 'has-detail-open': mobileOpen }">
+  <div ref="rootEl" class="inbox" :class="{ 'has-detail-open': mobileOpen, 'has-selection': selected.length }">
     <InboxHeader :form="form" :form-status="formStatus" />
 
     <FormStateBanner v-model:form-status="formStatus" :form="form" :now="now" @form-updated="emit('form-updated', $event)" />
@@ -151,7 +152,6 @@ onBeforeUnmount(() => window.clearInterval(clock));
           :form-status="formStatus"
           :channels="channels"
           :now="now"
-          :released="releasedId === current.id"
           :has-prev="openIndex > 0"
           :has-next="openIndex !== -1 && openIndex < visibleIds.length - 1"
           :digest-hour-utc="digestHourUtc"
@@ -168,9 +168,9 @@ onBeforeUnmount(() => window.clearInterval(clock));
           @delete="remove([current.id])"
         />
         <div v-else class="det-empty">
-          <p class="det-empty-mark" aria-hidden="true">Nº&nbsp;—</p>
-          <p class="empty-title">Pick a letter.</p>
-          <p class="empty-body">Choose something from the list to see what’s inside, where it went and how spammy it looked.</p>
+          <Icon name="inbox" :size="28" class="det-empty-icon" />
+          <p class="empty-title">No submission selected</p>
+          <p class="empty-body">Pick one from the list to see its contents, where it was delivered and its spam check.</p>
         </div>
       </div>
     </div>
@@ -179,11 +179,10 @@ onBeforeUnmount(() => window.clearInterval(clock));
 
 <style scoped>
 .inbox {
-  --topbar-h: 3.75rem;
   --list-w: 24rem;
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - var(--topbar-h));
+  height: calc(100dvh - var(--app-topbar-h));
   min-height: 34rem;
 }
 
@@ -193,16 +192,13 @@ onBeforeUnmount(() => window.clearInterval(clock));
   min-height: 0;
   display: grid;
   grid-template-columns: var(--list-w) minmax(0, 1fr);
-  margin-top: var(--s-3);
-  border-top: 1px solid var(--line);
 }
 .pane-list {
   position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border-right: var(--bw-strong) solid var(--line-strong);
-  background: var(--bg-sunk);
+  border-right: 1px solid var(--line);
 }
 .pane-detail {
   min-height: 0;
@@ -213,39 +209,31 @@ onBeforeUnmount(() => window.clearInterval(clock));
 .tools {
   display: grid;
   gap: var(--s-2);
-  padding: var(--s-3) var(--s-3) 0;
-  background: var(--bg-sunk);
+  padding: var(--s-2) var(--s-3) 0;
+  background: var(--bg);
 }
 
 /* ---- Nothing open ------------------------------------------------------ */
 .det-empty {
   display: grid;
-  justify-items: start;
-  gap: var(--s-2);
+  justify-items: center;
   align-content: center;
+  gap: var(--s-1);
   min-height: 100%;
-  padding: var(--s-8) clamp(1rem, 4vw, 4rem);
+  padding: var(--s-8) var(--s-5);
+  text-align: center;
 }
-.det-empty-mark {
-  font-family: var(--font-display);
-  font-stretch: var(--stretch-condensed);
-  font-weight: 900;
-  font-size: clamp(5rem, 12vw, 10rem);
-  line-height: 0.8;
-  color: var(--bg-deep);
+.det-empty-icon {
+  color: var(--fg-subtle);
+  margin-bottom: var(--s-2);
 }
 .empty-title {
-  font-family: var(--font-display);
-  font-stretch: var(--stretch-condensed);
-  font-weight: 900;
-  font-size: 2rem;
-  line-height: 0.95;
+  font-weight: 600;
 }
 .empty-body {
   max-width: 34ch;
   font-size: var(--fs-sm);
   color: var(--fg-muted);
-  margin-bottom: var(--s-2);
 }
 
 @media (max-width: 1100px) {
@@ -258,11 +246,10 @@ onBeforeUnmount(() => window.clearInterval(clock));
 @media (max-width: 720px) {
   .inbox {
     height: auto;
-    min-height: calc(100dvh - var(--topbar-h));
+    min-height: calc(100dvh - var(--app-topbar-h));
   }
   .split {
     display: block;
-    border-top: 0;
   }
   .pane-list {
     border-right: 0;
@@ -270,9 +257,8 @@ onBeforeUnmount(() => window.clearInterval(clock));
   }
   .tools {
     position: sticky;
-    top: var(--topbar-h);
+    top: var(--app-topbar-h);
     z-index: 5;
-    padding-top: var(--s-2);
   }
   .pane-detail {
     display: none;
@@ -293,7 +279,7 @@ onBeforeUnmount(() => window.clearInterval(clock));
 }
 @keyframes sheet-in {
   from {
-    transform: translateX(28%);
+    transform: translateX(12%);
     opacity: 0;
   }
 }
@@ -302,5 +288,9 @@ onBeforeUnmount(() => window.clearInterval(clock));
 <style>
 html.inbox-detail-open {
   overflow: hidden;
+}
+/* Once anything is selected, every row shows its checkbox (SubmissionRow hides them until hover). */
+.inbox.has-selection .row-check {
+  opacity: 1;
 }
 </style>

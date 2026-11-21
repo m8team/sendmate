@@ -110,21 +110,21 @@ export function tabKeyTarget(keys: Filter[], current: Filter, key: string): Filt
 export function emptyCopy(filter: Filter, appliedQuery: string, endpoint: string) {
   if (appliedQuery) {
     return {
-      title: 'Nothing with that on the label.',
-      body: `No ${filter === 'all' ? '' : FILTER_LABEL[filter].toLowerCase() + ' '}post matches “${appliedQuery}”. Try a name, an email or a word from the message.`,
+      title: 'No matches',
+      body: `No ${filter === 'all' ? '' : FILTER_LABEL[filter].toLowerCase() + ' '}submissions match “${appliedQuery}”. Try a name, an email or a word from the message.`,
     };
   }
   switch (filter) {
     case 'unread':
-      return { title: 'All caught up.', body: 'Nothing unread. Go and put the kettle on.' };
+      return { title: 'All caught up', body: 'Nothing unread.' };
     case 'starred':
-      return { title: 'Nothing starred yet.', body: 'Press s on anything worth keeping and it’ll wait for you here.' };
+      return { title: 'Nothing starred', body: 'Star a submission (or press s) to keep it here.' };
     case 'spam':
-      return { title: 'Spam folder’s empty.', body: 'Either the bots are on holiday or the honeypot’s doing its job.' };
+      return { title: 'No spam', body: 'Anything the spam check catches shows up here.' };
     case 'held':
-      return { title: 'Nothing held.', body: 'The phishing guard hasn’t had to step in. Long may it last.' };
+      return { title: 'Nothing held', body: 'Submissions held by the phishing check show up here for review.' };
     default:
-      return { title: 'No post today.', body: `As soon as someone submits the form at ${endpoint.replace(/^https?:\/\//, '')}, it lands here.` };
+      return { title: 'No submissions yet', body: `When someone submits a form pointed at ${endpoint.replace(/^https?:\/\//, '')}, it shows up here.` };
   }
 }
 
@@ -136,7 +136,7 @@ export function exportScopeNote(filter: Filter, appliedQuery: string, folderCoun
   return `Exports everything in ${FILTER_LABEL[f]}${filter === 'unread' ? ' (read and unread)' : ''}${n !== null ? ` · ${n.toLocaleString('en-GB')}` : ''}`;
 }
 
-/** "Sorting…", "1 item", "12+ items found" under the search box. */
+/** "1 item", "12+ items found" under the search box. */
 export function listMeta(visibleCount: number, hasMore: boolean, appliedQuery: string) {
   return `${visibleCount}${hasMore ? '+' : ''} ${visibleCount === 1 && !hasMore ? 'item' : 'items'}${appliedQuery ? ' found' : ''}`;
 }
