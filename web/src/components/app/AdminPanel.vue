@@ -38,10 +38,11 @@ onMounted(async () => {
 
 <template>
   <div class="office">
-    <header class="office-head">
-      <p class="label office-kicker"><span class="bay-no">Back room</span> · Admins only</p>
-      <h1 class="h2">Sorting office admin</h1>
-      <p class="office-lede">Free-tier headroom, abuse reports, errors and the blocklist. Everything here acts on every account, so read twice.</p>
+    <header class="app-head">
+      <div>
+        <h1 class="app-title">Admin</h1>
+        <p class="app-sub">Usage, reports, errors and the blocklist. Actions here affect every account.</p>
+      </div>
     </header>
 
     <div v-if="state === 'loading'" class="office-grid" aria-busy="true">
@@ -77,27 +78,15 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.office-head {
-  display: grid;
-  gap: var(--s-2);
-  margin-bottom: clamp(1.25rem, 3vw, 2.25rem);
-  padding-bottom: var(--s-4);
-  border-bottom: var(--bw-strong) solid var(--line-strong);
-}
-.office-kicker {
-  color: var(--fg-muted);
-}
-.office-lede {
-  max-width: 60ch;
-  color: var(--fg-muted);
-}
 .office-notice {
   max-width: 40rem;
 }
 /* The sections are child components; their root <section class="office-section"> picks these up. */
 .office-section + .office-section,
 .office-two {
-  margin-top: var(--s-8);
+  margin-top: var(--s-6);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--line);
 }
 .office-grid {
   display: grid;
@@ -112,6 +101,8 @@ onMounted(async () => {
 }
 .office-two > .office-section + .office-section {
   margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 @media (max-width: 1200px) {
   .office-two {

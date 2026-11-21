@@ -60,8 +60,8 @@ onMounted(load);
 <template>
   <section class="office-section" aria-labelledby="office-growth">
     <div class="office-bar">
-      <h2 id="office-growth" class="bay label label-lg">
-        <span class="bay-no">02</span> Growth
+      <h2 id="office-growth" class="office-title">
+        Growth
       </h2>
       <button type="button" class="btn btn-ghost btn-xs" @click="load">
         <Icon name="refresh" :size="14" /> Refresh
@@ -148,8 +148,9 @@ onMounted(load);
 .gr-tiles {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border: var(--bw-strong) solid var(--line-strong);
-  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  overflow: hidden;
 }
 .gr-tile {
   display: grid;
@@ -158,18 +159,16 @@ onMounted(load);
   min-width: 0;
 }
 .gr-tile + .gr-tile {
-  border-left: 1px dashed var(--line);
+  border-left: 1px solid var(--line);
 }
 .gr-label,
 .gr-sub {
   color: var(--fg-muted);
 }
 .gr-num {
-  font-family: var(--font-display);
-  font-stretch: var(--stretch-condensed);
-  font-weight: 900;
-  font-size: clamp(2.2rem, 3.2vw, 3rem);
-  line-height: 0.9;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 .gr-note {
   font-size: var(--fs-xs);
@@ -197,9 +196,6 @@ onMounted(load);
   gap: var(--s-3);
   font-size: var(--fs-sm);
 }
-.gr-meter {
-  height: 10px;
-}
 .gr-count {
   text-align: right;
 }
@@ -210,7 +206,7 @@ onMounted(load);
   }
   .gr-tile + .gr-tile {
     border-left: 0;
-    border-top: 1px dashed var(--line);
+    border-top: 1px solid var(--line);
   }
 }
 </style>

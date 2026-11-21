@@ -10,8 +10,9 @@
   gap: var(--s-3);
   margin-bottom: var(--s-3);
 }
-.office-bar .bay {
-  font-weight: 500;
+.office-title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
 }
 .office-table {
   margin-top: var(--s-4);
@@ -26,15 +27,16 @@
 }
 .office-empty {
   padding: var(--s-4);
-  border: 2px dashed var(--line);
+  border: 1px dashed var(--line);
+  border-radius: var(--r-3);
   color: var(--fg-muted);
 }
 .office-panel {
   display: grid;
   gap: var(--s-3);
   padding: var(--s-4);
-  border: var(--bw-strong) solid var(--line-strong);
-  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
 }
 .office-value {
   overflow-wrap: anywhere;

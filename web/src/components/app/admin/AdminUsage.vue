@@ -27,7 +27,7 @@ onMounted(loadUsage);
 <template>
   <section class="office-section" aria-labelledby="office-usage">
     <div class="office-bar">
-      <h2 id="office-usage" class="bay label label-lg"><span class="bay-no">01</span> Usage today</h2>
+      <h2 id="office-usage" class="office-title">Usage today</h2>
       <button type="button" class="btn btn-ghost btn-xs" @click="loadUsage"><Icon name="refresh" :size="14" /> Refresh</button>
     </div>
     <p v-if="usageError" class="field-error" role="alert"><Icon name="alert" :size="14" /> {{ usageError }}</p>
@@ -89,8 +89,9 @@ onMounted(loadUsage);
   gap: var(--s-3);
 }
 .office-tiles {
-  border: var(--bw-strong) solid var(--line-strong);
-  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  overflow: hidden;
 }
 .office-tile {
   display: grid;
@@ -100,27 +101,22 @@ onMounted(loadUsage);
   min-width: 0;
 }
 .office-tile + .office-tile {
-  border-left: 1px dashed var(--line);
+  border-left: 1px solid var(--line);
 }
 .office-tile-label {
   color: var(--fg-muted);
 }
 .office-num {
-  font-family: var(--font-display);
-  font-stretch: var(--stretch-condensed);
-  font-weight: 900;
-  font-size: clamp(2.2rem, 3.2vw, 3rem);
-  line-height: 0.9;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
   overflow-wrap: anywhere;
 }
 .office-of {
   margin-left: 0.1em;
-  font-size: 0.45em;
-  font-weight: 700;
+  font-size: var(--fs-xs);
+  font-weight: 500;
   color: var(--fg-muted);
-}
-.office-tile .meter {
-  height: 10px;
 }
 .office-note {
   font-size: var(--fs-xs);
@@ -135,7 +131,7 @@ onMounted(loadUsage);
     border-left: 0;
   }
   .office-tile:nth-child(n + 4) {
-    border-top: 1px dashed var(--line);
+    border-top: 1px solid var(--line);
   }
 }
 @media (max-width: 900px) {
@@ -144,13 +140,13 @@ onMounted(loadUsage);
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .office-tile:nth-child(3n + 1) {
-    border-left: 1px dashed var(--line);
+    border-left: 1px solid var(--line);
   }
   .office-tile:nth-child(odd) {
     border-left: 0;
   }
   .office-tile:nth-child(n + 3) {
-    border-top: 1px dashed var(--line);
+    border-top: 1px solid var(--line);
   }
 }
 </style>

@@ -45,7 +45,7 @@ onMounted(load);
 <template>
   <section class="office-section" aria-labelledby="office-errors">
     <div class="office-bar">
-      <h2 id="office-errors" class="bay label label-lg"><span class="bay-no">04</span> {{ showResolved ? 'Resolved errors' : 'Open errors' }}</h2>
+      <h2 id="office-errors" class="office-title">{{ showResolved ? 'Resolved errors' : 'Open errors' }}</h2>
       <div class="cluster">
         <label class="office-toggle">
           <input v-model="showResolved" type="checkbox" class="switch" @change="load" />
@@ -106,7 +106,7 @@ onMounted(load);
 }
 .office-errors {
   display: grid;
-  border-top: var(--bw-heavy) solid var(--line-strong);
+  border-top: 1px solid var(--line);
 }
 .office-error {
   display: grid;

@@ -35,7 +35,7 @@ async function unsuspend() {
 <template>
   <section class="office-section" aria-labelledby="office-users">
     <div class="office-bar">
-      <h2 id="office-users" class="bay label label-lg"><span class="bay-no">06</span> Suspend a user</h2>
+      <h2 id="office-users" class="office-title">Suspend a user</h2>
     </div>
     <form class="office-panel" novalidate @submit.prevent="suspend">
       <div class="field">

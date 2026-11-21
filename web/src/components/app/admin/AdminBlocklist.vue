@@ -53,7 +53,7 @@ defineExpose({ load });
 <template>
   <section class="office-section" aria-labelledby="office-block">
     <div class="office-bar">
-      <h2 id="office-block" class="bay label label-lg"><span class="bay-no">05</span> Blocklist</h2>
+      <h2 id="office-block" class="office-title">Blocklist</h2>
     </div>
 
     <form class="office-panel office-blockform" novalidate @submit.prevent="addBlock">

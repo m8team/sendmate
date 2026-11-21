@@ -65,7 +65,7 @@ onMounted(loadReports);
 <template>
   <section class="office-section" aria-labelledby="office-reports">
     <div class="office-bar">
-      <h2 id="office-reports" class="bay label label-lg"><span class="bay-no">03</span> {{ showAll ? 'All reports' : 'Open reports' }}</h2>
+      <h2 id="office-reports" class="office-title">{{ showAll ? 'All reports' : 'Open reports' }}</h2>
       <label class="office-toggle">
         <input v-model="showAll" type="checkbox" class="switch" @change="loadReports" />
         <span>Include resolved</span>
@@ -149,7 +149,7 @@ onMounted(loadReports);
 }
 .office-reports {
   display: grid;
-  border-top: var(--bw-heavy) solid var(--line-strong);
+  border-top: 1px solid var(--line);
 }
 .office-report {
   display: grid;
