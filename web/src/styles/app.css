@@ -4,10 +4,60 @@
    Everything is scoped to .app-body so marketing pages never see it.
    ========================================================================== */
 
+/*
+   The rules every dashboard screen follows:
+   - Type: five sizes. 12 meta, 13 secondary, 14 body, 16 emphasis, 20 page title.
+     The --fs-* tokens are remapped below, so older components land on the same scale.
+   - Space: 4 · 8 · 12 · 16 · 24 · 32 (--s-1 … --s-6). One gutter (--app-gutter) for every
+     pane, so left edges line up from the top bar down.
+   - Copy: say what something is and what to do. Explanations go in docs, not on routine screens.
+   - One primary (red) button per view. Everything else is outline or ghost.
+*/
 .app-body {
   --app-radius: var(--r-2);
   --app-row: 2.25rem;
+  --app-gutter: 1.5rem;
+  --fs-2xs: 0.75rem;
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1rem;
+  --fs-h4: 1rem;
   font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+@media (max-width: 720px) {
+  .app-body {
+    --app-gutter: 1rem;
+  }
+}
+
+/* ---- Page patterns ------------------------------------------------------ */
+.app-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-5);
+}
+.app-title {
+  font-size: 1.25rem;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.app-sub {
+  margin-top: var(--s-1);
+  color: var(--fg-muted);
+}
+.app-section + .app-section {
+  margin-top: var(--s-6);
+}
+.app-section-title {
+  margin-bottom: var(--s-3);
+  font-size: var(--fs-sm);
+  font-weight: 600;
 }
 
 /* ---- Type: headings in the text face, sized for a tool ------------------ */
@@ -279,4 +329,20 @@
   border-bottom-width: 1px;
   border-radius: 3px;
   background: var(--bg-sunk);
+}
+
+/* ---- Code blocks: a quiet well -------------------------------------------- */
+.app-body .codeblock {
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  background: var(--bg-sunk);
+}
+.app-body .cb-head {
+  min-height: 2.25rem;
+  padding: 0.2rem 0.25rem 0.2rem var(--s-3);
+  border-bottom: 1px solid var(--line);
+}
+.app-body .codeblock-compact .cb-body pre {
+  padding: var(--s-2) var(--s-3);
+  font-size: var(--fs-2xs);
 }
