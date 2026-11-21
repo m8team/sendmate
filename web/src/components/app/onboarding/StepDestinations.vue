@@ -15,15 +15,15 @@ const edit = computed(() => (step.value !== 2 && reached.value >= 2 ? { label: '
 <template>
   <OnboardingStep :n="2" heading="Where submissions go" :summary="step !== 2 && reached >= 3 ? summary[2] : undefined" :action="edit" @action="go(2)">
     <form v-if="step === 2" class="step-body" novalidate @submit.prevent="submitDestinations">
-      <p class="step-intro">Everything lands in your dashboard inbox anyway. Pick where you want a ping too. You can change this later.</p>
+      <p class="step-intro">Submissions always go to your inbox. Add anywhere else you want them. You can change this later.</p>
 
       <EmailDestination />
 
-      <p class="label dest-group">Also ping me on <span class="muted">(optional, free, no limits)</span></p>
+      <p class="dest-group">Other channels <span class="muted">(optional)</span></p>
       <ChannelDestination v-for="t in channelOrder" :key="t" :t="t" />
 
       <p v-if="emailOn && chosenAddress && !chosenAddress.verified" class="field-hint">
-        <b class="mono">{{ chosenAddress.email }}</b> hasn’t clicked its verification link yet. Emails wait until it does; everything still lands in your inbox.
+        <b>{{ chosenAddress.email }}</b> isn’t verified yet. Emails start once it is.
       </p>
 
       <div v-if="step2Error" class="notice notice-signal" role="alert">
@@ -35,8 +35,8 @@ const edit = computed(() => (step.value !== 2 && reached.value >= 2 ? { label: '
       <div class="step-actions">
         <button type="button" class="btn btn-ghost" @click="go(1)"><Icon name="arrow-left" /> Back</button>
         <button type="submit" class="btn btn-signal" :aria-disabled="saving ? 'true' : undefined">
-          <template v-if="saving">Checking destinations…</template>
-          <template v-else>Next: get the snippet <Icon name="arrow-right" /></template>
+          <template v-if="saving">Saving…</template>
+          <template v-else>Continue</template>
         </button>
       </div>
     </form>
@@ -45,7 +45,8 @@ const edit = computed(() => (step.value !== 2 && reached.value >= 2 ? { label: '
 
 <style scoped>
 .dest-group {
-  margin-top: var(--s-3);
-  color: var(--fg);
+  margin-top: var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
 }
 </style>

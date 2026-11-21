@@ -27,12 +27,11 @@ import {
  * then show the snippet and send a real test submission (step 3).
  * `OnboardingFlow` creates it with `provideOnboarding()`; the steps and the label read it with `useOnboarding()`.
  */
-function createOnboarding(bodyKb: number) {
+function createOnboarding() {
   const step = ref<Step>(1);
   const reached = ref<Step>(1);
   const me = ref<MeDto | null>(null);
   /** Build-time fallback until /api/me brings the deployment's limit. */
-  const maxWeightKb = computed(() => (me.value ? Math.round(me.value.limits.maxBodyBytes / 1024) : bodyKb));
 
   /* ---- Step 1 ---- */
   const name = ref('');
@@ -76,7 +75,6 @@ function createOnboarding(bodyKb: number) {
   const tabIndex = ref(0);
   const test = ref<'idle' | 'sending' | 'delivered' | 'failed'>('idle');
   const testNote = ref('');
-  const labelOpen = ref(false);
 
   const endpoint = computed(() => formEndpoint.value || `${typeof location === 'undefined' ? 'https://sendm8.com' : location.origin}/f/··········`);
   const endpointBase = computed(() => baseOf(endpoint.value, formId.value || '··········'));
@@ -320,7 +318,6 @@ function createOnboarding(bodyKb: number) {
       test.value = 'delivered';
       tracking.value = trackingNo(result.id);
       testNote.value = testSentNote(tracking.value, destinations.value, emailNeedsVerify.value);
-      if (window.innerWidth < 1024) labelOpen.value = true;
     } catch (err) {
       test.value = 'failed';
       testNote.value = `The test didn’t go through: ${friendlyError(err)}`;
@@ -334,7 +331,6 @@ function createOnboarding(bodyKb: number) {
     stepState,
     summary,
     go,
-    maxWeightKb,
     // step 1
     name,
     nameError,
@@ -375,7 +371,6 @@ function createOnboarding(bodyKb: number) {
     test,
     testNote,
     sendTest,
-    labelOpen,
   };
 }
 
@@ -383,8 +378,8 @@ export type Onboarding = ReturnType<typeof createOnboarding>;
 
 const KEY: InjectionKey<Onboarding> = Symbol('onboarding');
 
-export function provideOnboarding(bodyKb: number) {
-  const flow = createOnboarding(bodyKb);
+export function provideOnboarding() {
+  const flow = createOnboarding();
   provide(KEY, flow);
   return flow;
 }

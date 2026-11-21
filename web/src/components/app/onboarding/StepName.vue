@@ -25,13 +25,13 @@ const edit = computed(() => (step.value !== 1 ? { label: 'Edit', srLabel: 'name'
           :aria-invalid="nameError ? 'true' : undefined"
           :aria-describedby="nameError ? 'ob-name-hint ob-name-err' : 'ob-name-hint'"
         />
-        <p id="ob-name-hint" class="field-hint">Only you see this. Call it whatever you’d call it in the group chat.</p>
+        <p id="ob-name-hint" class="field-hint">Only you see this.</p>
         <p v-if="nameError" id="ob-name-err" class="field-error"><Icon name="alert" :size="14" /> {{ nameError }}</p>
       </div>
       <div class="step-actions">
         <button type="submit" class="btn btn-signal" :aria-disabled="creating ? 'true' : undefined">
-          <template v-if="creating">Making your endpoint…</template>
-          <template v-else>Next: where it goes <Icon name="arrow-right" /></template>
+          <template v-if="creating">Creating…</template>
+          <template v-else>Continue</template>
         </button>
       </div>
     </form>

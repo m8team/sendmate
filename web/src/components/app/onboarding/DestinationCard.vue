@@ -21,7 +21,7 @@ const on = defineModel<boolean>({ required: true });
   <div class="dest" :class="{ on }">
     <label class="dest-head">
       <input v-model="on" type="checkbox" class="switch" :aria-describedby="subId" />
-      <span class="dest-icon" aria-hidden="true"><Icon :name="icon" :size="18" /></span>
+      <span class="dest-icon" aria-hidden="true"><Icon :name="icon" :size="16" /></span>
       <span class="dest-name">{{ name }}</span>
       <span :id="subId" class="dest-sub">{{ sub }}</span>
     </label>
@@ -34,32 +34,26 @@ const on = defineModel<boolean>({ required: true });
 <style scoped>
 .dest {
   border: 1px solid var(--line);
-  background: var(--bg);
-}
-.dest.on {
-  border-color: var(--line-strong);
+  border-radius: var(--r-2);
 }
 .dest-head {
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  padding: 0.75rem var(--s-4);
+  padding: var(--s-2) var(--s-3);
   cursor: pointer;
   flex-wrap: wrap;
 }
 .dest-icon {
   display: inline-grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--line);
-  border-radius: var(--r-1);
+  color: var(--fg-muted);
 }
 .dest.on .dest-icon {
-  border-color: var(--fg);
+  color: var(--fg);
 }
 .dest-name {
-  font-weight: 700;
+  font-weight: 600;
 }
 .dest-sub {
   margin-left: auto;
@@ -70,9 +64,9 @@ const on = defineModel<boolean>({ required: true });
   display: grid;
   gap: var(--s-3);
   margin: 0;
-  padding: var(--s-4);
+  padding: var(--s-3);
   border: 0;
-  border-top: 1px dashed var(--line);
+  border-top: 1px solid var(--line);
   min-width: 0;
 }
 fieldset.dest-body :slotted(legend) {
@@ -82,12 +76,6 @@ fieldset.dest-body :slotted(legend) {
 }
 
 @media (max-width: 560px) {
-  .dest-body {
-    padding: var(--s-3);
-  }
-  .dest-head {
-    padding-inline: var(--s-3);
-  }
   .dest-sub {
     display: none;
   }

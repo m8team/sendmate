@@ -37,64 +37,59 @@ const { stepState } = useOnboarding();
 
 <style scoped>
 .step {
-  scroll-margin-top: 5.5rem;
+  scroll-margin-top: 4.5rem;
   border: 1px solid var(--line);
+  border-radius: var(--r-3);
   background: var(--bg);
 }
 .step.is-current {
-  border: var(--bw-strong) solid var(--line-strong);
-  background: var(--bg-raised);
-  box-shadow: var(--shadow-label);
-}
-.step.is-todo {
-  border-style: dashed;
+  border-color: color-mix(in srgb, var(--fg) 30%, transparent);
 }
 .step-head {
   display: flex;
   align-items: center;
-  gap: var(--s-4);
-  padding: var(--s-4) var(--s-5);
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
 }
 .step-no {
   flex: none;
-  font-family: var(--font-display);
-  font-stretch: var(--stretch-condensed);
-  font-weight: 900;
-  font-size: 2.6rem;
-  line-height: 0.8;
-  width: 1.6rem;
-  color: var(--fg-subtle);
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--bg-sunk);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--fg-muted);
 }
 .step.is-current .step-no {
-  color: var(--signal);
+  background: var(--fg);
+  color: var(--bg);
 }
 .step.is-done .step-no {
-  color: var(--fg);
+  background: var(--ok-wash);
+  color: var(--ok);
 }
 .step-head-text {
   flex: 1;
   min-width: 0;
 }
 .step-title {
-  font-family: var(--font-display);
-  font-stretch: var(--stretch-semi);
-  font-weight: 800;
-  font-size: clamp(1.25rem, 2vw, 1.55rem);
-  line-height: 1.1;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.4;
 }
 .step.is-todo .step-title {
   color: var(--fg-muted);
 }
-.step-title:focus {
-  outline: none;
-}
+.step-title:focus,
 .step-title:focus-visible {
   outline: none;
   box-shadow: none;
 }
 .step-summary {
-  margin-top: 0.15rem;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-xs);
   color: var(--fg-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -105,12 +100,10 @@ const { stepState } = useOnboarding();
 :slotted(.step-body) {
   display: grid;
   gap: var(--s-4);
-  padding: var(--s-2) var(--s-5) var(--s-5);
-  border-top: 2px dashed var(--line);
-  padding-top: var(--s-5);
+  padding: var(--s-4);
+  border-top: 1px solid var(--line);
 }
 :slotted(.step-intro) {
-  font-size: var(--fs-sm);
   color: var(--fg-muted);
   max-width: 60ch;
 }
@@ -118,17 +111,12 @@ const { stepState } = useOnboarding();
   display: flex;
   justify-content: flex-end;
   flex-wrap: wrap;
-  gap: var(--s-3);
-  margin-top: var(--s-2);
+  gap: var(--s-2);
 }
 
 @media (max-width: 560px) {
-  .step-head {
-    padding: var(--s-3) var(--s-4);
-    gap: var(--s-3);
-  }
   :slotted(.step-body) {
-    padding: var(--s-4);
+    padding: var(--s-3);
   }
   :slotted(.step-actions .btn) {
     flex: 1;

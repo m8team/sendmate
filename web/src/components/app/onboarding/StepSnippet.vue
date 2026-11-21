@@ -11,13 +11,13 @@ const open = computed(() => (step.value !== 3 && reached.value >= 3 ? { label: '
 </script>
 
 <template>
-  <OnboardingStep :n="3" heading="Grab the snippet" :action="open" @action="go(3)">
+  <OnboardingStep :n="3" heading="Add it to your site" :action="open" @action="go(3)">
     <div v-if="step === 3" class="step-body">
-      <p class="step-intro">Your endpoint is live. Paste it into any form’s <code>action</code> and you’re done.</p>
+      <p class="step-intro">Your endpoint is live. Use it as your form’s <code>action</code>.</p>
 
       <div class="endpoint ob-endpoint">
         <span class="endpoint-url"><span class="ep-base">{{ endpointBase }}</span><span class="ep-id">{{ formId }}</span></span>
-        <button type="button" class="btn btn-sm copy-btn" :data-copy="endpoint" data-copy-toast="Endpoint copied">
+        <button type="button" class="btn btn-ghost btn-sm copy-btn" :data-copy="endpoint" data-copy-toast="Endpoint copied">
           <span class="copy-idle"><Icon name="copy" :size="16" /><span>Copy</span></span>
           <span class="copy-done" aria-hidden="true"><Icon name="check" :size="16" /><span>Copied</span></span>
         </button>
@@ -25,9 +25,9 @@ const open = computed(() => (step.value !== 3 && reached.value >= 3 ? { label: '
 
       <div v-if="webhookSecret" class="notice notice-accent ob-secret" role="note">
         <span class="notice-icon"><Icon name="key" :size="18" /></span>
-        <p class="notice-title">Your webhook signing secret. Copy it now.</p>
+        <p class="notice-title">Copy your webhook signing secret now</p>
         <div class="notice-body">
-          <p>We only show it once. If you lose it, rotate it in the form’s settings.</p>
+          <p>It’s only shown once. You can rotate it in the form’s settings.</p>
           <p class="ob-secret-row">
             <code class="mono">{{ webhookSecret }}</code>
             <button type="button" class="btn btn-outline btn-xs copy-btn" :data-copy="webhookSecret" data-copy-toast="Signing secret copied">
@@ -72,8 +72,8 @@ const open = computed(() => (step.value !== 3 && reached.value >= 3 ? { label: '
 
       <div class="ob-test">
         <div class="ob-test-text">
-          <h3 class="h4">Try it before you ship it</h3>
-          <p class="muted">We’ll post a real test submission through your endpoint, so it goes to every destination you picked.</p>
+          <h3 class="h4">Send a test</h3>
+          <p class="muted">Posts a real submission to every destination you picked.</p>
         </div>
         <button
           v-if="test !== 'delivered'"
@@ -82,51 +82,40 @@ const open = computed(() => (step.value !== 3 && reached.value >= 3 ? { label: '
           :aria-disabled="test === 'sending' ? 'true' : undefined"
           @click="sendTest"
         >
-          <Icon name="send" /> {{ test === 'sending' ? 'In transit…' : test === 'failed' ? 'Try the test again' : 'Send a test submission' }}
+          <Icon name="send" /> {{ test === 'sending' ? 'Sending…' : test === 'failed' ? 'Try again' : 'Send test' }}
         </button>
         <a v-else class="btn btn-signal" :href="inboxHref">Go to your inbox <Icon name="arrow-right" /></a>
       </div>
-      <p class="ob-test-status mono" role="status" aria-live="polite">{{ testNote }}</p>
+      <p class="ob-test-status" role="status" aria-live="polite">{{ testNote }}</p>
     </div>
   </OnboardingStep>
 </template>
 
 <style scoped>
-.ob-endpoint .copy-btn {
-  --btn-bg: var(--fg);
-  --btn-fg: var(--bg);
-}
 .ob-code pre {
   white-space: pre;
 }
 .ob-url {
-  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
   color: var(--fg);
   padding: 0 0.1em;
-  font-weight: 600;
 }
 .ob-test {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s-4);
+  gap: var(--s-3);
   flex-wrap: wrap;
-  margin-top: var(--s-2);
-  padding: var(--s-4);
-  border: 2px dashed var(--line-strong);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
 }
 .ob-test-text p {
-  margin-top: 0.2rem;
-  font-size: var(--fs-sm);
-  max-width: 44ch;
+  font-size: var(--fs-xs);
 }
 .ob-test-status {
   min-height: 1.2em;
   font-size: var(--fs-xs);
   color: var(--ok);
-}
-.ob-secret {
-  margin-block: var(--s-4);
 }
 .ob-secret-row {
   display: flex;

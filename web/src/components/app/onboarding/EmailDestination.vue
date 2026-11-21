@@ -20,13 +20,12 @@ const { emailOn, emailChoice, newEmail, newEmailError, addressesLoading, address
       </p>
       <label v-for="e in verified" :key="e.id" class="pick-row">
         <input v-model="emailChoice" type="radio" class="check" name="ob-email" :value="e.id" />
-        <span class="pick-main mono">{{ e.email }}</span>
-        <span class="tag tag-ok">Verified</span>
+        <span class="pick-main">{{ e.email }}</span>
       </label>
       <label v-for="e in pending" :key="e.id" class="pick-row">
         <input v-model="emailChoice" type="radio" class="check" name="ob-email" :value="e.id" :aria-label="`${e.email}, waiting for verification`" />
-        <span class="pick-main mono">{{ e.email }}</span>
-        <span class="tag tag-warn">Not verified yet</span>
+        <span class="pick-main">{{ e.email }}</span>
+        <span class="tag tag-warn">Not verified</span>
       </label>
       <label class="pick-row">
         <input v-model="emailChoice" type="radio" class="check" name="ob-email" value="__new" />
@@ -47,7 +46,7 @@ const { emailOn, emailChoice, newEmail, newEmailError, addressesLoading, address
       />
       <p v-if="newEmailError" id="ob-new-email-err" class="field-error"><Icon name="alert" :size="14" /> {{ newEmailError }}</p>
       <p v-else id="ob-new-email-hint" class="field-hint">
-        We’ll send a verification link to <b>{{ newEmail.trim() || 'that address' }}</b>. Submissions wait safely in your inbox until you click it.
+        We’ll send it a verification link.
       </p>
     </div>
   </DestinationCard>
@@ -58,13 +57,14 @@ const { emailOn, emailChoice, newEmail, newEmailError, addressesLoading, address
   display: grid;
   gap: 0;
   border: 1px solid var(--line);
-  background: var(--bg-raised);
+  border-radius: var(--r-2);
+  overflow: hidden;
 }
 .pick-row {
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  padding: 0.6rem 0.75rem;
+  padding: var(--s-2) var(--s-3);
   border-bottom: 1px solid var(--line);
   cursor: pointer;
   min-width: 0;
@@ -74,7 +74,7 @@ const { emailOn, emailChoice, newEmail, newEmailError, addressesLoading, address
   border-bottom: 0;
 }
 .pick-row:has(input:checked) {
-  box-shadow: inset 4px 0 0 var(--signal);
+  background: var(--bg-sunk);
 }
 .pick-row.is-disabled {
   cursor: not-allowed;
@@ -87,7 +87,6 @@ const { emailOn, emailChoice, newEmail, newEmailError, addressesLoading, address
 .pick-main {
   flex: 1;
   min-width: 0;
-  font-size: var(--fs-sm);
   overflow-wrap: anywhere;
 }
 .sub-field {
