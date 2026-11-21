@@ -12,6 +12,14 @@ export function setTitle(title: string) {
   document.title = `${title} · sendm8`;
 }
 
+/** The topbar's "Copy endpoint" button (`data-form-endpoint`) copies this form's endpoint once it's known. */
+export function hydrateEndpoint(endpoint: string) {
+  document.querySelectorAll<HTMLElement>('[data-form-endpoint]').forEach((btn) => {
+    btn.dataset.copy = endpoint;
+    btn.hidden = false;
+  });
+}
+
 /** Links marked `data-form-href="/settings"` become `/app/forms/<id>/settings`. */
 export function hydrateFormLinks(formId: string) {
   document.querySelectorAll<HTMLAnchorElement>('a[data-form-href]').forEach((a) => {

@@ -64,7 +64,7 @@ const chip = computed(() => rowChip(props.s));
   background: color-mix(in srgb, var(--fg) 7%, var(--bg));
 }
 .row-check {
-  margin: 0.8rem 0 0 0.8rem;
+  margin: 0.9rem 0 0 0.8rem;
   position: relative;
   z-index: 1;
 }
@@ -91,7 +91,7 @@ const chip = computed(() => rowChip(props.s));
   display: grid;
   gap: 0.15rem;
   min-width: 0;
-  padding: 0.6rem 0.3rem 0.6rem 0.6rem;
+  padding: var(--s-3) var(--s-1) var(--s-3) var(--s-2);
   border: 0;
   background: transparent;
   text-align: left;
@@ -107,11 +107,13 @@ const chip = computed(() => rowChip(props.s));
   gap: 0.4rem;
   min-width: 0;
 }
+/* In the left margin, so sender and preview share one left edge. */
 .row-dot {
-  flex: none;
-  align-self: center;
-  width: 0.4rem;
-  height: 0.4rem;
+  position: absolute;
+  left: 0.3rem;
+  top: 1.05rem;
+  width: 0.375rem;
+  height: 0.375rem;
   border-radius: 50%;
   background: var(--fg);
 }
@@ -184,7 +186,7 @@ const chip = computed(() => rowChip(props.s));
   place-items: center;
   width: 2rem;
   height: 2rem;
-  margin: 0.35rem 0.3rem 0 0;
+  margin: 0.4rem var(--s-1) 0 0;
   border: 0;
   border-radius: var(--r-2);
   background: transparent;

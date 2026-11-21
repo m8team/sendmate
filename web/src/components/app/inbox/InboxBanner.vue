@@ -18,7 +18,7 @@ defineProps<{ icon: IconName; title: string }>();
 
 <style scoped>
 .banner {
-  margin: var(--s-3) clamp(1rem, 2.5vw, 1.5rem) 0;
+  margin: var(--s-3) var(--app-gutter) 0;
 }
 .banner-body {
   display: flex;
@@ -36,7 +36,7 @@ defineProps<{ icon: IconName; title: string }>();
 }
 @media (max-width: 720px) {
   .banner {
-    margin: var(--s-3) var(--s-3) 0;
+    margin: var(--s-3) var(--app-gutter) 0;
   }
 }
 </style>

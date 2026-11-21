@@ -14,31 +14,32 @@ import Icon from '../../ui/Icon.astro';
   <p class="label export-scope" data-export-scope>Exports everything in the current folder</p>
   <button type="button" class="export-opt" data-export="csv">
     <Icon name="file" size={18} />
-    <span><b>CSV</b><small>For spreadsheets. Opens in Excel, Numbers, Sheets.</small></span>
+    <span><b>CSV</b><small>For spreadsheets</small></span>
   </button>
   <button type="button" class="export-opt" data-export="json">
     <Icon name="code" size={18} />
-    <span><b>JSON</b><small>Everything, including delivery history. For code.</small></span>
+    <span><b>JSON</b><small>Everything, including delivery history</small></span>
   </button>
 </div>
 
 <style>
   .export-menu {
     inset: auto;
-    top: 3.4rem;
-    right: clamp(1rem, 2.5vw, 2rem);
+    top: calc(var(--app-topbar-h) + 0.25rem);
+    right: var(--app-gutter);
     margin: 0;
     width: min(20rem, calc(100vw - 2rem));
     padding: var(--s-2);
-    border: var(--bw-strong) solid var(--line-strong);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
     background: var(--bg-raised);
     color: var(--fg);
-    box-shadow: var(--shadow-label-lg);
+    box-shadow: 0 8px 28px rgb(0 0 0 / 0.18);
   }
   .export-scope {
     padding: 0.4rem 0.5rem 0.6rem;
     color: var(--fg-muted);
-    border-bottom: 1px dashed var(--line);
+    border-bottom: 1px solid var(--line);
     margin-bottom: var(--s-1);
   }
   .export-opt {
@@ -47,9 +48,9 @@ import Icon from '../../ui/Icon.astro';
     gap: var(--s-3);
     align-items: start;
     width: 100%;
-    padding: 0.65rem 0.5rem;
+    padding: 0.5rem;
     border: 0;
-    border-radius: var(--r-1);
+    border-radius: var(--r-2);
     background: transparent;
     text-align: left;
   }
@@ -61,8 +62,8 @@ import Icon from '../../ui/Icon.astro';
   }
   .export-opt b {
     display: block;
-    font-family: var(--font-mono);
     font-size: var(--fs-sm);
+    font-weight: 600;
   }
   .export-opt small {
     display: block;

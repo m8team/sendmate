@@ -11,7 +11,7 @@ import { isApiError } from '../../lib/api/client';
 import { toChannel, toForm } from '../../lib/api/adapters';
 import { friendlyError } from '../../lib/api/errors';
 import { formIdFromPath, guardSession } from '../../lib/api/session';
-import { hydrateFormLinks, setCrumb, setTitle } from '../../lib/page';
+import { hydrateEndpoint, hydrateFormLinks, setCrumb, setTitle } from '../../lib/page';
 import type { Channel, Form } from '../../lib/api/types';
 
 const props = defineProps<{
@@ -42,6 +42,7 @@ async function load() {
     form.value = toForm(dto);
     channels.value = chans.map(toChannel);
     setCrumb(props.crumbIndex, dto.name, `/app/forms/${id}`);
+    hydrateEndpoint(form.value.endpoint);
     setTitle(props.titleTemplate.replace('{name}', dto.name));
     state.value = 'ready';
   } catch (err) {

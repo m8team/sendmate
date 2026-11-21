@@ -42,22 +42,19 @@ async function togglePaused(e: Event) {
 
 <template>
   <InboxBanner v-if="formStatus === 'pending_confirmation'" class="notice-warn" icon="mail" :title="`Waiting for ${emailAddressOf(form.emailEndpoint) ?? 'the address'} to confirm`">
-    <p>
-      Someone posted to this address, so we sent it a confirmation email {{ ago(form.createdAt, now) }}. Until the link in it gets clicked, submissions are stored here but
-      <strong>nothing is delivered</strong>. Check the spam folder too, it likes to hide there.
-    </p>
+    <p>We sent a confirmation email {{ ago(form.createdAt, now) }}. Until it’s clicked, submissions are saved here but not delivered.</p>
   </InboxBanner>
   <InboxBanner v-else-if="formStatus === 'disabled'" class="notice-signal" icon="lock" title="This form has been switched off">
-    <p>It isn’t taking submissions{{ form.flag ? ` (${form.flag})` : '' }}. Everything below is still yours to read, export or delete.</p>
+    <p>It isn’t taking new submissions{{ form.flag ? ` (${form.flag})` : '' }}. Existing ones are still here.</p>
   </InboxBanner>
   <InboxBanner
     v-else-if="wasPaused || formStatus === 'paused'"
     :class="formStatus === 'active' ? 'notice-ok' : ''"
     :icon="formStatus === 'active' ? 'play' : 'pause'"
-    :title="formStatus === 'active' ? 'Back in business' : 'This form is paused'"
+    :title="formStatus === 'active' ? 'Form resumed' : 'This form is paused'"
   >
-    <p v-if="formStatus === 'active'">New submissions will land here again. Nothing sent while it was paused was kept, sorry, those visitors got a “form paused” error.</p>
-    <p v-else>New submissions are turned away with an HTTP 423 and aren’t stored. Everything below arrived before you paused it.</p>
+    <p v-if="formStatus === 'active'">New submissions are coming in again. Anything sent while it was paused was rejected.</p>
+    <p v-else>New submissions are rejected (HTTP 423) and not saved.</p>
     <label class="banner-switch">
       <input type="checkbox" role="switch" class="switch" :checked="formStatus === 'active'" :disabled="pauseBusy" @change="togglePaused" />
       <span>{{ formStatus === 'active' ? 'Accepting submissions' : 'Resume the form' }}</span>

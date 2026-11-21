@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * The inbox for one form: a one-line header and banners on top, then the list pane
+ * The inbox for one form: banners on top (the form's name and endpoint live in the topbar), then the list pane
  * (folders, search, bulk bar, rows) beside the detail pane. On phones the detail is a full-screen sheet.
  * State and behaviour live in the composables under ./inbox; this file wires them to the view.
  */
@@ -13,12 +13,11 @@ import FolderTabs from './inbox/FolderTabs.vue';
 import SpamWeekBanner from './inbox/SpamWeekBanner.vue';
 import FormStateBanner from './inbox/FormStateBanner.vue';
 import HeldBanner from './inbox/HeldBanner.vue';
-import InboxHeader from './inbox/InboxHeader.vue';
 import InboxSearch from './inbox/InboxSearch.vue';
 import KeyboardHints from './inbox/KeyboardHints.vue';
 import SubmissionList from './inbox/SubmissionList.vue';
 import UndoToast from './inbox/UndoToast.vue';
-import { spamWeekNote, type Filter } from './inbox/folders';
+import { listMeta, spamWeekNote, type Filter } from './inbox/folders';
 import { useInboxExport } from './inbox/useInboxExport';
 import { useInboxKeyboard } from './inbox/useInboxKeyboard';
 import { useInboxNav } from './inbox/useInboxNav';
@@ -83,7 +82,7 @@ onBeforeUnmount(() => window.clearInterval(clock));
 
 <template>
   <div ref="rootEl" class="inbox" :class="{ 'has-detail-open': mobileOpen, 'has-selection': selected.length }">
-    <InboxHeader :form="form" :form-status="formStatus" />
+    <h1 class="sr-only">{{ form.name }}</h1>
 
     <FormStateBanner v-model:form-status="formStatus" :form="form" :now="now" @form-updated="emit('form-updated', $event)" />
     <HeldBanner v-if="hasHeld || form.flag" :flag="form.flag" :show-review="filter !== 'held'" @review="setFilter('held')" />
@@ -95,14 +94,13 @@ onBeforeUnmount(() => window.clearInterval(clock));
         <div class="tools">
           <FolderTabs :tabs="tabs" :filter="filter" @select="setFilter" />
           <InboxSearch ref="searchRef" v-model="query" />
+          <p v-if="!selectedInView.length" class="list-meta" aria-live="polite">{{ loading ? 'Loading…' : listMeta(visibleIds.length, !!nextCursor, appliedQuery) }}</p>
           <BulkBar
+            v-if="selectedInView.length"
             :picked-count="selectedInView.length"
             :visible-count="visibleIds.length"
             :all-selected="allSelected"
             :some-selected="someSelected"
-            :loading="loading"
-            :has-more="!!nextCursor"
-            :applied-query="appliedQuery"
             :busy="bulkBusy"
             :all-starred="bulkAllStarred"
             :all-blocked="bulkAllBlocked"
@@ -209,8 +207,14 @@ onBeforeUnmount(() => window.clearInterval(clock));
 .tools {
   display: grid;
   gap: var(--s-2);
-  padding: var(--s-2) var(--s-3) 0;
+  padding: var(--s-3) var(--s-3) 0;
+  border-bottom: 1px solid var(--line);
   background: var(--bg);
+}
+.list-meta {
+  padding-bottom: var(--s-2);
+  font-size: var(--fs-2xs);
+  color: var(--fg-muted);
 }
 
 /* ---- Nothing open ------------------------------------------------------ */

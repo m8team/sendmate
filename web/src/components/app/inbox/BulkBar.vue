@@ -1,16 +1,12 @@
 <script setup lang="ts">
-/** Select-all plus, once anything's selected, the bulk actions; otherwise how much is in view. */
+/** Shown once anything is selected: select-all, how many, and the bulk actions. */
 import Icon from '../../ui/Icon.vue';
-import { listMeta } from './folders';
 
 defineProps<{
   pickedCount: number;
   visibleCount: number;
   allSelected: boolean;
   someSelected: boolean;
-  loading: boolean;
-  hasMore: boolean;
-  appliedQuery: string;
   busy: boolean;
   allStarred: boolean;
   allBlocked: boolean;
@@ -40,13 +36,6 @@ const emit = defineEmits<{ 'toggle-all': []; read: []; star: []; spam: []; delet
         <button type="button" class="btn btn-danger btn-xs" @click="emit('delete')"><Icon name="trash" :size="14" /> Delete</button>
       </div>
     </template>
-    <template v-else>
-      <span class="sel-meta label">
-        <template v-if="loading">Loading…</template>
-        <template v-else>{{ listMeta(visibleCount, hasMore, appliedQuery) }}</template>
-      </span>
-      <span class="sel-meta label sel-sort">Newest first</span>
-    </template>
   </div>
 </template>
 
@@ -58,9 +47,7 @@ const emit = defineEmits<{ 'toggle-all': []; read: []; star: []; spam: []; delet
   min-height: 2.4rem;
   margin: 0 calc(var(--s-3) * -1);
   padding: 0.2rem var(--s-3) 0.2rem calc(var(--s-3) + 0.1rem);
-  border-bottom: 1px solid var(--line);
-}
-.selbar.is-active {
+  border-top: 1px solid var(--line);
   background: var(--bg-sunk);
 }
 .check:indeterminate::before {
@@ -72,12 +59,6 @@ const emit = defineEmits<{ 'toggle-all': []; read: []; star: []; spam: []; delet
   font-weight: 600;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
-}
-.sel-meta {
-  color: var(--fg-muted);
-}
-.sel-sort {
-  margin-left: auto;
 }
 .bulk {
   display: flex;

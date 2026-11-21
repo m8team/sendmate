@@ -15,8 +15,12 @@ export function getStaticPaths() {
 
 <App title="Inbox" active="form" crumbs={[{ label: 'Forms', href: '/app' }, { label: 'Loading…' }]} bleed>
   <Fragment slot="actions">
+    <button type="button" class="btn btn-outline btn-sm copy-btn" data-form-endpoint data-copy-toast="Endpoint copied" hidden>
+      <span class="copy-idle"><Icon name="copy" size={16} /> <span class="hide-narrow">Copy endpoint</span></span>
+      <span class="copy-done" aria-hidden="true"><Icon name="check" size={16} /> <span class="hide-narrow">Copied</span></span>
+    </button>
     <ExportMenu />
-    <a class="btn btn-ghost btn-sm" href="/app" data-form-href="/settings">
+    <a class="btn btn-outline btn-sm" href="/app" data-form-href="/settings">
       <Icon name="settings" size={16} /> <span class="hide-narrow">Settings</span>
     </a>
   </Fragment>
