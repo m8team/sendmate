@@ -1,5 +1,5 @@
 /**
- * Fills the rail's pigeonhole list (RailPigeonholes.astro) from the API: one link per form,
+ * Fills the rail's form list (RailPigeonholes.astro) from the API: one link per form,
  * each with an unread badge, kept in step with `sendm8:forms-changed` and `sendm8:unread-changed`.
  */
 import type { FormDto } from '@sendm8/shared';
@@ -28,6 +28,9 @@ export function mountPigeonholes() {
     holes.querySelector<HTMLElement>('[data-holes-error]')!.hidden = true;
     holes.querySelector<HTMLElement>('[data-holes-empty]')!.hidden = forms.length > 0;
     counts.clear();
+    // Two forms with the same name get the end of their id, so they can be told apart.
+    const seen = new Map<string, number>();
+    for (const f of forms) seen.set(f.name, (seen.get(f.name) ?? 0) + 1);
     const frag = document.createDocumentFragment();
     for (const f of forms) {
       const li = tpl.content.firstElementChild!.cloneNode(true) as HTMLLIElement;
@@ -37,6 +40,11 @@ export function mountPigeonholes() {
       if (f.id === activeForm) a.setAttribute('aria-current', 'page');
       li.querySelector('.hole-dot')!.classList.add(`s-${f.status}`);
       li.querySelector('.hole-name')!.textContent = f.name;
+      if ((seen.get(f.name) ?? 0) > 1) {
+        const sub = li.querySelector<HTMLElement>('.hole-sub')!;
+        sub.textContent = f.id.slice(-4);
+        sub.hidden = false;
+      }
       counts.set(f.id, li.querySelector<HTMLElement>('.hole-count')!);
       frag.appendChild(li);
     }

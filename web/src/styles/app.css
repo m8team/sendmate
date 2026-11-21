@@ -1,0 +1,282 @@
+/* ==========================================================================
+   Dashboard: the working surface. Same tokens as marketing, none of the theatre.
+   Plain type, 1px rules, small controls, colour only where it means something.
+   Everything is scoped to .app-body so marketing pages never see it.
+   ========================================================================== */
+
+.app-body {
+  --app-radius: var(--r-2);
+  --app-row: 2.25rem;
+  font-size: var(--fs-sm);
+}
+
+/* ---- Type: headings in the text face, sized for a tool ------------------ */
+.app-body :is(.display, .h1, .h2, .h3, .h4) {
+  font-family: var(--font-text);
+  font-stretch: normal;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.app-body .h1 {
+  font-size: 1.5rem;
+}
+.app-body .h2 {
+  font-size: 1.25rem;
+}
+.app-body .h3 {
+  font-size: 1.0625rem;
+}
+.app-body .h4 {
+  font-size: var(--fs-sm);
+}
+
+/* Small section labels: sentence case, not stencilled */
+.app-body .label {
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.app-body .label-lg {
+  font-size: var(--fs-sm);
+}
+.app-body .field-label {
+  font-family: var(--font-text);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Section header: a plain heading, no numbering or rule */
+.app-body .bay {
+  font-weight: 600;
+  color: var(--fg);
+}
+.app-body .bay::after,
+.app-body .bay-no {
+  display: none;
+}
+
+/* ---- Buttons: flat, quiet, one weight --------------------------------- */
+.app-body .btn {
+  --btn-border: var(--line);
+  min-height: var(--app-row);
+  padding: 0.4rem 0.8rem;
+  border-width: 1px;
+  border-radius: var(--app-radius);
+  font-family: var(--font-text);
+  font-stretch: normal;
+  font-size: var(--fs-sm);
+  font-weight: 550;
+  letter-spacing: 0;
+  gap: 0.45em;
+}
+.app-body .btn:hover,
+.app-body .btn:active {
+  transform: none;
+  box-shadow: none;
+}
+.app-body .btn:not(.btn-outline, .btn-ghost, .btn-danger, .btn-signal) {
+  --btn-border: var(--fg);
+}
+.app-body .btn:not(.btn-outline, .btn-ghost, .btn-danger, .btn-signal):hover {
+  --btn-bg: color-mix(in srgb, var(--fg) 85%, var(--bg));
+}
+.app-body .btn-signal {
+  --btn-border: var(--signal);
+}
+.app-body .btn-signal:hover {
+  --btn-bg: color-mix(in srgb, var(--signal) 88%, var(--fg));
+  --btn-border: var(--btn-bg);
+}
+.app-body .btn-outline {
+  --btn-border: var(--line);
+}
+.app-body .btn-outline:hover {
+  --btn-bg: var(--bg-sunk);
+  --btn-border: color-mix(in srgb, var(--fg) 35%, transparent);
+}
+.app-body .btn-ghost {
+  --btn-border: transparent;
+}
+.app-body .btn-ghost:hover {
+  --btn-bg: var(--bg-sunk);
+  --btn-border: transparent;
+}
+.app-body .btn-danger {
+  --btn-border: var(--line);
+}
+.app-body .btn-danger:hover {
+  --btn-bg: var(--signal-wash);
+  --btn-fg: var(--signal-text);
+  --btn-border: var(--signal);
+}
+.app-body .btn-lg {
+  min-height: 2.6rem;
+  padding: 0.55rem 1rem;
+  font-size: var(--fs-md);
+}
+.app-body .btn-sm {
+  min-height: 2rem;
+  padding: 0.3rem 0.65rem;
+  font-size: var(--fs-xs);
+}
+.app-body .btn-xs {
+  min-height: 1.75rem;
+  padding: 0.2rem 0.5rem;
+  font-size: var(--fs-xs);
+}
+.app-body .btn svg {
+  width: 1em;
+  height: 1em;
+}
+.app-body .icon-btn {
+  width: 2rem;
+  height: 2rem;
+  border-color: transparent;
+  border-radius: var(--app-radius);
+}
+.app-body .icon-btn:hover {
+  border-color: transparent;
+  background: var(--bg-sunk);
+}
+
+/* ---- Inputs ------------------------------------------------------------- */
+.app-body :is(.input, .textarea, .select) {
+  min-height: var(--app-row);
+  padding: 0.4rem 0.65rem;
+  border-color: var(--line);
+  border-radius: var(--app-radius);
+  font-size: var(--fs-sm);
+}
+.app-body :is(.input, .textarea, .select):hover {
+  box-shadow: none;
+  border-color: color-mix(in srgb, var(--fg) 35%, transparent);
+}
+.app-body .textarea {
+  min-height: 6rem;
+}
+.app-body .check {
+  width: 1rem;
+  height: 1rem;
+  border-width: 1px;
+  border-color: color-mix(in srgb, var(--fg) 45%, transparent);
+  border-radius: 3px;
+}
+.app-body .check[type='radio'] {
+  border-radius: 50%;
+}
+.app-body .check::before {
+  width: 0.55rem;
+  height: 0.55rem;
+}
+
+/* ---- Status tags: a coloured word on a wash, no stencil ----------------- */
+.app-body .tag {
+  padding: 0.1em 0.45em;
+  border: 0;
+  border-radius: var(--app-radius);
+  background: color-mix(in srgb, var(--tag-color) 14%, transparent);
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  font-weight: 550;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.app-body .tag::before {
+  display: none;
+}
+
+/* ---- Notices ------------------------------------------------------------ */
+.app-body .notice {
+  padding: 0.75rem 0.9rem;
+  border-left-width: 3px;
+  border-radius: var(--app-radius);
+}
+.app-body .notice-title {
+  font-family: var(--font-text);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ---- Endpoint: a quiet one-line copy field ------------------------------ */
+.app-body .endpoint {
+  border: 1px solid var(--line);
+  border-radius: var(--app-radius);
+  background: var(--bg-sunk);
+}
+.app-body .endpoint-url {
+  padding: 0.3rem 0.6rem;
+  font-size: var(--fs-xs);
+}
+.app-body .endpoint-url .ep-id {
+  color: var(--fg);
+}
+.app-body .endpoint .copy-btn {
+  border-left: 1px solid var(--line);
+}
+
+/* ---- Meter: a plain bar ------------------------------------------------- */
+.app-body .meter {
+  height: 6px;
+  border: 0;
+  border-radius: var(--r-round);
+  background: var(--bg-deep);
+  overflow: hidden;
+}
+.app-body .meter::before {
+  inset: 0 auto 0 0;
+  width: var(--pct);
+  max-width: 100%;
+  border-radius: inherit;
+}
+
+/* ---- Tables ------------------------------------------------------------- */
+.app-body .table th {
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  border-bottom: 1px solid var(--line);
+}
+.app-body .table td {
+  padding: 0.55rem 0.75rem;
+}
+
+/* ---- Loading placeholders: flat, no hatching ---------------------------- */
+.app-body .skel,
+.app-body .skel-ink {
+  border-radius: var(--app-radius);
+  background: var(--bg-deep);
+}
+
+/* ---- Toast -------------------------------------------------------------- */
+.app-body .toast {
+  border: 0;
+  border-radius: var(--app-radius);
+  font-family: var(--font-text);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  letter-spacing: 0;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.18);
+  animation-name: app-toast-in;
+}
+@keyframes app-toast-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+}
+
+/* ---- Keyboard keys ------------------------------------------------------ */
+.app-body .kbd {
+  border-bottom-width: 1px;
+  border-radius: 3px;
+  background: var(--bg-sunk);
+}

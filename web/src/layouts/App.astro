@@ -1,13 +1,15 @@
 ---
 /**
  * Dashboard shell: a pigeonhole rail on the left, a working area on the right.
- * Calmer than marketing: same tokens, fewer theatrics, more tabular density.
+ * Utilitarian on purpose: the postal theme belongs to the marketing site. Same tokens,
+ * plain words, dense layouts (styles/app.css).
  *
  * Everything user-specific (account, forms, unread counts, email usage) is fetched in the
  * browser from the API; the static build ships skeletons in its place.
  * The rail and topbar live in components/app/shell.
  */
 import Base from './Base.astro';
+import '../styles/app.css';
 import AppRail from '../components/app/shell/AppRail.astro';
 import AppTopbar, { type Crumb } from '../components/app/shell/AppTopbar.astro';
 
@@ -39,11 +41,12 @@ const { title, active = 'forms', crumbs = [], bleed = false } = Astro.props;
 
 <style>
   :global(.app-body) {
+    --app-topbar-h: 3rem;
     background: var(--bg);
   }
   .app {
     display: grid;
-    grid-template-columns: 16.5rem minmax(0, 1fr);
+    grid-template-columns: 15rem minmax(0, 1fr);
     min-height: 100dvh;
   }
   .work {
@@ -54,8 +57,8 @@ const { title, active = 'forms', crumbs = [], bleed = false } = Astro.props;
   .work-main {
     flex: 1;
     width: 100%;
-    max-width: 82rem;
-    padding: clamp(1.25rem, 3vw, 2.5rem) clamp(1rem, 2.5vw, 2rem) var(--s-9);
+    max-width: 80rem;
+    padding: var(--s-5) clamp(1rem, 2.5vw, 1.5rem) var(--s-8);
   }
   .work-main.is-bleed {
     max-width: none;

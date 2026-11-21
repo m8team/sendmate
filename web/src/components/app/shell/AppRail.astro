@@ -1,6 +1,6 @@
 ---
 /**
- * The dashboard rail: sections, the pigeonholes (one per form), and the account at the bottom.
+ * The dashboard rail: sections, one link per form, and the account at the bottom.
  * A sticky sidebar on wide screens, a drawer opened from the topbar's menu button below 960px.
  * Everything user-specific is filled in by the scripts below; the static build ships skeletons.
  */
@@ -20,29 +20,31 @@ const { active } = Astro.props;
   <div class="rail-top">
     <Logo href="/app" size="sm" />
     <button type="button" class="icon-btn rail-close" data-rail-close>
-      <Icon name="x" size={18} /><span class="sr-only">Close menu</span>
+      <Icon name="x" size={16} /><span class="sr-only">Close menu</span>
     </button>
   </div>
 
   <nav class="rail-nav" aria-label="Dashboard sections">
     <a class="rail-link" href="/app" aria-current={active === 'forms' ? 'page' : undefined}>
-      <Icon name="grid" size={18} /> All forms
+      <Icon name="grid" size={16} /> Forms
     </a>
     <a class="rail-link" href="/app/account/email" aria-current={active === 'email' ? 'page' : undefined}>
-      <Icon name="key" size={18} /> Email & BYOK
+      <Icon name="mail" size={16} /> Email sending
     </a>
     <a class="rail-link" href="/app/admin" aria-current={active === 'admin' ? 'page' : undefined} data-admin-link hidden>
-      <Icon name="shield" size={18} /> Admin
+      <Icon name="shield" size={16} /> Admin
     </a>
 
-    <p class="label rail-heading">Pigeonholes</p>
+    <div class="rail-heading">
+      <p class="label">Your forms</p>
+      <a class="rail-add" href="/app/onboarding" aria-label="New form" title="New form"><Icon name="plus" size={14} /></a>
+    </div>
     <RailPigeonholes />
-    <a class="btn btn-outline btn-sm rail-new" href="/app/onboarding"><Icon name="plus" size={16} /> New form</a>
   </nav>
 
   <div class="rail-bottom">
     <a class="rail-usage" href="/app/account/email">
-      <span class="rail-usage-row mono"><span>Emails today</span><span data-usage-count>··/··</span></span>
+      <span class="rail-usage-row"><span>Emails today</span><span class="tabular" data-usage-count>··/··</span></span>
       <span class="meter" data-usage-meter style="--pct:0%" aria-hidden="true"></span>
     </a>
     <div class="rail-account">
@@ -53,7 +55,7 @@ const { active } = Astro.props;
       </span>
       <ThemeToggle />
     </div>
-    <button type="button" class="rail-link rail-signout" data-signout><Icon name="logout" size={18} /> Sign out</button>
+    <button type="button" class="rail-link rail-signout" data-signout><Icon name="logout" size={16} /> Sign out</button>
   </div>
 </aside>
 <div class="rail-scrim" data-rail-close aria-hidden="true"></div>
@@ -73,25 +75,25 @@ const { active } = Astro.props;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 3.75rem;
+    height: var(--app-topbar-h);
     padding: 0 var(--s-4);
-    border-bottom: 1px solid var(--line);
   }
   .rail-close {
     display: none;
   }
   .rail-nav {
-    padding: var(--s-3);
+    padding: 0 var(--s-2) var(--s-3);
     display: grid;
-    gap: 2px;
+    gap: 1px;
     align-content: start;
   }
   .rail-link {
     display: flex;
     align-items: center;
-    gap: var(--s-3);
-    padding: 0.5rem 0.6rem;
-    border-radius: var(--r-1);
+    gap: 0.6rem;
+    min-height: 2rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--r-2);
     font-size: var(--fs-sm);
     font-weight: 500;
     text-decoration: none;
@@ -102,20 +104,28 @@ const { active } = Astro.props;
     color: var(--fg);
   }
   .rail-link[aria-current='page'] {
-    background: var(--fg);
-    color: var(--bg);
+    background: var(--bg);
+    color: var(--fg);
+    font-weight: 600;
   }
   .rail-heading {
-    margin: var(--s-5) 0.6rem var(--s-2);
-    color: var(--fg-muted);
     display: flex;
     align-items: center;
-    gap: var(--s-2);
+    justify-content: space-between;
+    margin: var(--s-5) 0.6rem var(--s-1);
+    color: var(--fg-muted);
   }
-  .rail-heading::after {
-    content: '';
-    flex: 1;
-    border-top: 1px solid var(--line);
+  .rail-add {
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--r-2);
+    color: var(--fg-muted);
+  }
+  .rail-add:hover {
+    background: var(--bg);
+    color: var(--fg);
   }
   .rail-signout {
     width: 100%;
@@ -135,54 +145,45 @@ const { active } = Astro.props;
     border-radius: 50%;
     object-fit: cover;
   }
-  .rail-new {
-    margin-top: var(--s-3);
-    justify-self: start;
-  }
   .rail-bottom {
     margin-top: auto;
-    padding: var(--s-3);
+    padding: var(--s-3) var(--s-2);
     border-top: 1px solid var(--line);
     display: grid;
-    gap: var(--s-3);
+    gap: var(--s-2);
   }
   .rail-usage {
     display: grid;
     gap: 0.35rem;
-    padding: 0.5rem 0.6rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--r-2);
     text-decoration: none;
-    border: 1px dashed var(--line);
   }
   .rail-usage:hover {
-    border-color: var(--fg);
+    background: var(--bg);
   }
   .rail-usage-row {
     display: flex;
     justify-content: space-between;
-    font-size: var(--fs-2xs);
+    font-size: var(--fs-xs);
     color: var(--fg-muted);
-  }
-  .rail-usage .meter {
-    height: 10px;
   }
   .rail-account {
     display: flex;
     align-items: center;
     gap: var(--s-2);
-    padding-inline: 0.2rem;
+    padding-inline: 0.6rem 0;
   }
   .avatar {
     flex: none;
     display: grid;
     place-items: center;
-    width: 2.1rem;
-    height: 2.1rem;
-    border: 2px solid var(--fg);
+    width: 1.75rem;
+    height: 1.75rem;
     border-radius: 50%;
-    font-family: var(--font-display);
-    font-stretch: var(--stretch-semi);
-    font-weight: 850;
-    font-size: 0.8rem;
+    background: var(--bg-deep);
+    font-size: var(--fs-2xs);
+    font-weight: 600;
   }
   .rail-who {
     flex: 1;
@@ -210,10 +211,10 @@ const { active } = Astro.props;
       position: fixed;
       inset: 0 auto 0 0;
       z-index: var(--z-overlay);
-      width: min(20rem, 86vw);
+      width: min(18rem, 86vw);
       transform: translateX(-102%);
       transition: transform var(--dur-3) var(--ease-out);
-      box-shadow: var(--shadow-label-lg);
+      box-shadow: 0 0 40px rgb(0 0 0 / 0.25);
     }
     :global(.rail-is-open) .rail {
       transform: none;

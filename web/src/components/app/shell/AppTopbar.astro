@@ -17,7 +17,7 @@ const { crumbs } = Astro.props;
 
 <header class="topbar">
   <button type="button" class="icon-btn rail-open" aria-controls="app-rail" aria-expanded="false" data-rail-open>
-    <Icon name="menu" size={20} /><span class="sr-only">Open menu</span>
+    <Icon name="menu" size={18} /><span class="sr-only">Open menu</span>
   </button>
   <nav aria-label="Breadcrumb" class="crumbs">
     <ol role="list">
@@ -51,10 +51,9 @@ const { crumbs } = Astro.props;
     display: flex;
     align-items: center;
     gap: var(--s-3);
-    min-height: 3.75rem;
-    padding: 0.4rem clamp(1rem, 2.5vw, 2rem);
-    background: color-mix(in srgb, var(--bg) 94%, transparent);
-    backdrop-filter: blur(6px);
+    min-height: var(--app-topbar-h);
+    padding: 0.3rem clamp(1rem, 2.5vw, 1.5rem);
+    background: var(--bg);
     border-bottom: 1px solid var(--line);
   }
   .rail-open {
@@ -68,8 +67,7 @@ const { crumbs } = Astro.props;
     display: flex;
     align-items: center;
     gap: 0.35rem;
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     white-space: nowrap;
     overflow: hidden;
   }

@@ -1,6 +1,6 @@
 ---
 /**
- * The rail's pigeonhole list: skeletons in the static build, filled in the browser by
+ * The rail's form list: skeletons in the static build, filled in the browser by
  * railPigeonholes.ts from the <template> below (so the clones keep this component's styles).
  */
 ---
@@ -17,11 +17,11 @@
     ))
   }
   <li data-holes-empty hidden>
-    <p class="holes-note">No forms yet. Make your first one below.</p>
+    <p class="holes-note">No forms yet.</p>
   </li>
   <li data-holes-error hidden>
     <p class="holes-note">
-      Couldn’t load your forms. <button type="button" class="holes-retry" data-holes-retry>Try again</button>
+      Couldn’t load forms. <button type="button" class="holes-retry" data-holes-retry>Try again</button>
     </p>
   </li>
 </ul>
@@ -30,54 +30,62 @@
     <a class="hole" href="/app">
       <span class="hole-dot" aria-hidden="true"></span>
       <span class="hole-name"></span>
-      <span class="hole-count mono" hidden></span>
+      <span class="hole-sub mono" hidden></span>
+      <span class="hole-count" hidden></span>
     </a>
   </li>
 </template>
 
 <style>
-  /* each form is a pigeonhole: a little box with a slot */
   .holes {
     display: grid;
-    gap: 4px;
+    gap: 1px;
   }
   .hole {
     display: flex;
     align-items: center;
     gap: var(--s-2);
-    padding: 0.55rem 0.6rem;
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--line);
-    background: var(--bg);
+    min-height: 2rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--r-2);
     font-size: var(--fs-sm);
     text-decoration: none;
-    color: var(--fg);
+    color: var(--fg-muted);
     min-width: 0;
   }
   .hole:hover {
-    border-color: var(--fg);
+    background: var(--bg);
+    color: var(--fg);
   }
   .hole[aria-current='page'] {
-    border-color: var(--fg);
-    border-top-color: var(--signal);
-    box-shadow: var(--shadow-label);
+    background: var(--bg);
+    color: var(--fg);
+    font-weight: 600;
   }
+  /* Only a form that needs attention gets a dot; active forms stay quiet. */
   .hole-dot {
     flex: none;
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.45rem;
+    height: 0.45rem;
     border-radius: 50%;
-    background: var(--ok);
+    background: var(--fg-subtle);
+    opacity: 0.6;
+  }
+  .hole-dot.s-active {
+    display: none;
   }
   .hole-dot.s-paused {
     background: transparent;
     border: 1.5px solid var(--fg-muted);
+    opacity: 1;
   }
   .hole-dot.s-pending_confirmation {
     background: var(--warn);
+    opacity: 1;
   }
   .hole-dot.s-disabled {
     background: var(--signal);
+    opacity: 1;
   }
   .hole-name {
     flex: 1;
@@ -86,25 +94,26 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .hole-sub {
+    flex: none;
+    font-size: var(--fs-2xs);
+    color: var(--fg-subtle);
+  }
   .hole-count {
     flex: none;
-    min-width: 1.4rem;
-    padding: 0 0.3rem;
-    background: var(--signal);
-    color: var(--on-signal);
-    font-size: 0.6875rem;
+    font-size: var(--fs-xs);
     font-weight: 600;
-    text-align: center;
-    line-height: 1.35rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--fg);
   }
   .hole-skel {
     pointer-events: none;
   }
   .hole-dot.s-skel {
-    background: var(--bg-deep);
+    display: none;
   }
   .holes-note {
-    padding: 0.4rem 0.6rem;
+    padding: 0.3rem 0.6rem;
     font-size: var(--fs-xs);
     color: var(--fg-muted);
   }
@@ -112,7 +121,7 @@
     border: 0;
     padding: 0;
     background: none;
-    color: var(--signal-text);
+    color: var(--fg);
     font: inherit;
     font-weight: 600;
     text-decoration: underline;
