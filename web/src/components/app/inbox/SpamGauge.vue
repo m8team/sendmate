@@ -31,7 +31,7 @@ const label = computed(() => gaugeLabel(props.s));
   <ul v-if="s.spamReasons.length" role="list" class="reasons">
     <li v-for="r in s.spamReasons" :key="r"><Icon name="flag" :size="13" /> {{ spamReasonLabel(r) }}</li>
   </ul>
-  <p v-else class="reasons-none">Nothing suspicious: honeypot empty, no dodgy links, no spammy phrases.</p>
+
 </template>
 
 <style scoped>
@@ -39,10 +39,8 @@ const label = computed(() => gaugeLabel(props.s));
   --score: 0;
   --g-color: var(--ok);
   display: grid;
-  gap: 0.4rem;
-  padding: var(--s-3);
-  border: 1px solid var(--line);
-  border-radius: var(--r-2);
+  gap: var(--s-2);
+  max-width: 24rem;
 }
 .g-bad {
   --g-color: var(--signal);

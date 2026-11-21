@@ -12,18 +12,14 @@ const emit = defineEmits<{ release: [] }>();
     <span class="notice-icon"><Icon name="alert" :size="20" /></span>
     <p class="notice-title">Held for review</p>
     <div class="notice-body">
-      <p>
-        Held for review because it looks like it’s collecting passwords or card details, or the form was reported. It wasn’t sent anywhere, and every value shows as
-        <code>[held for review]</code> so nobody’s stolen details get passed on.
-      </p>
-      <p>Free form backends get abused for phishing, so held submissions can’t be released from the dashboard. You can still star it, or delete it if it isn’t something you expected.</p>
+      <p>It looks like it’s collecting passwords or card details, so it wasn’t delivered and its contents are hidden. Held submissions can’t be released.</p>
     </div>
   </div>
   <div v-else-if="s.status === 'spam'" class="notice det-notice" role="note">
     <span class="notice-icon"><Icon name="shield" :size="20" /></span>
-    <p class="notice-title">Not delivered: filed as spam</p>
+    <p class="notice-title">Marked as spam</p>
     <div class="notice-body">
-      <p>Nothing was sent to email or your channels. Spam hangs about for {{ spamRetentionDays }} days in case we got it wrong, then it’s gone.</p>
+      <p>It wasn’t delivered, and it’s deleted after {{ spamRetentionDays }} days.</p>
       <p>
         <button type="button" class="btn btn-outline btn-sm" @click="emit('release')">
           <Icon name="check" :size="16" /> {{ s.deliveries.length ? 'Not spam, move to inbox' : 'Not spam, deliver it' }}
@@ -35,7 +31,7 @@ const emit = defineEmits<{ release: [] }>();
     <span class="notice-icon"><Icon name="clock" :size="20" /></span>
     <p class="notice-title">Waiting for a captcha</p>
     <div class="notice-body">
-      <p>This one looked a bit suspicious, so the visitor was asked to pass a quick Turnstile check. It’s delivered as soon as they do. If they never do, it was probably a bot.</p>
+      <p>The visitor was asked to pass a captcha. It’s delivered when they do.</p>
     </div>
   </div>
 </template>

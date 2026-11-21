@@ -144,9 +144,9 @@ export function journeySteps(s: Submission, ctx: JourneyContext): Step[] {
     if (step) out.push(step);
   }
   if (!s.deliveries.length && ctx.formStatus === 'pending_confirmation') {
-    out.push({ key: 'confirm', tone: 'skip', icon: 'send', title: 'Delivery', tag: { text: 'On hold', cls: '' }, lines: ['Nothing goes out until the address is confirmed.'] });
+    out.push({ key: 'confirm', tone: 'skip', icon: 'send', title: 'On hold', lines: ['Nothing goes out until the address is confirmed.'] });
   } else if (!s.deliveries.length) {
-    out.push({ key: 'none', tone: 'skip', icon: 'send', title: 'Delivery', tag: { text: 'Inbox only', cls: '' }, lines: ['No channels are switched on, so it was only saved here.'] });
+    out.push({ key: 'none', tone: 'skip', icon: 'send', title: 'Not sent anywhere', lines: ['No channels are set up, so it was only saved here.'] });
   }
   return out;
 }

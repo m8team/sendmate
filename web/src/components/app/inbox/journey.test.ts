@@ -94,8 +94,8 @@ describe('journeySteps', () => {
   });
 
   it('explains missing deliveries', () => {
-    expect(journeySteps(sub({ deliveries: [] }), ctx)[3]).toMatchObject({ key: 'none', tag: { text: 'Inbox only' } });
-    expect(journeySteps(sub({ deliveries: [] }), { ...ctx, formStatus: 'pending_confirmation' })[3]).toMatchObject({ key: 'confirm', tag: { text: 'On hold' } });
+    expect(journeySteps(sub({ deliveries: [] }), ctx)[3]).toMatchObject({ key: 'none', title: 'Not sent anywhere' });
+    expect(journeySteps(sub({ deliveries: [] }), { ...ctx, formStatus: 'pending_confirmation' })[3]).toMatchObject({ key: 'confirm', title: 'On hold' });
   });
 });
 

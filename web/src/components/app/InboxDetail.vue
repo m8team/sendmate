@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * One submission, opened: sender and actions, why it wasn't delivered (if it wasn't),
- * then the message, delivery, spam check and details. The pieces live in ./inbox.
+ * then the message, delivery, spam check and details, in one column. The pieces live in ./inbox.
  */
 import Icon from '../ui/Icon.vue';
 import type { Channel, Form, Submission } from '../../lib/api/types';
@@ -54,7 +54,6 @@ const emit = defineEmits<{
 
     <div class="det-inner">
       <SubmissionHeader :s="s" :form-name="form.name" :now="now" @star="emit('star')" @spam="emit('spam')" @release="emit('release')" @delete="emit('delete')" />
-
       <DeliveryNotice :s="s" :spam-retention-days="spamRetentionDays" @release="emit('release')" />
 
       <section class="blk" aria-labelledby="blk-contents">
@@ -63,36 +62,31 @@ const emit = defineEmits<{
         <AttachedFiles :files="s.files" :dropped="s.droppedFiles" />
       </section>
 
-      <div class="det-grid">
-        <section class="blk" aria-labelledby="blk-journey">
-          <h3 id="blk-journey" class="blk-h">Delivery</h3>
-          <DeliveryJourney
-            :s="s"
-            :form-id="form.id"
-            :form-status="formStatus"
-            :channels="channels"
-            :now="now"
-            :digest-hour-utc="digestHourUtc"
-            :spam-retention-days="spamRetentionDays"
-            :max-delivery-attempts="maxDeliveryAttempts"
-            :retrying="retrying"
-            @retry="emit('retry')"
-            @release="emit('release')"
-          />
-        </section>
+      <section class="blk" aria-labelledby="blk-journey">
+        <h3 id="blk-journey" class="blk-h">Delivery</h3>
+        <DeliveryJourney
+          :s="s"
+          :form-id="form.id"
+          :form-status="formStatus"
+          :channels="channels"
+          :now="now"
+          :digest-hour-utc="digestHourUtc"
+          :spam-retention-days="spamRetentionDays"
+          :max-delivery-attempts="maxDeliveryAttempts"
+          :retrying="retrying"
+          @retry="emit('retry')"
+        />
+      </section>
 
-        <div class="det-side">
-          <section class="blk" aria-labelledby="blk-spam">
-            <h3 id="blk-spam" class="blk-h">Spam check</h3>
-            <SpamGauge :s="s" />
-          </section>
+      <section class="blk" aria-labelledby="blk-spam">
+        <h3 id="blk-spam" class="blk-h">Spam check</h3>
+        <SpamGauge :s="s" />
+      </section>
 
-          <section class="blk" aria-labelledby="blk-meta">
-            <h3 id="blk-meta" class="blk-h">Details</h3>
-            <SubmissionMeta :s="s" />
-          </section>
-        </div>
-      </div>
+      <section class="blk" aria-labelledby="blk-meta">
+        <h3 id="blk-meta" class="blk-h">Details</h3>
+        <SubmissionMeta :s="s" />
+      </section>
     </div>
   </article>
 </template>
@@ -105,39 +99,23 @@ const emit = defineEmits<{
 .det-bar {
   display: none;
 }
+/* One column, one left edge: header, notices and every section line up. */
 .det-inner {
-  max-width: 64rem;
-  padding: var(--s-5) clamp(1rem, 2.4vw, 1.75rem) var(--s-7);
+  max-width: 46rem;
+  padding: var(--s-5) var(--app-gutter) var(--s-7);
   display: grid;
-  gap: var(--s-6);
+  gap: var(--s-5);
 }
-.blk-h {
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  color: var(--fg-muted);
-}
-
-/* ---- Blocks ------------------------------------------------------------ */
 .blk {
   display: grid;
-  gap: var(--s-2);
-  align-content: start;
+  gap: var(--s-3);
   min-width: 0;
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--line);
 }
-.det-grid {
-  display: grid;
-  gap: var(--s-6);
-}
-.det-side {
-  display: grid;
-  gap: var(--s-6);
-  align-content: start;
-}
-@container det (min-width: 46rem) {
-  .det-grid {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-    gap: var(--s-6) clamp(1.5rem, 3cqi, 3rem);
-  }
+.blk-h {
+  font-size: var(--fs-sm);
+  font-weight: 600;
 }
 
 /* ---- Mobile: full-screen detail with a back bar ------------------------ */

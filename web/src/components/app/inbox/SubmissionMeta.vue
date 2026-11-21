@@ -8,57 +8,51 @@ defineProps<{ s: Submission }>();
 <template>
   <dl class="meta">
     <div>
-      <dt class="label">Country</dt>
-      <dd v-if="s.meta.country"><span class="mono meta-cc">{{ s.meta.country }}</span> {{ s.meta.countryName }}</dd>
-      <dd v-else class="muted">Unknown</dd>
+      <dt>Country</dt>
+      <dd>{{ s.meta.countryName ?? 'Unknown' }}</dd>
     </div>
     <div>
-      <dt class="label">Browser</dt>
+      <dt>Browser</dt>
       <dd :title="s.meta.userAgent ?? undefined">{{ s.meta.browser ?? 'Unknown' }}</dd>
     </div>
-    <div><dt class="label">Referrer</dt><dd class="mono">{{ s.meta.referrer ?? '(direct)' }}</dd></div>
     <div>
-      <dt class="label">IP address</dt>
-      <dd class="mono">Hashed<span class="meta-why"> · we never store the raw address</span></dd>
+      <dt>Referrer</dt>
+      <dd>{{ s.meta.referrer ?? 'None (direct)' }}</dd>
     </div>
-    <div><dt class="label">Reference</dt><dd class="mono">{{ s.tracking }}</dd></div>
-    <div><dt class="label">ID</dt><dd class="mono meta-id">{{ s.id }}</dd></div>
+    <div>
+      <dt>IP address</dt>
+      <dd>Not stored (hashed)</dd>
+    </div>
+    <div>
+      <dt>Reference</dt>
+      <dd class="mono">{{ s.tracking }}</dd>
+    </div>
+    <div>
+      <dt>ID</dt>
+      <dd class="mono">{{ s.id }}</dd>
+    </div>
   </dl>
 </template>
 
 <style scoped>
 .meta {
   display: grid;
-  border-top: 1px solid var(--line);
+  gap: var(--s-2);
 }
 .meta > div {
   display: grid;
-  grid-template-columns: 6.5rem minmax(0, 1fr);
-  gap: var(--s-3);
-  padding: 0.45rem 0;
-  border-bottom: 1px solid var(--line);
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: var(--s-4);
   align-items: baseline;
 }
 .meta dt {
+  font-size: var(--fs-xs);
   color: var(--fg-muted);
 }
 .meta dd {
-  font-size: var(--fs-sm);
   overflow-wrap: anywhere;
 }
 .meta dd.mono {
   font-size: var(--fs-xs);
-}
-.meta-cc {
-  display: inline-block;
-  padding: 0 0.3rem;
-  border-radius: 3px;
-  background: var(--bg-sunk);
-  font-size: var(--fs-2xs);
-  margin-right: 0.2rem;
-}
-.meta-why {
-  font-family: var(--font-text);
-  color: var(--fg-muted);
 }
 </style>

@@ -1,5 +1,8 @@
 <script setup lang="ts">
-/** Where a submission went, as a timeline, with "Retry now" on failed deliveries. */
+/**
+ * Where a submission went: one row per channel, with "Retry now" on failed deliveries.
+ * Arrival time, origin and the spam score have their own places in the detail, so only delivery shows here.
+ */
 import { computed } from 'vue';
 import Icon from '../../ui/Icon.vue';
 import type { Channel, Form, Submission } from '../../../lib/api/types';
@@ -16,10 +19,9 @@ const props = defineProps<{
   maxDeliveryAttempts: number;
   retrying: boolean;
 }>();
-const emit = defineEmits<{ retry: []; release: [] }>();
+const emit = defineEmits<{ retry: [] }>();
 
-const isHeld = computed(() => props.s.status === 'held');
-const isBlocked = computed(() => props.s.status === 'spam' || props.s.status === 'held');
+const BEFORE_DELIVERY = new Set(['received', 'check', 'stored']);
 
 const steps = computed(() =>
   journeySteps(props.s, {
@@ -29,150 +31,111 @@ const steps = computed(() =>
     digestHourUtc: props.digestHourUtc,
     spamRetentionDays: props.spamRetentionDays,
     maxDeliveryAttempts: props.maxDeliveryAttempts,
-  }),
+  }).filter((st) => !BEFORE_DELIVERY.has(st.key)),
 );
 
-/** One "Retry now" button, on the first failed step: the API retries every failed delivery at once. */
-const retryableSteps = computed(() => steps.value.filter((st) => st.retryable));
-const retryableCount = computed(() => retryableSteps.value.length);
-const firstRetryable = computed(() => retryableSteps.value[0]?.key ?? null);
+/** Why nothing went out, for submissions that never reach the delivery stage. */
+const stopped = computed(() => {
+  if (props.s.status === 'spam') return 'Not delivered: marked as spam.';
+  if (props.s.status === 'held') return 'Not delivered while it’s held.';
+  if (props.s.status === 'pending_challenge') return 'Delivered once the visitor passes the captcha.';
+  return null;
+});
+
+/** One "Retry now" button, on the first failed row: the API retries every failed delivery at once. */
+const retryable = computed(() => steps.value.filter((st) => st.retryable));
+const firstRetryable = computed(() => retryable.value[0]?.key ?? null);
 </script>
 
 <template>
-  <ol role="list" :key="s.id" class="journey">
-    <li v-for="st in steps" :key="st.key" class="jstep" :class="`t-${st.tone}`">
-      <span class="jnode" aria-hidden="true"><Icon :name="TONE_ICON[st.tone]" :size="12" :stroke-width="2.5" /></span>
-      <div class="jbody">
-        <p class="jhead">
-          <Icon :name="st.icon" :size="16" class="jicon" />
-          <span class="jtitle">{{ st.title }}</span>
+  <p v-if="stopped" class="stopped">{{ stopped }}</p>
+  <ul v-else role="list" class="dl">
+    <li v-for="st in steps" :key="st.key" class="drow" :class="`t-${st.tone}`">
+      <span class="dnode" aria-hidden="true"><Icon :name="TONE_ICON[st.tone]" :size="12" :stroke-width="2.5" /></span>
+      <div class="dbody">
+        <p class="dhead">
+          <span class="dtitle">{{ st.title }}</span>
           <span v-if="st.tag" class="tag" :class="st.tag.cls">{{ st.tag.text }}</span>
-          <span v-if="st.time" class="jtime">{{ st.time }}</span>
+          <span v-if="st.time" class="dtime">{{ st.time }}</span>
         </p>
-        <p v-if="st.target" class="mono jtarget">{{ st.target }}</p>
-        <p v-for="(l, i) in st.lines" :key="i" class="jline">{{ l }}</p>
-        <p v-if="st.retryable && s.status === 'ok' && st.key === firstRetryable" class="jact">
+        <p v-for="(l, i) in st.lines" :key="i" class="dline">{{ l }}</p>
+        <p v-if="st.key === 'none'" class="dline"><a :href="`/app/forms/${formId}/settings#channels`">Set up a channel</a></p>
+        <p v-if="st.retryable && s.status === 'ok' && st.key === firstRetryable" class="dact">
           <button type="button" class="btn btn-outline btn-xs" :aria-disabled="retrying ? 'true' : undefined" @click="!retrying && emit('retry')">
             <Icon name="refresh" :size="14" :class="{ spin: retrying }" />
-            {{ retrying ? 'Trying…' : retryableCount > 1 ? `Retry all ${retryableCount} now` : 'Retry now' }}
+            {{ retrying ? 'Trying…' : retryable.length > 1 ? `Retry all ${retryable.length}` : 'Retry now' }}
           </button>
         </p>
       </div>
     </li>
-    <li v-if="isBlocked" class="jstep t-stop">
-      <span class="jnode" aria-hidden="true"><Icon name="x" :size="12" :stroke-width="2.5" /></span>
-      <div class="jbody">
-        <p class="jhead">
-          <Icon name="send" :size="16" class="jicon" />
-          <span class="jtitle">Not delivered</span>
-          <span class="tag tag-signal">Stopped</span>
-        </p>
-        <p class="jline">
-          {{ isHeld ? 'Held back from all' : 'Kept away from all' }} {{ channels.filter((c) => c.enabled).length }} of your channels.
-          {{ isHeld ? 'It stays that way while it’s under review.' : 'Mark it not spam and it’s queued for delivery straight away.' }}
-        </p>
-        <p v-if="!isHeld" class="jact">
-          <button type="button" class="btn btn-signal btn-xs" @click="emit('release')"><Icon name="send" :size="14" /> Not spam, deliver it</button>
-        </p>
-      </div>
-    </li>
-  </ol>
+  </ul>
 </template>
 
 <style scoped>
-.journey {
-  position: relative;
-  display: grid;
-  border-top: 1px solid var(--line);
-  padding-top: var(--s-3);
+.stopped {
+  color: var(--fg-muted);
 }
-.jstep {
-  position: relative;
+.dl {
+  display: grid;
+  gap: var(--s-3);
+}
+.drow {
   display: grid;
   grid-template-columns: 1.25rem minmax(0, 1fr);
   column-gap: var(--s-3);
-  padding-bottom: var(--s-4);
+  align-items: start;
 }
-.jstep:last-child {
-  padding-bottom: 0;
-}
-.jstep:not(:last-child)::before {
-  content: '';
-  position: absolute;
-  left: calc(0.625rem - 0.5px);
-  top: 1.35rem;
-  bottom: 0.1rem;
-  width: 1px;
-  background: var(--line);
-}
-.jnode {
-  position: relative;
-  z-index: 1;
+.dnode {
   display: grid;
   place-items: center;
   width: 1.25rem;
   height: 1.25rem;
+  margin-top: 0.05rem;
   border-radius: 50%;
   background: var(--ok-wash);
   color: var(--ok);
 }
-.t-bad .jnode,
-.t-stop .jnode {
+.t-bad .dnode {
   background: var(--signal-wash);
   color: var(--signal-text);
 }
-.t-warn .jnode {
+.t-warn .dnode {
   background: var(--warn-wash);
   color: var(--warn);
 }
-.t-wait .jnode,
-.t-skip .jnode {
+.t-wait .dnode,
+.t-skip .dnode {
   background: var(--bg-sunk);
   color: var(--fg-muted);
 }
-.jbody {
+.dbody {
   min-width: 0;
 }
-.jhead {
+.dhead {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem 0.5rem;
-  min-height: 1.25rem;
+  gap: var(--s-1) var(--s-2);
 }
-.jicon {
-  display: none;
-}
-.jtitle {
+.dtitle {
   font-weight: 600;
-  font-size: var(--fs-sm);
-  line-height: 1.3;
 }
-.jtime {
+.dtime {
   margin-left: auto;
-  font-family: var(--font-text);
-  font-size: var(--fs-xs);
+  font-size: var(--fs-2xs);
   font-variant-numeric: tabular-nums;
   color: var(--fg-muted);
   white-space: nowrap;
 }
-.jtarget {
-  margin-top: 0.15rem;
-  font-size: var(--fs-2xs);
-  color: var(--fg-muted);
-  overflow-wrap: anywhere;
-}
-.jline {
-  margin-top: 0.15rem;
-  font-size: var(--fs-sm);
-  line-height: 1.45;
+.dline {
+  margin-top: 0.125rem;
   color: var(--fg-muted);
 }
-.t-bad .jline,
-.t-warn .jline:first-of-type {
+.t-bad .dline:first-of-type,
+.t-warn .dline:first-of-type {
   color: var(--fg);
 }
-.jact {
+.dact {
   margin-top: var(--s-2);
 }
 .spin {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** What was in the form: one row per field, then the special `_fields`. Held values show masked. */
+/** What was in the form: each field's name above its value, then the special `_fields`. Held values show masked. */
 import { computed } from 'vue';
 import type { Submission } from '../../../lib/api/types';
 
@@ -11,63 +11,48 @@ const specialFields = computed(() => Object.entries(props.s.special).filter(([, 
 </script>
 
 <template>
-  <table class="kv">
-    <tbody>
-      <tr v-for="[k, val] in fields" :key="k">
-        <th scope="row" class="mono">{{ k }}</th>
-        <td>
-          <span v-if="val.trim()" class="kv-val" :class="{ 'kv-held': isHeld }">{{ val }}</span>
-          <span v-else class="kv-empty">left blank</span>
-        </td>
-      </tr>
-      <tr v-for="[k, val] in specialFields" :key="`special-${k}`">
-        <th scope="row" class="mono">{{ k }}</th>
-        <td><span class="kv-val">{{ val }}</span></td>
-      </tr>
-    </tbody>
-  </table>
+  <dl class="fields">
+    <div v-for="[k, val] in fields" :key="k" class="field-row">
+      <dt>{{ k }}</dt>
+      <dd>
+        <span v-if="val.trim()" class="val" :class="{ 'val-held': isHeld }">{{ val }}</span>
+        <span v-else class="val-empty">Left blank</span>
+      </dd>
+    </div>
+    <div v-for="[k, val] in specialFields" :key="`special-${k}`" class="field-row">
+      <dt>{{ k }}</dt>
+      <dd><span class="val">{{ val }}</span></dd>
+    </div>
+  </dl>
 </template>
 
 <style scoped>
-.kv {
-  width: 100%;
-  border-collapse: collapse;
-  border-top: 1px solid var(--line);
+.fields {
+  display: grid;
+  gap: var(--s-4);
 }
-.kv th,
-.kv td {
-  padding: 0.55rem 0;
-  border-bottom: 1px solid var(--line);
-  vertical-align: top;
-  text-align: left;
+.field-row {
+  display: grid;
+  gap: var(--s-1);
+  min-width: 0;
 }
-.kv th {
-  width: 9.5rem;
-  padding-right: var(--s-4);
-  font-size: var(--fs-xs);
-  font-weight: 500;
+dt {
+  font-size: var(--fs-2xs);
   color: var(--fg-muted);
   overflow-wrap: anywhere;
 }
-.kv-val {
+.val {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font-size: var(--fs-sm);
   line-height: 1.55;
 }
-.kv-empty {
-  font-size: var(--fs-xs);
+.val-empty {
   color: var(--fg-subtle);
 }
 /* held values read "[held for review]": set them like a code, not like prose */
-.kv-held {
+.val-held {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--warn);
-}
-@container det (max-width: 34rem) {
-  .kv th {
-    width: 6.5rem;
-  }
 }
 </style>
