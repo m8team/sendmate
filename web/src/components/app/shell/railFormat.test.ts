@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { EmailSettingsDto } from '@sendm8/shared';
-import { unreadBadge, usageReading } from './railFormat';
+import { railSection, unreadBadge, usageReading } from './railFormat';
 
 const settings = (today: number, limit: number, byok = { configured: false, healthy: false }) =>
   ({ byok, usage: { instantToday: today, instantLimit: limit } }) as unknown as Pick<EmailSettingsDto, 'byok' | 'usage'>;
@@ -22,5 +22,16 @@ describe('usageReading', () => {
   it('is uncapped on a healthy key of your own', () => {
     expect(usageReading(settings(500, 100, { configured: true, healthy: true }))).toEqual({ text: 'Your key · ∞', pct: 0, high: null });
     expect(usageReading(settings(50, 100, { configured: true, healthy: false })).text).toBe('50/100');
+  });
+});
+
+describe('railSection', () => {
+  it('maps dashboard URLs to the rail link to mark', () => {
+    expect(railSection('/app')).toBe('forms');
+    expect(railSection('/app/')).toBe('forms');
+    expect(railSection('/app/onboarding/')).toBe('new');
+    expect(railSection('/app/account/email')).toBe('email');
+    expect(railSection('/app/admin')).toBe('admin');
+    expect(railSection('/app/forms/k3x9q2m7ab')).toBeNull();
   });
 });

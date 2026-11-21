@@ -44,5 +44,7 @@ export default defineConfig({
     }),
   ],
   trailingSlash: 'ignore',
+  // Fetch a page's HTML while the pointer is on its link, so the click itself is instant.
+  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
   devToolbar: { enabled: false },
 });

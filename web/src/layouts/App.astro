@@ -6,8 +6,13 @@
  *
  * Everything user-specific (account, forms, unread counts, email usage) is fetched in the
  * browser from the API; the static build ships skeletons in its place.
+ *
+ * Pages inside the dashboard swap client-side (ClientRouter): the rail is kept (transition:persist)
+ * and only the work area cross-fades, while lib/api/store keeps loaded data for the whole visit.
+ * Links to pages outside the dashboard (no ClientRouter) still do a normal full load.
  * The rail and topbar live in components/app/shell.
  */
+import { ClientRouter, fade } from 'astro:transitions';
 import Base from './Base.astro';
 import '../styles/app.css';
 import AppRail from '../components/app/shell/AppRail.astro';
@@ -25,6 +30,7 @@ const { title, active = 'forms', crumbs = [], bleed = false } = Astro.props;
 ---
 
 <Base title={title} noindex bodyClass="app-body">
+  <ClientRouter slot="head" fallback="swap" />
   <div class="app">
     <AppRail active={active} />
 
@@ -32,7 +38,7 @@ const { title, active = 'forms', crumbs = [], bleed = false } = Astro.props;
       <AppTopbar crumbs={crumbs}>
         <slot name="actions" slot="actions" />
       </AppTopbar>
-      <main id="main" tabindex="-1" class:list={['work-main', bleed && 'is-bleed']}>
+      <main id="main" tabindex="-1" class:list={['work-main', bleed && 'is-bleed']} transition:animate={fade({ duration: '120ms' })}>
         <slot />
       </main>
     </div>

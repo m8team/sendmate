@@ -16,3 +16,13 @@ export function usageReading(s: Pick<EmailSettingsDto, 'byok' | 'usage'>): { tex
   const pct = Math.min(100, Math.round((s.usage.instantToday / Math.max(1, s.usage.instantLimit)) * 100));
   return { text: `${s.usage.instantToday}/${s.usage.instantLimit}`, pct, high: pct > 80 };
 }
+
+/** Which rail section a dashboard URL belongs to, for marking the current link after navigation. */
+export function railSection(pathname: string): 'forms' | 'new' | 'email' | 'admin' | null {
+  const path = pathname.replace(/\/+$/, '') || '/';
+  if (path === '/app') return 'forms';
+  if (path === '/app/onboarding') return 'new';
+  if (path === '/app/account/email') return 'email';
+  if (path === '/app/admin') return 'admin';
+  return null;
+}

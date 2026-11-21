@@ -17,7 +17,7 @@ interface Props {
 const { active } = Astro.props;
 ---
 
-<aside class="rail" id="app-rail" aria-label="Dashboard">
+<aside class="rail" id="app-rail" aria-label="Dashboard" transition:persist="app-rail">
   <div class="rail-top">
     <Logo href="/app" size="sm" />
     <button type="button" class="icon-btn rail-close" data-rail-close>
@@ -27,17 +27,17 @@ const { active } = Astro.props;
 
   <nav class="rail-nav" aria-label="Dashboard sections">
     <div class="rail-group">
-      <a class="rail-link" href="/app" aria-current={active === 'forms' ? 'page' : undefined}>
+      <a class="rail-link" href="/app" data-rail-section="forms" aria-current={active === 'forms' ? 'page' : undefined}>
         <Icon name="grid" size={16} /> Forms
       </a>
-      <a class="rail-add" href="/app/onboarding" aria-label="New form" title="New form" aria-current={active === 'new' ? 'page' : undefined}><Icon name="plus" size={14} /></a>
+      <a class="rail-add" href="/app/onboarding" data-rail-section="new" aria-label="New form" title="New form" aria-current={active === 'new' ? 'page' : undefined}><Icon name="plus" size={14} /></a>
     </div>
     <RailPigeonholes />
 
-    <a class="rail-link rail-gap" href="/app/account/email" aria-current={active === 'email' ? 'page' : undefined}>
+    <a class="rail-link rail-gap" href="/app/account/email" data-rail-section="email" aria-current={active === 'email' ? 'page' : undefined}>
       <Icon name="settings" size={16} /> Settings
     </a>
-    <a class="rail-link" href="/app/admin" aria-current={active === 'admin' ? 'page' : undefined} data-admin-link hidden>
+    <a class="rail-link" href="/app/admin" data-rail-section="admin" aria-current={active === 'admin' ? 'page' : undefined} data-admin-link hidden>
       <Icon name="shield" size={16} /> Admin
     </a>
   </nav>
@@ -58,7 +58,7 @@ const { active } = Astro.props;
     <button type="button" class="rail-link rail-signout" data-signout><Icon name="logout" size={16} /> Sign out</button>
   </div>
 </aside>
-<div class="rail-scrim" data-rail-close aria-hidden="true"></div>
+<div class="rail-scrim" data-rail-close aria-hidden="true" transition:persist="app-rail-scrim"></div>
 
 <style>
   .rail {
@@ -241,36 +241,60 @@ const { active } = Astro.props;
 </style>
 
 <script>
-  // The drawer: the topbar's menu button opens it; the close button, the scrim or Escape shut it.
-  const root = document.documentElement;
-  const openBtn = document.querySelector<HTMLButtonElement>('[data-rail-open]');
-  const rail = document.getElementById('app-rail');
-  const setOpen = (open: boolean) => {
-    root.classList.toggle('rail-is-open', open);
-    openBtn?.setAttribute('aria-expanded', String(open));
-    if (open) rail?.querySelector<HTMLElement>('a, button')?.focus();
-    else openBtn?.focus();
-  };
-  openBtn?.addEventListener('click', () => setOpen(true));
-  document.querySelectorAll('[data-rail-close]').forEach((el) => el.addEventListener('click', () => setOpen(false)));
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && root.classList.contains('rail-is-open')) setOpen(false);
-  });
-</script>
-
-<script>
   import { setUnauthorizedHandler } from '../../../lib/api/client';
   import { friendlyError } from '../../../lib/api/errors';
   import { guardSession, SIGN_IN_PATH } from '../../../lib/api/session';
+  import { DATA_REFRESHED, clearCache, loadEmailSettings, loadMe } from '../../../lib/api/store';
   import { toast } from '../../../lib/toast';
   import { mountAccount } from './railAccount';
   import { mountPigeonholes } from './railPigeonholes';
+  import { railSection } from './railFormat';
 
-  // Any 401 from any island means the session ended: back to sign-in.
-  setUnauthorizedHandler(() => window.location.replace(SIGN_IN_PATH));
+  /*
+   * The rail is kept across client-side navigation (transition:persist in AppRail), so this runs once
+   * per visit. Anything that depends on the page (which link is current, which form is open) is
+   * re-applied after every swap instead of being baked into the HTML.
+   */
+
+  // ---- Drawer (narrow screens): the topbar's menu button opens it; close, scrim or Escape shut it.
+  const root = document.documentElement;
+  const rail = document.getElementById('app-rail');
+  const openButton = () => document.querySelector<HTMLButtonElement>('[data-rail-open]');
+  const setOpen = (open: boolean, moveFocus = true) => {
+    root.classList.toggle('rail-is-open', open);
+    openButton()?.setAttribute('aria-expanded', String(open));
+    if (!moveFocus) return;
+    if (open) rail?.querySelector<HTMLElement>('a, button')?.focus();
+    else openButton()?.focus();
+  };
+  // Delegated: the topbar (and its menu button) is replaced on every navigation.
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-rail-open]')) setOpen(true);
+    else if (target.closest('[data-rail-close]')) setOpen(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && root.classList.contains('rail-is-open')) setOpen(false);
+  });
+
+  // ---- Data
+  // Any 401 from any island means the session ended: forget what we cached and go to sign-in.
+  setUnauthorizedHandler(() => {
+    clearCache();
+    window.location.replace(SIGN_IN_PATH);
+  });
 
   const pigeonholes = mountPigeonholes();
   const account = mountAccount();
+
+  /** Mark the section link for the current URL. Forms in the list are handled by syncActive(). */
+  function markSection() {
+    const current = railSection(location.pathname);
+    document.querySelectorAll<HTMLAnchorElement>('[data-rail-section]').forEach((a) => {
+      if (a.dataset.railSection === current) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+  }
 
   async function boot() {
     const me = await guardSession().catch((err) => {
@@ -284,5 +308,66 @@ const { active } = Astro.props;
     account.showAdminLink(me);
   }
 
-  boot();
+  window.addEventListener(DATA_REFRESHED, async (e) => {
+    const { key } = (e as CustomEvent<{ key: string }>).detail;
+    if (key === 'me') {
+      const me = await loadMe();
+      account.show(me);
+      account.showAdminLink(me);
+    } else if (key === 'email-settings') {
+      await loadEmailSettings();
+      account.refreshUsage();
+    }
+  });
+
+  /**
+   * Once the browser is idle, fetch each dashboard page's scripts ahead of time (modulepreload), so the
+   * first visit to a page in a session doesn't wait on its JavaScript. Form pages all share one shell,
+   * so one inbox and one settings page cover every form.
+   */
+  function warmPages() {
+    const preloaded = new Set<string>();
+    const preload = (href: string | null) => {
+      if (!href || preloaded.has(href)) return;
+      preloaded.add(href);
+      const link = document.createElement('link');
+      link.rel = 'modulepreload';
+      link.href = href;
+      document.head.appendChild(link);
+    };
+    const pages = new Set(['/app/', '/app/onboarding/', '/app/account/email/']);
+    const form = document.querySelector<HTMLElement>('[data-hole]')?.dataset.hole;
+    if (form) {
+      pages.add(`/app/forms/${form}`);
+      pages.add(`/app/forms/${form}/settings`);
+    }
+    if (!document.querySelector<HTMLElement>('[data-admin-link]')?.hidden) pages.add('/app/admin/');
+    pages.delete(location.pathname);
+    for (const page of pages) {
+      fetch(page, { credentials: 'same-origin' })
+        .then((res) => (res.ok ? res.text() : ''))
+        .then((html) => {
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          doc.querySelectorAll('astro-island').forEach((island) => {
+            preload(island.getAttribute('component-url'));
+            preload(island.getAttribute('renderer-url'));
+          });
+          doc.querySelectorAll<HTMLScriptElement>('script[type="module"][src]').forEach((script) => preload(script.getAttribute('src')));
+        })
+        .catch(() => {
+          /* only a head start; the page still loads normally */
+        });
+    }
+  }
+  // Safari has no requestIdleCallback: a short delay does the same job there.
+  const whenIdle = (fn: () => void) => (typeof window.requestIdleCallback === 'function' ? window.requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 1500));
+
+  document.addEventListener('astro:after-swap', () => {
+    setOpen(false, false);
+    markSection();
+    pigeonholes.syncActive();
+  });
+
+  markSection();
+  boot().then(() => whenIdle(warmPages));
 </script>

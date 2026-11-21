@@ -84,12 +84,12 @@ import Icon from '../../ui/Icon.astro';
 </style>
 
 <script>
-  const menu = document.getElementById('inbox-export') as (HTMLElement & { hidePopover?: () => void }) | null;
-  menu?.addEventListener('click', (e) => {
-    const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-export]');
+  // Delegated, because the dashboard swaps pages client-side and this script only runs once.
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('#inbox-export [data-export]');
     if (!btn) return;
     window.dispatchEvent(new CustomEvent('sendm8:export', { detail: btn.dataset.export }));
-    menu.hidePopover?.();
+    (document.getElementById('inbox-export') as (HTMLElement & { hidePopover?: () => void }) | null)?.hidePopover?.();
   });
   window.addEventListener('sendm8:inbox-view', (e) => {
     const { note } = (e as CustomEvent<{ note: string }>).detail;
