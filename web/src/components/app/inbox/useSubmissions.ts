@@ -9,12 +9,12 @@ import { api } from '../../../lib/api/endpoints';
 import { toForm, toSubmission } from '../../../lib/api/adapters';
 import { friendlyError } from '../../../lib/api/errors';
 import { getUnreadCache, markRead, readIds, setUnreadCache } from '../../../lib/api/readState';
-import { announceUnread } from '../../../lib/api/store';
+import { INBOX_PAGE_SIZE, announceUnread, inboxKey, inboxSnapshot, rememberInbox, takePrefetchedInbox } from '../../../lib/api/store';
 import { toast } from '../../../lib/toast';
 import { apiFilter, filterFromSearch, folderTabs, inFilter, unreadIn, type Filter, type LocalCounts } from './folders';
 import { isMobile } from './media';
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = INBOX_PAGE_SIZE;
 
 export interface InboxSource {
   form: Form;
@@ -75,23 +75,50 @@ export function useSubmissions(props: InboxSource, onFormUpdated: (form: Form) =
   );
 
   /* ---- Loading ----------------------------------------------------------- */
+  /** A plain folder view (no search) can be shown from, and saved to, the snapshot cache. */
+  const snapshotKey = () => (appliedQuery.value ? null : inboxKey(props.form.id, filter.value));
+  function saveSnapshot() {
+    const key = snapshotKey();
+    if (key && !loading.value && !loadError.value) rememberInbox(key, { items: items.value, nextCursor: nextCursor.value });
+  }
+
+  function openFirst() {
+    if (!isMobile() && (!openId.value || !byId(openId.value))) {
+      openId.value = visibleIds.value[0] ?? null;
+      activeId.value = openId.value;
+    }
+  }
+
   async function load(reset = true) {
     const seq = ++requestSeq;
+    // Coming back to a folder: show what it had straight away, and refresh quietly behind it.
+    const key = reset ? snapshotKey() : null;
+    const snap = key ? inboxSnapshot<Submission>(key) : undefined;
     if (reset) {
-      loading.value = true;
       loadError.value = '';
       selected.value = [];
+      if (snap) {
+        items.value = snap.items;
+        nextCursor.value = snap.nextCursor;
+        loading.value = false;
+        openFirst();
+      } else {
+        loading.value = true;
+      }
     } else {
       if (!nextCursor.value || loadingMore.value) return;
       loadingMore.value = true;
     }
     try {
-      const page = await api.listSubmissions(props.form.id, {
-        filter: apiFilter(filter.value),
-        q: appliedQuery.value,
-        cursor: reset ? null : nextCursor.value,
-        limit: PAGE_SIZE,
-      });
+      // A first inbox page may already be on its way, started when the link was hovered.
+      const early = reset && !appliedQuery.value && apiFilter(filter.value) === 'inbox' ? takePrefetchedInbox(props.form.id) : undefined;
+      const page = await (early ??
+        api.listSubmissions(props.form.id, {
+          filter: apiFilter(filter.value),
+          q: appliedQuery.value,
+          cursor: reset ? null : nextCursor.value,
+          limit: PAGE_SIZE,
+        }));
       if (seq !== requestSeq) return;
       const read = readIds(props.form.id);
       const fresh = page.data.map((d) => toSubmission(d, props.channels, read.has(d.id)));
@@ -105,13 +132,16 @@ export function useSubmissions(props: InboxSource, onFormUpdated: (form: Form) =
       if (filter.value === 'held' && items.value.length) hasHeld.value = true;
       if (!appliedQuery.value) counts.value = { ...counts.value, [filter.value]: { n: visible.value.length, more: page.nextCursor !== null } };
       syncUnread();
-      if (reset && !isMobile() && (!openId.value || !byId(openId.value))) {
-        openId.value = visibleIds.value[0] ?? null;
-        activeId.value = openId.value;
+      if (reset) {
+        openFirst();
+        if (key) rememberInbox(key, { items: items.value, nextCursor: page.nextCursor });
       }
     } catch (err) {
       if (seq !== requestSeq) return;
-      if (reset) {
+      if (reset && snap) {
+        // Still showing the snapshot: say so quietly rather than blanking the list.
+        toast(`Couldn’t refresh: ${friendlyError(err)}`);
+      } else if (reset) {
         loadError.value = friendlyError(err);
         items.value = [];
         nextCursor.value = null;
@@ -191,7 +221,11 @@ export function useSubmissions(props: InboxSource, onFormUpdated: (form: Form) =
       load();
     }, 300);
   });
-  onBeforeUnmount(() => window.clearTimeout(searchTimer));
+  onBeforeUnmount(() => {
+    window.clearTimeout(searchTimer);
+    // Keep what's on screen (stars, deletes, read state included) for the next visit.
+    saveSnapshot();
+  });
 
   return {
     items,

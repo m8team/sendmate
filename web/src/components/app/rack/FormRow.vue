@@ -7,12 +7,13 @@ import Icon from '../../ui/Icon.vue';
 import { ago } from '../InboxUtils';
 import { formStatusTag } from '../inbox/formStatus';
 import { fmtN, type RackRow } from './rackRows';
+import { prefetchForm } from '../../../lib/api/store';
 
 defineProps<{ row: RackRow; now: number }>();
 </script>
 
 <template>
-  <div class="ft-row fr" :class="`is-${row.f.status}`" role="row">
+  <div class="ft-row fr" :class="`is-${row.f.status}`" role="row" @pointerenter="prefetchForm(row.f.id)">
     <div class="fr-id" role="cell">
       <p class="fr-name">
         <a :href="row.href" class="fr-link">{{ row.f.name }}</a>

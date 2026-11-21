@@ -4,7 +4,7 @@
 import type { MeDto } from '@sendm8/shared';
 import { api } from '../../../lib/api/endpoints';
 import { initials } from '../../../lib/api/session';
-import { invalidate, loadEmailSettings } from '../../../lib/api/store';
+import { clearCache, invalidate, loadEmailSettings } from '../../../lib/api/store';
 import { usageReading } from './railFormat';
 
 export function mountAccount() {
@@ -54,6 +54,7 @@ export function mountAccount() {
     } catch {
       /* already signed out is fine */
     }
+    clearCache();
     window.location.href = '/';
   });
 

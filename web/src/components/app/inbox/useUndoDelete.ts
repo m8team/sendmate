@@ -73,7 +73,7 @@ export function useUndoDelete(list: Submissions, nav: InboxNav, formId: () => st
       openId.value = back[0].id;
       activeId.value = back[0].id;
     }
-    toast(back.length === 1 ? 'Back in the pigeonhole' : `${back.length} back in the pigeonhole`);
+    toast(back.length === 1 ? 'Restored' : `${back.length} restored`);
   }
 
   function onPageHide() {

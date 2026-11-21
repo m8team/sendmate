@@ -6,7 +6,7 @@ import { computed, inject, onBeforeUnmount, onMounted, provide, ref, type Inject
 import type { EmailAddressDto, EmailSettingsDto } from '@sendm8/shared';
 import { api } from '../../../lib/api/endpoints';
 import { fieldNamesFrom } from '../../../lib/api/adapters';
-import { loadEmailSettings } from '../../../lib/api/index';
+import { loadEmailSettings, loadEmails } from '../../../lib/api/store';
 import type { Channel, Form } from '../../../lib/api/types';
 import { useAddChannel } from './useAddChannel';
 import { useChannels } from './useChannels';
@@ -52,30 +52,44 @@ function createContext(props: FormSettingsProps, onFormUpdated: (form: Form) => 
   /** Set once the form is deleted, so the save bar and the leave warning stand down. */
   const deleted = ref(false);
 
-  async function loadExtras() {
-    const [settings, emails, recent] = await Promise.allSettled([
-      loadEmailSettings(),
-      api.listEmails(),
-      api.listSubmissions(draft.current.value.id, { filter: 'all', limit: 25 }),
-    ]);
-    if (settings.status === 'fulfilled') {
-      emailSettings.value = settings.value;
-      budget.used.value = settings.value.usage.instantToday;
-    }
-    if (emails.status === 'fulfilled') addresses.value = emails.value;
-    addressesLoaded.value = true;
-    fieldNames.value = recent.status === 'fulfilled' ? fieldNamesFrom(recent.value.data.filter((s) => s.status !== 'held')) : null;
+  /** Each piece fills in as soon as it arrives: cached ones at once, the field-name check when it lands. */
+  function loadExtras() {
+    loadEmailSettings()
+      .then((settings) => {
+        emailSettings.value = settings;
+        budget.used.value = settings.usage.instantToday;
+      })
+      .catch(() => {});
+    loadEmails()
+      .then((emails) => (addresses.value = emails))
+      .catch(() => {})
+      .finally(() => (addressesLoaded.value = true));
+    api
+      .listSubmissions(draft.current.value.id, { filter: 'all', limit: 25 })
+      .then((recent) => (fieldNames.value = fieldNamesFrom(recent.data.filter((s) => s.status !== 'held'))))
+      .catch(() => (fieldNames.value = null));
   }
 
+  const unsaved = () => draft.dirty.value && !deleted.value;
+
   function onBeforeUnload(e: BeforeUnloadEvent) {
-    if (draft.dirty.value && !deleted.value) e.preventDefault();
+    if (unsaved()) e.preventDefault();
+  }
+
+  /** Client-side navigation doesn't fire beforeunload, so ask before leaving with unsaved changes. */
+  function onBeforeNavigate(e: Event) {
+    if (unsaved() && !window.confirm('You have unsaved changes. Leave without saving?')) e.preventDefault();
   }
 
   onMounted(() => {
     window.addEventListener('beforeunload', onBeforeUnload);
+    document.addEventListener('astro:before-preparation', onBeforeNavigate);
     loadExtras();
   });
-  onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload));
+  onBeforeUnmount(() => {
+    window.removeEventListener('beforeunload', onBeforeUnload);
+    document.removeEventListener('astro:before-preparation', onBeforeNavigate);
+  });
 
   return {
     onFormUpdated,

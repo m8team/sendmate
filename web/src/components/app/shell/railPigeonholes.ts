@@ -1,17 +1,17 @@
 /**
  * Fills the rail's form list (RailPigeonholes.astro) from the API: one link per form,
  * each with an unread badge, kept in step with `sendm8:forms-changed` and `sendm8:unread-changed`.
+ * The rail survives client-side navigation, so `syncActive()` moves the open form along with the URL.
  */
 import type { FormDto } from '@sendm8/shared';
 import { friendlyError } from '../../../lib/api/errors';
 import { formIdFromPath } from '../../../lib/api/session';
-import { FORMS_CHANGED, UNREAD_CHANGED, invalidate, loadForms, unreadFor } from '../../../lib/api/store';
+import { DATA_REFRESHED, FORMS_CHANGED, UNREAD_CHANGED, invalidate, loadForms, prefetchForm, unreadFor } from '../../../lib/api/store';
 import { unreadBadge } from './railFormat';
 
 export function mountPigeonholes() {
   const holes = document.querySelector<HTMLUListElement>('[data-holes]')!;
   const tpl = document.querySelector<HTMLTemplateElement>('[data-hole-tpl]')!;
-  const activeForm = formIdFromPath(location.pathname);
   const counts = new Map<string, HTMLElement>();
 
   function setCount(formId: string, count: number, more = false) {
@@ -24,15 +24,26 @@ export function mountPigeonholes() {
   }
 
   /** The form you're in shows its Inbox and Settings underneath, with the current one marked. */
-  function openForm(li: HTMLLIElement, a: HTMLAnchorElement, id: string) {
-    a.classList.add('is-open');
+  function setOpen(li: HTMLLIElement, open: boolean) {
+    const id = li.dataset.hole!;
+    const a = li.querySelector<HTMLAnchorElement>('.hole')!;
     const pages = li.querySelector<HTMLElement>('.hole-pages')!;
     const inbox = pages.querySelector<HTMLAnchorElement>('[data-hole-inbox]')!;
     const settings = pages.querySelector<HTMLAnchorElement>('[data-hole-settings]')!;
+    a.classList.toggle('is-open', open);
+    pages.hidden = !open;
+    inbox.removeAttribute('aria-current');
+    settings.removeAttribute('aria-current');
+    if (!open) return;
     inbox.href = `/app/forms/${id}`;
     settings.href = `/app/forms/${id}/settings`;
     (location.pathname.replace(/\/$/, '').endsWith('/settings') ? settings : inbox).setAttribute('aria-current', 'page');
-    pages.hidden = false;
+  }
+
+  /** After a client-side navigation: open the form in the new URL (if any) and close the rest. */
+  function syncActive() {
+    const active = formIdFromPath(location.pathname);
+    holes.querySelectorAll<HTMLLIElement>('[data-hole]').forEach((li) => setOpen(li, li.dataset.hole === active));
   }
 
   function render(forms: FormDto[]) {
@@ -49,7 +60,6 @@ export function mountPigeonholes() {
       li.dataset.hole = f.id;
       const a = li.querySelector<HTMLAnchorElement>('a')!;
       a.href = `/app/forms/${f.id}`;
-      if (f.id === activeForm) openForm(li, a, f.id);
       li.querySelector('.hole-dot')!.classList.add(`s-${f.status}`);
       li.querySelector('.hole-name')!.textContent = f.name;
       if ((seen.get(f.name) ?? 0) > 1) {
@@ -62,6 +72,7 @@ export function mountPigeonholes() {
     }
     holes.prepend(frag);
     holes.removeAttribute('aria-busy');
+    syncActive();
   }
 
   async function loadUnread(forms: FormDto[]) {
@@ -98,10 +109,18 @@ export function mountPigeonholes() {
     refresh();
   });
   window.addEventListener(FORMS_CHANGED, () => refresh());
+  window.addEventListener(DATA_REFRESHED, (e) => {
+    if ((e as CustomEvent<{ key: string }>).detail.key === 'forms') refresh();
+  });
+  // Start loading a form's inbox while the pointer is on its link, so the click lands on data.
+  holes.addEventListener('pointerover', (e) => {
+    const li = (e.target as HTMLElement).closest<HTMLLIElement>('[data-hole]');
+    if (li?.dataset.hole) prefetchForm(li.dataset.hole);
+  });
   window.addEventListener(UNREAD_CHANGED, (e) => {
     const { formId, count, more } = (e as CustomEvent<{ formId: string; count: number; more: boolean }>).detail;
     setCount(formId, count, more);
   });
 
-  return { refresh };
+  return { refresh, syncActive };
 }

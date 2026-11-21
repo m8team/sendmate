@@ -13,7 +13,7 @@ import { rackRows, rackSubtitle, type UnreadCount } from './rack/rackRows';
 import { toForm } from '../../lib/api/adapters';
 import { friendlyError } from '../../lib/api/errors';
 import { guardSession } from '../../lib/api/session';
-import { FORMS_CHANGED, UNREAD_CHANGED, invalidate, loadForms, unreadFor } from '../../lib/api/store';
+import { DATA_REFRESHED, FORMS_CHANGED, UNREAD_CHANGED, invalidate, loadForms, unreadFor } from '../../lib/api/store';
 import type { Form } from '../../lib/api/types';
 
 const loading = ref(true);
@@ -24,7 +24,8 @@ const unread = reactive<Record<string, UnreadCount>>({});
 const now = ref(Date.now());
 
 async function load() {
-  loading.value = true;
+  // Only the first load shows skeletons; later ones (a change, a background refresh) swap quietly.
+  if (!forms.value.length) loading.value = true;
   error.value = '';
   try {
     me.value = await guardSession();
@@ -65,14 +66,20 @@ function onFormsChanged() {
   load();
 }
 
+function onRefreshed(e: Event) {
+  if ((e as CustomEvent<{ key: string }>).detail.key === 'forms') load();
+}
+
 onMounted(() => {
   window.addEventListener(UNREAD_CHANGED, onUnread);
   window.addEventListener(FORMS_CHANGED, onFormsChanged);
+  window.addEventListener(DATA_REFRESHED, onRefreshed);
   load();
 });
 onBeforeUnmount(() => {
   window.removeEventListener(UNREAD_CHANGED, onUnread);
   window.removeEventListener(FORMS_CHANGED, onFormsChanged);
+  window.removeEventListener(DATA_REFRESHED, onRefreshed);
 });
 
 const rows = computed(() => rackRows(forms.value, unread));

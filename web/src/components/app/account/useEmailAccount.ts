@@ -2,12 +2,11 @@
  * Shared state for /app/account/email. ResendKey.vue creates it; the key panel, the usage panel
  * and the recipients list inject it.
  */
-import { computed, inject, onMounted, provide, ref, type InjectionKey } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, provide, ref, type InjectionKey } from 'vue';
 import type { EmailAddressDto, EmailSettingsDto, MeDto } from '@sendm8/shared';
-import { api } from '../../../lib/api/endpoints';
 import { friendlyError } from '../../../lib/api/errors';
 import { guardSession } from '../../../lib/api/session';
-import { invalidate } from '../../../lib/api/store';
+import { DATA_REFRESHED, invalidate, loadEmailSettings, loadEmails, peek, setCached } from '../../../lib/api/store';
 import { hourLabel } from '../SettingsChannelRules';
 import { usagePct } from '../settings/settingsHelpers';
 import { useResendKey } from './useResendKey';
@@ -40,12 +39,13 @@ function createContext() {
   const resendKey = useResendKey({ settings, byok, limit, loadDomains: sender.loadDomains, announceSettings });
 
   async function load() {
-    loading.value = true;
+    // Cached from an earlier visit: no skeleton, the values refresh behind the scenes.
+    loading.value = !(peek('email-settings') && peek('emails'));
     loadError.value = '';
     try {
       me.value = await guardSession();
       if (!me.value) return;
-      const [s, emails] = await Promise.all([api.emailSettings(), api.listEmails()]);
+      const [s, emails] = await Promise.all([loadEmailSettings(), loadEmails()]);
       settings.value = s;
       addresses.value = emails;
       if (!resendKey.from.value) resendKey.from.value = s.byok.from ?? '';
@@ -56,7 +56,22 @@ function createContext() {
       loading.value = false;
     }
   }
-  onMounted(load);
+  /** A background refresh found newer values: show them. */
+  function onRefreshed(e: Event) {
+    const { key } = (e as CustomEvent<{ key: string }>).detail;
+    if (key === 'email-settings') settings.value = peek<EmailSettingsDto>(key) ?? settings.value;
+    if (key === 'emails') addresses.value = peek<EmailAddressDto[]>(key) ?? addresses.value;
+  }
+  onMounted(() => {
+    window.addEventListener(DATA_REFRESHED, onRefreshed);
+    load();
+  });
+  // Keep what's on screen (including addresses added or verified here) for the next visit.
+  onBeforeUnmount(() => {
+    window.removeEventListener(DATA_REFRESHED, onRefreshed);
+    if (settings.value) setCached('email-settings', settings.value);
+    if (!loading.value) setCached('emails', addresses.value);
+  });
 
   return { loading, loadError, load, me, addresses, byok, healthy, used, limit, digestAt, pct, left, senderName, fromPlaceholder, sender, resendKey };
 }

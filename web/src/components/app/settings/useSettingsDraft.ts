@@ -1,5 +1,6 @@
 import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { api } from '../../../lib/api/endpoints';
+import { setCached } from '../../../lib/api/store';
 import { buildFormPatch, toForm, type SettingsDraft } from '../../../lib/api/adapters';
 import { fieldError, friendlyError } from '../../../lib/api/errors';
 import { announceFormsChanged } from '../../../lib/api/index';
@@ -103,7 +104,10 @@ export function useSettingsDraft({ form, selectTab, onSaved }: DraftOptions) {
         }
       }
       if (turnstile?.action === 'delete') await api.deleteTurnstile(current.value.id);
-      const fresh = toForm(await api.getForm(current.value.id), current.value.daily);
+      const dto = await api.getForm(current.value.id);
+      // The inbox and the rail read this from the cache: give them the saved copy, not the old one.
+      setCached(`form:${dto.id}`, dto);
+      const fresh = toForm(dto, current.value.daily);
       resetTo(fresh);
       onSaved(fresh);
       if (patch?.name) announceFormsChanged();

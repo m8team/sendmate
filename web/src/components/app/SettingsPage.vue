@@ -32,7 +32,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <FormLoader v-slot="{ form, channels, onFormUpdated }" title-template="Settings · {name}" :crumb-index="1" variant="settings">
+  <FormLoader v-slot="{ form, channels, rev, onFormUpdated }" title-template="Settings · {name}" :crumb-index="1" variant="settings">
     <header class="app-head">
       <div>
         <h1 class="app-title">Settings</h1>
@@ -42,7 +42,7 @@ onMounted(async () => {
         </p>
       </div>
     </header>
-    <FormSettings :form="form" :channels="channels" :limits="settingsLimits" @form-updated="onFormUpdated" />
+    <FormSettings :key="rev" :form="form" :channels="channels" :limits="settingsLimits" @form-updated="onFormUpdated" />
   </FormLoader>
 </template>
 
