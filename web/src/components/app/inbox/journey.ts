@@ -1,11 +1,11 @@
 /**
- * Pure logic for the submission detail: the parcel stamp, the delivery journey steps,
+ * Pure logic for the submission detail: the status tag, the delivery steps,
  * the reply link and the spam gauge label. No DOM.
  */
 import type { IconName } from '../../ui/icons';
 import type { Delivery, Form, Submission } from '../../../lib/api/types';
 import { clipText, deliveryErrorLabel } from '../../../lib/api/adapters';
-import { DAY, SPAM_LINE, channelIcon, channelName, dayMonth, digestTime, hhmm, hhmmss, inMinutes, postmark, verdict } from '../InboxUtils';
+import { DAY, SPAM_LINE, channelIcon, channelName, dayMonth, digestTime, hhmm, hhmmss, fullTime, inMinutes, verdict } from '../InboxUtils';
 
 export type Tone = 'done' | 'bad' | 'warn' | 'wait' | 'skip';
 
@@ -24,17 +24,17 @@ export interface Step {
 
 export const TONE_ICON: Record<Tone, IconName> = { done: 'check', bad: 'x', warn: 'refresh', wait: 'clock', skip: 'minus' };
 
-/** The rubber stamp on the parcel label. */
-export function stampFor(s: Submission): { text: string; cls: string } {
-  if (s.status === 'spam') return { text: 'Return to sender', cls: 'stamp-ink' };
-  if (s.status === 'held') return { text: 'Held', cls: 'stamp-warn' };
-  if (s.status === 'pending_challenge') return { text: 'Waiting', cls: 'stamp-warn' };
+/** The status tag beside the sender: where this submission ended up, in plain words. */
+export function deliveryStatus(s: Submission): { text: string; cls: string } {
+  if (s.status === 'spam') return { text: 'Spam', cls: 'tag-signal' };
+  if (s.status === 'held') return { text: 'Held', cls: 'tag-warn' };
+  if (s.status === 'pending_challenge') return { text: 'Waiting for captcha', cls: 'tag-warn' };
   const ds = s.deliveries;
-  if (!ds.length) return { text: 'Filed', cls: 'stamp-ink' };
-  if (ds.some((d) => d.status === 'failed')) return { text: ds.some((d) => d.status === 'delivered') ? 'Part delivered' : 'Undelivered', cls: 'stamp-warn' };
-  if (ds.some((d) => d.status === 'retrying')) return { text: 'In transit', cls: 'stamp-warn' };
-  if (ds.every((d) => d.status === 'digest')) return { text: 'Queued', cls: 'stamp-ink' };
-  return { text: 'Delivered', cls: '' };
+  if (!ds.length) return { text: 'Inbox only', cls: '' };
+  if (ds.some((d) => d.status === 'failed')) return { text: ds.some((d) => d.status === 'delivered') ? 'Partly delivered' : 'Not delivered', cls: 'tag-signal' };
+  if (ds.some((d) => d.status === 'retrying')) return { text: 'Retrying', cls: 'tag-warn' };
+  if (ds.every((d) => d.status === 'digest')) return { text: 'Queued for digest', cls: '' };
+  return { text: 'Delivered', cls: 'tag-ok' };
 }
 
 /** Destinations sometimes answer with a whole HTML page; keep the first bit. */
@@ -57,21 +57,23 @@ export interface JourneyContext {
 
 function checkStep(s: Submission): Step {
   const score = s.spamScore.toFixed(2);
-  const base = { key: 'check', icon: 'shield' as const, title: 'Spam-checked' };
+  const base = { key: 'check', icon: 'shield' as const, title: 'Spam check' };
   if (s.status === 'held') return { ...base, tone: 'warn', tag: { text: 'Held', cls: 'tag-warn' }, lines: [`Score ${score}. Held for review, so it stopped here.`] };
   if (s.status === 'pending_challenge')
     return { ...base, tone: 'wait', tag: { text: 'Captcha', cls: 'tag-warn' }, lines: [`Score ${score}. Looked a bit suspicious, so the visitor was asked to pass a quick captcha first.`] };
   if (s.status === 'spam')
     return { ...base, tone: 'bad', tag: { text: 'Spam', cls: 'tag-signal' }, lines: [`Score ${score}${s.spamScore >= SPAM_LINE ? `, over the ${SPAM_LINE.toFixed(2)} line.` : '. You marked it as spam.'}`] };
   if (s.spamScore >= SPAM_LINE) return { ...base, tone: 'warn', tag: { text: 'Let through', cls: 'tag-warn' }, lines: [`Score ${score}, over the line, but you said it’s not spam.`] };
-  return { ...base, tone: 'done', tag: { text: 'Clean', cls: 'tag-ok' }, lines: [`Score ${score}. ${verdict(s).word}.`] };
+  const v = verdict(s);
+  if (v.tone === 'warn') return { ...base, tone: 'done', tag: { text: 'Passed', cls: 'tag-warn' }, lines: [`Score ${score}. ${v.word}, but under the ${SPAM_LINE.toFixed(2)} spam line.`] };
+  return { ...base, tone: 'done', tag: { text: 'Passed', cls: 'tag-ok' }, lines: [`Score ${score}. ${v.word}.`] };
 }
 
 function storedLine(s: Submission, spamRetentionDays: number) {
-  if (s.status === 'spam') return `Filed under spam. Deleted for good around ${dayMonth(s.createdAt + spamRetentionDays * DAY)} unless you rescue it.`;
-  if (s.status === 'held') return 'Filed under held, safe and unsent.';
+  if (s.status === 'spam') return `In the spam folder. Deleted for good around ${dayMonth(s.createdAt + spamRetentionDays * DAY)} unless you rescue it.`;
+  if (s.status === 'held') return 'In the held folder, not sent anywhere.';
   if (s.status === 'pending_challenge') return 'Waiting for the visitor to pass the captcha. It’s delivered as soon as they do.';
-  return 'Filed in this inbox.';
+  return 'Saved to this inbox.';
 }
 
 function deliveryStep(s: Submission, d: Delivery, ctx: JourneyContext): Step | null {
@@ -127,13 +129,13 @@ function deliveryStep(s: Submission, d: Delivery, ctx: JourneyContext): Step | n
   }
 }
 
-/** Received → spam-checked → stored → one step per channel, like a parcel tracking page. */
+/** Received → spam check → saved → one step per channel. */
 export function journeySteps(s: Submission, ctx: JourneyContext): Step[] {
   const origin = [s.meta.countryName ? `From ${s.meta.countryName}` : 'From somewhere unknown', s.meta.referrer ? `via ${s.meta.referrer}` : 'no referrer'].join(', ');
   const out: Step[] = [
-    { key: 'received', tone: 'done', icon: 'arrow-down', title: 'Received', time: postmark(s.createdAt), target: `POST /f/${ctx.formId}`, lines: [`${origin}.`] },
+    { key: 'received', tone: 'done', icon: 'arrow-down', title: 'Received', time: fullTime(s.createdAt), target: `POST /f/${ctx.formId}`, lines: [`${origin}.`] },
     checkStep(s),
-    { key: 'stored', tone: 'done', icon: 'inbox', title: 'Stored', lines: [storedLine(s, ctx.spamRetentionDays)] },
+    { key: 'stored', tone: 'done', icon: 'inbox', title: 'Saved', lines: [storedLine(s, ctx.spamRetentionDays)] },
   ];
   if (s.status === 'spam' || s.status === 'held' || s.status === 'pending_challenge') return out;
 
@@ -144,7 +146,7 @@ export function journeySteps(s: Submission, ctx: JourneyContext): Step[] {
   if (!s.deliveries.length && ctx.formStatus === 'pending_confirmation') {
     out.push({ key: 'confirm', tone: 'skip', icon: 'send', title: 'Delivery', tag: { text: 'On hold', cls: '' }, lines: ['Nothing goes out until the address is confirmed.'] });
   } else if (!s.deliveries.length) {
-    out.push({ key: 'none', tone: 'skip', icon: 'send', title: 'Delivery', tag: { text: 'Inbox only', cls: '' }, lines: ['No channels were switched on, so it’s only here.'] });
+    out.push({ key: 'none', tone: 'skip', icon: 'send', title: 'Delivery', tag: { text: 'Inbox only', cls: '' }, lines: ['No channels are switched on, so it was only saved here.'] });
   }
   return out;
 }

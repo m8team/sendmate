@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * One submission, opened: the parcel label, why it wasn't delivered (if it wasn't),
- * then contents, delivery journey, spam check and postmarks. The pieces live in ./inbox.
+ * One submission, opened: sender and actions, why it wasn't delivered (if it wasn't),
+ * then the message, delivery, spam check and details. The pieces live in ./inbox.
  */
 import Icon from '../ui/Icon.vue';
 import type { Channel, Form, Submission } from '../../lib/api/types';
@@ -9,9 +9,9 @@ import AttachedFiles from './inbox/AttachedFiles.vue';
 import ContentsTable from './inbox/ContentsTable.vue';
 import DeliveryJourney from './inbox/DeliveryJourney.vue';
 import DeliveryNotice from './inbox/DeliveryNotice.vue';
-import PostmarkList from './inbox/PostmarkList.vue';
 import SpamGauge from './inbox/SpamGauge.vue';
-import TrackingTicket from './inbox/TrackingTicket.vue';
+import SubmissionHeader from './inbox/SubmissionHeader.vue';
+import SubmissionMeta from './inbox/SubmissionMeta.vue';
 
 defineProps<{
   s: Submission;
@@ -19,7 +19,6 @@ defineProps<{
   formStatus: Form['status'];
   channels: Channel[];
   now: number;
-  released: boolean;
   hasPrev: boolean;
   hasNext: boolean;
   digestHourUtc: number;
@@ -45,7 +44,7 @@ const emit = defineEmits<{
     <!-- Mobile-only bar: back to the list, flick through post -->
     <div class="det-bar">
       <button type="button" class="btn btn-ghost btn-sm det-back" @click="emit('back')">
-        <Icon name="arrow-left" :size="18" /> <span>{{ form.name }}</span>
+        <Icon name="arrow-left" :size="16" /> <span>{{ form.name }}</span>
       </button>
       <div class="det-flick">
         <button type="button" class="icon-btn" :disabled="!hasPrev" aria-label="Newer submission" @click="emit('prev')"><Icon name="arrow-down" :size="16" style="transform: rotate(180deg)" /></button>
@@ -54,19 +53,19 @@ const emit = defineEmits<{
     </div>
 
     <div class="det-inner">
-      <TrackingTicket :s="s" :form-name="form.name" :now="now" :released="released" @star="emit('star')" @spam="emit('spam')" @release="emit('release')" @delete="emit('delete')" />
+      <SubmissionHeader :s="s" :form-name="form.name" :now="now" @star="emit('star')" @spam="emit('spam')" @release="emit('release')" @delete="emit('delete')" />
 
       <DeliveryNotice :s="s" :spam-retention-days="spamRetentionDays" @release="emit('release')" />
 
       <section class="blk" aria-labelledby="blk-contents">
-        <h3 id="blk-contents" class="bay label"><span class="bay-no">A</span> Contents</h3>
+        <h3 id="blk-contents" class="blk-h">Message</h3>
         <ContentsTable :s="s" />
         <AttachedFiles :files="s.files" :dropped="s.droppedFiles" />
       </section>
 
       <div class="det-grid">
         <section class="blk" aria-labelledby="blk-journey">
-          <h3 id="blk-journey" class="bay label"><span class="bay-no">B</span> Delivery journey</h3>
+          <h3 id="blk-journey" class="blk-h">Delivery</h3>
           <DeliveryJourney
             :s="s"
             :form-id="form.id"
@@ -84,13 +83,13 @@ const emit = defineEmits<{
 
         <div class="det-side">
           <section class="blk" aria-labelledby="blk-spam">
-            <h3 id="blk-spam" class="bay label"><span class="bay-no">C</span> Spam check</h3>
+            <h3 id="blk-spam" class="blk-h">Spam check</h3>
             <SpamGauge :s="s" />
           </section>
 
           <section class="blk" aria-labelledby="blk-meta">
-            <h3 id="blk-meta" class="bay label"><span class="bay-no">D</span> Postmarks</h3>
-            <PostmarkList :s="s" />
+            <h3 id="blk-meta" class="blk-h">Details</h3>
+            <SubmissionMeta :s="s" />
           </section>
         </div>
       </div>
@@ -107,16 +106,21 @@ const emit = defineEmits<{
   display: none;
 }
 .det-inner {
-  max-width: 72rem;
-  padding: clamp(1rem, 2.4vw, 2rem);
+  max-width: 64rem;
+  padding: var(--s-5) clamp(1rem, 2.4vw, 1.75rem) var(--s-7);
   display: grid;
   gap: var(--s-6);
+}
+.blk-h {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--fg-muted);
 }
 
 /* ---- Blocks ------------------------------------------------------------ */
 .blk {
   display: grid;
-  gap: var(--s-3);
+  gap: var(--s-2);
   align-content: start;
   min-width: 0;
 }
@@ -146,10 +150,10 @@ const emit = defineEmits<{
     align-items: center;
     justify-content: space-between;
     gap: var(--s-2);
-    min-height: 3.5rem;
-    padding: 0.4rem 0.6rem;
+    min-height: var(--app-topbar-h);
+    padding: 0.3rem 0.5rem;
     background: var(--bg);
-    border-bottom: var(--bw-strong) solid var(--line-strong);
+    border-bottom: 1px solid var(--line);
   }
   .det-back {
     min-width: 0;
@@ -164,8 +168,8 @@ const emit = defineEmits<{
     gap: var(--s-1);
   }
   .det-flick .icon-btn {
-    width: 2.6rem;
-    height: 2.6rem;
+    width: 2.5rem;
+    height: 2.5rem;
   }
   .det-flick .icon-btn:disabled {
     opacity: 0.35;

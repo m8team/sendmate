@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** Where a submission came from: country, browser, referrer, a note on IPs, and its id. */
+/** Where a submission came from: country, browser, referrer, a note on IPs, its reference and its id. */
 import type { Submission } from '../../../lib/api/types';
 
 defineProps<{ s: Submission }>();
@@ -21,6 +21,7 @@ defineProps<{ s: Submission }>();
       <dt class="label">IP address</dt>
       <dd class="mono">Hashed<span class="meta-why"> · we never store the raw address</span></dd>
     </div>
+    <div><dt class="label">Reference</dt><dd class="mono">{{ s.tracking }}</dd></div>
     <div><dt class="label">ID</dt><dd class="mono meta-id">{{ s.id }}</dd></div>
   </dl>
 </template>
@@ -28,13 +29,13 @@ defineProps<{ s: Submission }>();
 <style scoped>
 .meta {
   display: grid;
-  border-top: var(--bw-strong) solid var(--line-strong);
+  border-top: 1px solid var(--line);
 }
 .meta > div {
   display: grid;
-  grid-template-columns: 7rem minmax(0, 1fr);
+  grid-template-columns: 6.5rem minmax(0, 1fr);
   gap: var(--s-3);
-  padding: 0.55rem 0;
+  padding: 0.45rem 0;
   border-bottom: 1px solid var(--line);
   align-items: baseline;
 }
@@ -51,7 +52,8 @@ defineProps<{ s: Submission }>();
 .meta-cc {
   display: inline-block;
   padding: 0 0.3rem;
-  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  background: var(--bg-sunk);
   font-size: var(--fs-2xs);
   margin-right: 0.2rem;
 }

@@ -31,7 +31,8 @@ defineProps<{ files: SubmissionFile[]; dropped: string[] }>();
   column-gap: var(--s-3);
   align-items: center;
   padding: 0.6rem 0.8rem;
-  border: 1px dashed var(--line-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
   background: var(--bg-raised);
 }
 .file-ico {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Delivery, Submission } from '../../../lib/api/types';
-import { deliveryTitle, gaugeLabel, journeySteps, replyMailto, stampFor, type JourneyContext } from './journey';
+import { deliveryTitle, gaugeLabel, journeySteps, replyMailto, deliveryStatus, type JourneyContext } from './journey';
 
 const T0 = Date.UTC(2026, 8, 14, 15, 35, 2);
 
@@ -38,17 +38,17 @@ const sub = (over: Partial<Submission> = {}): Submission => ({
 
 const ctx: JourneyContext = { formId: 'f1', formStatus: 'active', now: T0 + 60_000, digestHourUtc: 18, spamRetentionDays: 30, maxDeliveryAttempts: 5 };
 
-describe('stampFor', () => {
-  it('stamps each outcome', () => {
-    expect(stampFor(sub()).text).toBe('Delivered');
-    expect(stampFor(sub({ status: 'spam' })).text).toBe('Return to sender');
-    expect(stampFor(sub({ status: 'held' }))).toEqual({ text: 'Held', cls: 'stamp-warn' });
-    expect(stampFor(sub({ status: 'pending_challenge' })).text).toBe('Waiting');
-    expect(stampFor(sub({ deliveries: [] })).text).toBe('Filed');
-    expect(stampFor(sub({ deliveries: [delivery(), delivery({ status: 'failed' })] })).text).toBe('Part delivered');
-    expect(stampFor(sub({ deliveries: [delivery({ status: 'failed' })] })).text).toBe('Undelivered');
-    expect(stampFor(sub({ deliveries: [delivery({ status: 'retrying' })] })).text).toBe('In transit');
-    expect(stampFor(sub({ deliveries: [delivery({ status: 'digest' })] })).text).toBe('Queued');
+describe('deliveryStatus', () => {
+  it('names each outcome in plain words', () => {
+    expect(deliveryStatus(sub())).toEqual({ text: 'Delivered', cls: 'tag-ok' });
+    expect(deliveryStatus(sub({ status: 'spam' }))).toEqual({ text: 'Spam', cls: 'tag-signal' });
+    expect(deliveryStatus(sub({ status: 'held' }))).toEqual({ text: 'Held', cls: 'tag-warn' });
+    expect(deliveryStatus(sub({ status: 'pending_challenge' })).text).toBe('Waiting for captcha');
+    expect(deliveryStatus(sub({ deliveries: [] })).text).toBe('Inbox only');
+    expect(deliveryStatus(sub({ deliveries: [delivery(), delivery({ status: 'failed' })] })).text).toBe('Partly delivered');
+    expect(deliveryStatus(sub({ deliveries: [delivery({ status: 'failed' })] })).text).toBe('Not delivered');
+    expect(deliveryStatus(sub({ deliveries: [delivery({ status: 'retrying' })] })).text).toBe('Retrying');
+    expect(deliveryStatus(sub({ deliveries: [delivery({ status: 'digest' })] })).text).toBe('Queued for digest');
   });
 });
 
@@ -56,16 +56,21 @@ describe('journeySteps', () => {
   it('traces a delivered submission', () => {
     const steps = journeySteps(sub(), ctx);
     expect(steps.map((s) => s.key)).toEqual(['received', 'check', 'stored', 'ch1']);
-    expect(steps[0]).toMatchObject({ time: '14 SEP 15:35:02 UTC', target: 'POST /f/f1', lines: ['From United Kingdom, via example.com/contact.'] });
-    expect(steps[1]).toMatchObject({ tone: 'done', tag: { text: 'Clean' }, lines: ['Score 0.05. Looks human.'] });
+    expect(steps[0]).toMatchObject({ time: '14 Sep, 15:35:02 UTC', target: 'POST /f/f1', lines: ['From United Kingdom, via example.com/contact.'] });
+    expect(steps[1]).toMatchObject({ tone: 'done', tag: { text: 'Passed', cls: 'tag-ok' }, lines: ['Score 0.05. Looks human.'] });
     expect(steps[3]).toMatchObject({ tone: 'done', time: '15:35:03 UTC', lines: ['Took 1.2s.'] });
+  });
+
+  it('flags a suspicious score that still passed, instead of calling it clean', () => {
+    const check = journeySteps(sub({ spamScore: 0.43 }), ctx)[1];
+    expect(check).toMatchObject({ tag: { text: 'Passed', cls: 'tag-warn' }, lines: ['Score 0.43. A bit suspicious, but under the 0.80 spam line.'] });
   });
 
   it('stops at storage for spam, held and captcha post', () => {
     const spam = journeySteps(sub({ status: 'spam', spamScore: 0.9 }), ctx);
     expect(spam.map((s) => s.key)).toEqual(['received', 'check', 'stored']);
     expect(spam[1].lines[0]).toBe('Score 0.90, over the 0.80 line.');
-    expect(spam[2].lines[0]).toBe('Filed under spam. Deleted for good around 14 Oct unless you rescue it.');
+    expect(spam[2].lines[0]).toBe('In the spam folder. Deleted for good around 14 Oct unless you rescue it.');
     expect(journeySteps(sub({ status: 'held' }), ctx)[1].tag?.text).toBe('Held');
     expect(journeySteps(sub({ status: 'pending_challenge' }), ctx)).toHaveLength(3);
   });

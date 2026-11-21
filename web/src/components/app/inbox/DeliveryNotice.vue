@@ -16,7 +16,7 @@ const emit = defineEmits<{ release: [] }>();
         Held for review because it looks like it’s collecting passwords or card details, or the form was reported. It wasn’t sent anywhere, and every value shows as
         <code>[held for review]</code> so nobody’s stolen details get passed on.
       </p>
-      <p>Free form backends get abused for phishing, so held post can’t be released from the dashboard. You can still star it, or delete it if it isn’t something you expected.</p>
+      <p>Free form backends get abused for phishing, so held submissions can’t be released from the dashboard. You can still star it, or delete it if it isn’t something you expected.</p>
     </div>
   </div>
   <div v-else-if="s.status === 'spam'" class="notice det-notice" role="note">

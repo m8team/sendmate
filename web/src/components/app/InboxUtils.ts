@@ -29,7 +29,8 @@ export const dayMonth = (t: number | string) => {
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
 };
 /** "14 SEP 15:35:02 UTC" */
-export const postmark = (t: number | string) => `${dayMonth(t).toUpperCase()} ${hhmmss(t)} UTC`;
+/** "14 Sep, 15:35:02 UTC": the full time a submission arrived. */
+export const fullTime = (t: number | string) => `${dayMonth(t)}, ${hhmmss(t)} UTC`;
 export const isoDate = (t: number) => new Date(t).toISOString();
 
 export function inMinutes(ms: number) {
@@ -114,21 +115,6 @@ export function toJson(s: Submission) {
     null,
     2,
   );
-}
-
-/** Deterministic decorative barcode widths from a tracking number. */
-export function barcode(tracking: string) {
-  const bars: { x: number; w: number }[] = [];
-  let x = 0;
-  for (const ch of tracking.replace(/\s/g, '')) {
-    const c = ch.charCodeAt(0);
-    for (let i = 0; i < 3; i++) {
-      const w = ((c >> i) & 3) + 1;
-      bars.push({ x, w });
-      x += w + (((c >> (i + 2)) & 1) + 1);
-    }
-  }
-  return { bars, width: x };
 }
 
 export function ago(t: number | string, now: number) {

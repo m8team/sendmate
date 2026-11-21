@@ -32,11 +32,11 @@ const specialFields = computed(() => Object.entries(props.s.special).filter(([, 
 .kv {
   width: 100%;
   border-collapse: collapse;
-  border-top: var(--bw-strong) solid var(--line-strong);
+  border-top: 1px solid var(--line);
 }
 .kv th,
 .kv td {
-  padding: 0.7rem 0;
+  padding: 0.55rem 0;
   border-bottom: 1px solid var(--line);
   vertical-align: top;
   text-align: left;
@@ -52,14 +52,12 @@ const specialFields = computed(() => Object.entries(props.s.special).filter(([, 
 .kv-val {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font-size: var(--fs-md);
-  line-height: 1.5;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
 }
 .kv-empty {
-  font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--fg-subtle);
-  font-style: italic;
 }
 /* held values read "[held for review]": set them like a code, not like prose */
 .kv-held {
