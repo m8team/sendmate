@@ -6,7 +6,7 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import type { MeDto } from '@sendm8/shared';
 import Icon from '../ui/Icon.vue';
-import HeardFromCard from './rack/HeardFromCard.vue';
+import HeardFromDialog from './rack/HeardFromDialog.vue';
 import OtherAddressCard from './rack/OtherAddressCard.vue';
 import FormTable from './rack/FormTable.vue';
 import { rackRows, rackSubtitle, type UnreadCount } from './rack/rackRows';
@@ -102,9 +102,10 @@ const subtitle = computed(() => rackSubtitle(forms.value.length, unread));
     </div>
 
     <template v-else>
-      <HeardFromCard v-if="!loading && me && me.heardFrom === null" @done="(answer) => me && (me.heardFrom = answer)" />
       <FormTable :loading="loading" :rows="rows" :now="now" />
       <OtherAddressCard v-if="!loading && me && !forms.length" :signed-in-as="me.user.email" @claimed="onFormsChanged" />
+      <!-- Only once there's a form, so it never gets in the way of making the first one. -->
+      <HeardFromDialog v-if="!loading && me && me.heardFrom === null && forms.length" @done="(answer) => me && (me.heardFrom = answer)" />
     </template>
   </div>
 </template>
