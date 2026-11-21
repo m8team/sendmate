@@ -27,7 +27,6 @@ const chip = computed(() => rowChip(props.s));
     <input type="checkbox" class="check row-check" :checked="picked" :aria-label="`Select submission from ${sender(s)}`" @change="emit('pick')" />
     <button type="button" class="row-main" :tabindex="tabStop ? 0 : -1" :aria-current="open ? 'true' : undefined" @click="emit('open')" @focus="emit('focus')">
       <span class="row-top">
-        <span v-if="unread" class="row-dot" aria-hidden="true"></span>
         <span v-if="unread" class="sr-only">Unread.</span>
         <span class="row-from">{{ sender(s) }}</span>
         <time class="row-time" :datetime="isoDate(s.createdAt)">{{ ago(s.createdAt, now) }}</time>
@@ -106,16 +105,6 @@ const chip = computed(() => rowChip(props.s));
   align-items: baseline;
   gap: 0.4rem;
   min-width: 0;
-}
-/* In the left margin, so sender and preview share one left edge. */
-.row-dot {
-  position: absolute;
-  left: 0.3rem;
-  top: 1.05rem;
-  width: 0.375rem;
-  height: 0.375rem;
-  border-radius: 50%;
-  background: var(--fg);
 }
 .row-from {
   flex: 1;
