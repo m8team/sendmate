@@ -38,7 +38,7 @@ const groups: Group[] = [
       { href: '/app', name: 'Forms list', desc: 'Every pigeonhole with counts, sparklines and status.' },
       { href: `/app/forms/${studio.id}`, name: `Inbox: ${studio.name}`, desc: 'The submission inbox with filters, search and the delivery journey.' },
       { href: `/app/forms/${studio.id}/settings`, name: 'Form settings', desc: 'General, notifications, channels, spam and the danger zone.' },
-      { href: '/app/account/email', name: 'Email & BYOK', desc: 'Paste a Resend key, see usage against the free sender.' },
+      { href: '/app/account/email', name: 'Email sending', desc: 'Email addresses, the daily limit and your own Resend key.' },
       ...otherForms.map((f) => ({
         href: `/app/forms/${f.id}`,
         name: `Inbox: ${f.name}`,

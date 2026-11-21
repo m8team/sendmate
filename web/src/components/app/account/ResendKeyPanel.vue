@@ -12,8 +12,8 @@ const { connected } = resendKey;
 <template>
   <section class="panel keypanel" aria-labelledby="rk-key-title" :aria-busy="loading ? 'true' : undefined">
     <header class="panel-head">
-      <p class="label muted">Option B · bring your own stamps</p>
-      <h2 id="rk-key-title" class="h3">Your Resend key</h2>
+      <h2 id="rk-key-title" class="h3">Your own Resend key</h2>
+      <p>Removes the daily limit and sends from your own domain.</p>
     </header>
 
     <div v-if="loading" class="keyform" aria-hidden="true">
@@ -27,18 +27,7 @@ const { connected } = resendKey;
 
     <ResendKeyForm v-else />
 
-    <div class="security">
-      <h3 class="label security-title"><Icon name="lock" :size="14" /> How we look after it</h3>
-      <ul role="list">
-        <li>Encrypted with AES-256-GCM before it touches the database.</li>
-        <li>Never shown in full again, not even to you. You’ll only ever see the last four characters.</li>
-        <li>Only used to send your own notifications.</li>
-        <li>
-          If it stops working (revoked, or you hit your Resend limit), we don’t quietly switch to our sender. Notifications wait for the digest and you’ll see a
-          banner here.
-        </li>
-      </ul>
-    </div>
+    <p class="security"><Icon name="lock" :size="13" /> Stored encrypted. Only the last four characters are ever shown.</p>
   </section>
 </template>
 
@@ -47,41 +36,12 @@ const { connected } = resendKey;
 .keyform {
   display: grid;
   gap: var(--s-4);
-  padding: var(--s-5);
 }
 .security {
-  margin: 0 var(--s-5) var(--s-5);
-  padding: var(--s-4);
-  background: var(--bg-sunk);
-  border: 1px solid var(--line);
-}
-.security-title {
   display: flex;
   align-items: center;
   gap: var(--s-2);
-}
-.security ul {
-  display: grid;
-  gap: 0.35rem;
-  margin-top: var(--s-3);
-  font-size: var(--fs-sm);
-}
-.security li {
-  position: relative;
-  padding-left: 1.1rem;
-}
-.security li::before {
-  content: '—';
-  position: absolute;
-  left: 0;
+  font-size: var(--fs-xs);
   color: var(--fg-muted);
-}
-@media (max-width: 560px) {
-  .keyform {
-    padding: var(--s-4);
-  }
-  .security {
-    margin: 0 var(--s-4) var(--s-4);
-  }
 }
 </style>

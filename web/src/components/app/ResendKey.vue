@@ -19,31 +19,13 @@ const { loadError, load } = provideEmailAccount();
       </div>
     </div>
 
-    <div class="rk-grid">
-      <ResendKeyPanel />
-      <PostageUsage />
-    </div>
-
     <EmailAddresses />
+    <PostageUsage />
+    <ResendKeyPanel />
   </div>
 </template>
 
 <style scoped>
-.rk {
-  display: grid;
-  gap: var(--s-5);
-}
-.rk-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(17rem, 4fr);
-  gap: var(--s-5);
-  align-items: start;
-}
-@media (max-width: 1100px) {
-  .rk-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
 .rk-load {
   margin-bottom: var(--s-5);
 }

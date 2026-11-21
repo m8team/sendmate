@@ -105,12 +105,9 @@ async function removeAddress(a: EmailAddressDto) {
 
 <template>
   <section class="panel recips" aria-labelledby="rk-recips-title">
-    <header class="panel-head recips-head">
-      <div>
-        <p class="label muted">Recipients</p>
-        <h2 id="rk-recips-title" class="h3">Addresses we can deliver to</h2>
-      </div>
-      <p class="muted small">Every inbox has to say yes once, so nobody can point a form at someone else’s email. The address you signed in with is already verified. Verifying an address also moves any no-signup forms sent to it (<code>/f/that@address</code>) into your account.</p>
+    <header class="panel-head">
+      <h2 id="rk-recips-title" class="h3">Email addresses</h2>
+      <p>Addresses that can receive notifications. Each one confirms by email first.</p>
     </header>
     <ul class="recip-list" role="list" :aria-busy="loading ? 'true' : undefined">
       <li v-if="loading" class="recip" aria-hidden="true">
@@ -119,21 +116,21 @@ async function removeAddress(a: EmailAddressDto) {
       </li>
       <li v-for="r in addresses" :key="r.id" class="recip">
         <span class="recip-icon" aria-hidden="true"><Icon name="mail" :size="18" /></span>
-        <span class="recip-email mono">{{ r.email }}</span>
+        <span class="recip-email">{{ r.email }}</span>
         <span class="recip-status">
-          <span v-if="r.bounced" class="tag tag-signal" title="Mail to this address bounced, or it was reported as spam, so we've stopped sending to it.">Bounced: we've stopped emailing it</span>
+          <span v-if="r.bounced" class="tag tag-signal" title="Mail to this address bounced, or it was reported as spam, so we've stopped sending to it.">Bounced</span>
           <span v-else-if="r.verified" class="tag tag-ok">Verified{{ r.verifiedAt ? ` ${sinceLabel(r.verifiedAt)}` : '' }}{{ isLogin(r) ? ' · your login' : '' }}</span>
-          <span v-else class="tag tag-warn">Waiting for a click</span>
+          <span v-else class="tag tag-warn">Not verified</span>
         </span>
         <span class="recip-action">
           <span v-if="recipErrors[r.id]" class="small field-error" role="alert">{{ recipErrors[r.id] }}</span>
           <template v-else-if="!r.verified">
             <span v-if="cooldownLeft(r) > 0" class="small ok-text recip-cooldown">
-              <Icon name="check" :size="14" /> Sent. Check that inbox. <span class="muted">Resend in <span class="mono tabular">{{ countdown(cooldownLeft(r)) }}</span></span>
+              <Icon name="check" :size="14" /> Sent. <span class="muted">Resend in <span class="mono tabular">{{ countdown(cooldownLeft(r)) }}</span></span>
             </span>
-            <span v-else-if="resend[r.id] === 'sent' && !r.verificationSentAt" class="small ok-text"><Icon name="check" :size="14" /> Sent. Check that inbox.</span>
+            <span v-else-if="resend[r.id] === 'sent' && !r.verificationSentAt" class="small ok-text"><Icon name="check" :size="14" /> Sent</span>
             <button v-else type="button" class="btn btn-outline btn-xs" :aria-disabled="resend[r.id] === 'sending' ? 'true' : undefined" @click="resendVerification(r)">
-              <Icon name="refresh" :size="14" /> {{ resend[r.id] === 'sending' ? 'Sending…' : 'Resend verification' }}<span class="sr-only"> to {{ r.email }}</span>
+              <Icon name="refresh" :size="14" /> {{ resend[r.id] === 'sending' ? 'Sending…' : 'Resend link' }}<span class="sr-only"> to {{ r.email }}</span>
             </button>
           </template>
           <button v-if="!isLogin(r)" type="button" class="btn btn-ghost btn-xs rk-remove" :aria-disabled="removingAddr === r.id ? 'true' : undefined" @click="removeAddress(r)">
@@ -165,21 +162,18 @@ async function removeAddress(a: EmailAddressDto) {
 
 <style scoped src="./account-panel.css"></style>
 <style scoped>
-.recips-head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
-  gap: var(--s-2) var(--s-5);
-  align-items: end;
-}
 .recip-list {
   display: grid;
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  overflow: hidden;
 }
 .recip {
   display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr) auto minmax(11rem, auto);
+  grid-template-columns: 1.25rem minmax(0, 1fr) auto auto;
   align-items: center;
   gap: var(--s-3);
-  padding: 0.7rem var(--s-5);
+  padding: var(--s-2) var(--s-3);
   border-bottom: 1px solid var(--line);
 }
 .recip:last-child {
@@ -191,7 +185,6 @@ async function removeAddress(a: EmailAddressDto) {
   color: var(--fg-muted);
 }
 .recip-email {
-  font-size: var(--fs-sm);
   overflow-wrap: anywhere;
 }
 .recip-action {
@@ -206,18 +199,13 @@ async function removeAddress(a: EmailAddressDto) {
   align-items: center;
   gap: 0.3rem;
   color: var(--ok);
-  font-weight: 600;
 }
 .rk-remove {
   color: var(--signal-text);
 }
 @media (max-width: 700px) {
-  .recips-head {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .recip {
-    grid-template-columns: 1.5rem minmax(0, 1fr);
-    padding-inline: var(--s-4);
+    grid-template-columns: 1.25rem minmax(0, 1fr);
   }
   .recip-status,
   .recip-action {
@@ -227,8 +215,8 @@ async function removeAddress(a: EmailAddressDto) {
 }
 /* After the 700px rule on purpose: the add row keeps its wider icon column. */
 .recip-add {
-  grid-template-columns: 2rem minmax(0, 1fr);
-  background: var(--bg);
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  background: var(--bg-sunk);
 }
 .recip-form {
   display: flex;

@@ -32,7 +32,7 @@ const { replacing, checking, key, show, formatError, from, fromError, apiError, 
       </div>
       <p v-if="formatError" id="rk-key-err" class="field-error"><Icon name="alert" :size="14" /> {{ formatError }}</p>
       <p id="rk-key-hint" class="field-hint">
-        In Resend: API Keys → Create API key → Full access. Copy it before you close the dialog, Resend only shows it once too.
+        In Resend: API Keys → Create API key (full access).
       </p>
     </div>
 
@@ -51,7 +51,7 @@ const { replacing, checking, key, show, formatError, from, fromError, apiError, 
         @input="fromError = ''"
       />
       <p v-if="fromError" id="rk-from-err" class="field-error"><Icon name="alert" :size="14" /> {{ fromError }}</p>
-      <p id="rk-from-hint" class="field-hint">Use a domain you’ve verified in Resend. Your inbox will say <b>{{ from.trim() || fromPlaceholder }}</b>.</p>
+      <p id="rk-from-hint" class="field-hint">Must be on a domain you’ve verified in Resend.</p>
     </div>
 
     <div v-if="apiError" id="rk-api-err" class="notice notice-signal" role="alert">
@@ -63,11 +63,10 @@ const { replacing, checking, key, show, formatError, from, fromError, apiError, 
     <KeyCheckProgress v-if="checking" :step="checkStep" />
 
     <div class="keyform-actions">
-      <button type="submit" class="btn btn-signal" :aria-disabled="checking ? 'true' : undefined">
-        <Icon name="key" /> {{ checking ? 'Checking…' : replacing ? 'Check and replace' : 'Check and connect' }}
+      <button type="submit" class="btn btn-outline" :aria-disabled="checking ? 'true' : undefined">
+        {{ checking ? 'Checking…' : replacing ? 'Replace key' : 'Connect' }}
       </button>
       <button v-if="replacing" type="button" class="btn btn-ghost" @click="cancelReplace">Cancel</button>
-      <p class="small muted">We check it with Resend before saving. Nothing gets sent.</p>
     </div>
   </form>
 </template>
@@ -77,7 +76,6 @@ const { replacing, checking, key, show, formatError, from, fromError, apiError, 
 .keyform {
   display: grid;
   gap: var(--s-4);
-  padding: var(--s-5);
 }
 .pwrow {
   display: flex;
@@ -97,9 +95,6 @@ const { replacing, checking, key, show, formatError, from, fromError, apiError, 
   gap: var(--s-3) var(--s-4);
 }
 @media (max-width: 560px) {
-  .keyform {
-    padding: var(--s-4);
-  }
   .pwbtn-text {
     display: none;
   }

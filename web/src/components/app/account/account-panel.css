@@ -1,24 +1,51 @@
 /*
- * The Email & BYOK page's raised panels. Loaded as `<style scoped src>` by each panel,
- * so these rules stay scoped to it.
+ * An Email sending section, laid out like a settings row: heading and one line of help on the
+ * left, the content on the right. Loaded as `<style scoped src>` by each panel.
  */
 .panel {
+  display: grid;
+  grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+  gap: 0 var(--s-6);
+  align-items: start;
+  padding: var(--s-5) 0;
+  border-top: 1px solid var(--line);
   min-width: 0;
-  border: var(--bw-strong) solid var(--line-strong);
-  background: var(--bg-raised);
+}
+.panel > :not(.panel-head) {
+  grid-column: 2;
+  max-width: 36rem;
+}
+/* Extra content stacks in the right column under the first item. */
+.panel > :not(.panel-head) + :not(.panel-head) {
+  margin-top: var(--s-3);
 }
 .panel-head {
-  padding: var(--s-4) var(--s-5);
-  border-bottom: 2px dashed var(--line);
+  grid-column: 1;
+  grid-row: 1;
 }
 .panel-head .h3 {
-  margin-top: 0.3rem;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.panel-head p {
+  margin-top: var(--s-1);
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
 }
 .small {
-  font-size: var(--fs-sm);
+  font-size: var(--fs-xs);
 }
-@media (max-width: 560px) {
+@media (max-width: 960px) {
+  .panel {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--s-3);
+  }
+  .panel > :not(.panel-head) + :not(.panel-head) {
+    margin-top: 0;
+  }
+  .panel > :not(.panel-head),
   .panel-head {
-    padding: var(--s-4);
+    grid-column: 1;
+    grid-row: auto;
   }
 }

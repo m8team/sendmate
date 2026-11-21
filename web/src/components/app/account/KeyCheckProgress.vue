@@ -8,7 +8,7 @@ defineProps<{ step: number }>();
 
 <template>
   <div class="checking" role="status" aria-live="polite">
-    <p class="checking-title mono">Checking with Resend…</p>
+    <p class="checking-title">Checking with Resend…</p>
     <ol class="checklist" role="list">
       <li v-for="c in keyChecks" :key="c.n" :class="{ done: step > c.n, now: step === c.n }">
         <span class="checklist-mark" aria-hidden="true">
@@ -23,9 +23,9 @@ defineProps<{ step: number }>();
 
 <style scoped>
 .checking {
-  padding: var(--s-4);
-  border: 1.5px solid var(--line-strong);
-  background: var(--bg);
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
 }
 .checking-title {
   font-size: var(--fs-sm);
@@ -36,8 +36,9 @@ defineProps<{ step: number }>();
   display: block;
   height: 3px;
   margin-top: var(--s-2);
-  background: repeating-linear-gradient(90deg, var(--signal) 0 10px, transparent 10px 16px);
-  background-size: 32px 3px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--fg-muted) 0 10px, transparent 10px 16px);
+  background-size: 32px 2px;
   animation: conveyor 700ms linear infinite;
 }
 @keyframes conveyor {

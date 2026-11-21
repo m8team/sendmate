@@ -1,4 +1,4 @@
-/** Pure checks for the Email & BYOK page: Resend keys, sender addresses and recipients. */
+/** Pure checks for the Email sending page: Resend keys, sender addresses and recipients. */
 import type { EmailAddressDto } from '@sendm8/shared';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
