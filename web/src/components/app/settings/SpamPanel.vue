@@ -15,13 +15,13 @@ const riskyFields = computed(() => findRisky(fieldNames.value));
   <section id="fs-panel-spam" role="tabpanel" aria-labelledby="fs-tab-spam" tabindex="0" class="panel">
     <header class="panel-head">
       <h2 class="h3">Spam</h2>
-      <p class="muted">Layers, cheapest first. Spam is still stored so you can fish out anything we got wrong, it just never gets delivered.</p>
+      <p class="muted">Spam is kept in your Spam folder for {{ limits.spamRetentionDays }} days but never delivered.</p>
     </header>
 
     <div class="row">
       <div class="row-text">
         <label class="row-title" for="fs-honeypot">Honeypot field</label>
-        <p class="row-desc">A hidden field people never see. Bots fill in everything, so if it has a value, it’s spam. <code>_gotcha</code> always works; add your own name if you like.</p>
+        <p class="row-desc">A hidden field only bots fill in. <code>_gotcha</code> always works.</p>
       </div>
       <div class="row-control field">
         <div class="pwrow">
@@ -44,12 +44,12 @@ const riskyFields = computed(() => findRisky(fieldNames.value));
           {{
             current.honeypotField && !draft.honeypotField.trim()
               ? `Saving removes “${current.honeypotField}”. The built-in _gotcha and _honeypot keep working.`
-              : 'Optional. Leave it empty to use only the built-in _gotcha and _honeypot.'
+              : 'Optional. Add a custom field name.'
           }}
         </p>
         <div class="codeblock codeblock-compact">
           <div class="cb-head">
-            <span class="label cb-name">Add to your form</span>
+            <span class="label cb-name">HTML</span>
             <button type="button" class="btn btn-ghost btn-xs copy-btn" :data-copy="snippet" data-copy-toast="Honeypot copied">
               <span class="copy-idle"><Icon name="copy" :size="14" /><span>Copy</span></span>
               <span class="copy-done" aria-hidden="true"><Icon name="check" :size="14" /><span>Copied</span></span>
@@ -64,48 +64,35 @@ const riskyFields = computed(() => findRisky(fieldNames.value));
 
     <div class="row">
       <div class="row-text">
-        <label class="row-title" for="fs-ai">AI spam scoring <span class="tag tag-plain">Optional</span></label>
-        <p class="row-desc">
-          A second opinion on the wording for submissions that got past the other checks. Anything it’s sure about goes to spam before it’s delivered. It’s best-effort: if the AI
-          is busy or unavailable (some self-hosted setups don’t have it), submissions just carry on as normal.
-        </p>
+        <label class="row-title" for="fs-ai">AI spam check</label>
+        <p class="row-desc">Reads submissions that pass the other checks and catches spam by its wording.</p>
       </div>
       <div class="row-control switchrow">
         <input id="fs-ai" v-model="draft.aiSpamScoring" type="checkbox" class="switch" />
-        <span class="mono">{{ draft.aiSpamScoring ? 'On' : 'Off' }}</span>
+        <span>{{ draft.aiSpamScoring ? 'On' : 'Off' }}</span>
       </div>
     </div>
 
     <div class="row">
       <div class="row-text">
-        <p class="row-title">Phishing guard <span class="tag tag-ok">Always on</span></p>
-        <p class="row-desc">
-          Forms with fields like <code>password</code>, <code>card_number</code>, <code>cvv</code> or <code>seed_phrase</code> get held, not delivered, until they’re
-          reviewed. Nobody gets to use sendm8 to collect stolen logins.
-        </p>
+        <p class="row-title">Phishing check <span class="tag tag-ok">Always on</span></p>
+        <p class="row-desc">Submissions with fields like <code>password</code> or <code>card_number</code> are held, not delivered.</p>
       </div>
       <div class="row-control">
-        <p v-if="fieldNames === null" class="hint-line"><span class="tag tag-plain">Waiting</span> We’ll check your field names once the first submission arrives.</p>
-        <p v-else-if="!fieldNames.length" class="hint-line"><span class="tag tag-plain">Nothing yet</span> No submissions to check yet.</p>
-        <p v-else-if="!riskyFields.length" class="hint-line">
-          <span class="tag tag-ok">All clear</span> Checked your recent fields: <span class="mono">{{ fieldNames.join(', ') }}</span>.
-        </p>
-        <p v-else class="hint-line">
-          <span class="tag tag-signal">Held</span> These look risky: <span class="mono">{{ riskyFields.join(', ') }}</span>. Submissions with them wait for review.
-        </p>
+        <p v-if="fieldNames === null || !fieldNames.length" class="hint-line muted">Checked when the first submission arrives.</p>
+        <p v-else-if="!riskyFields.length" class="hint-line"><span class="tag tag-ok">All clear</span> No risky fields in recent submissions.</p>
+        <p v-else class="hint-line"><span class="tag tag-signal">Held</span> Risky fields: <span class="mono">{{ riskyFields.join(', ') }}</span></p>
       </div>
     </div>
 
     <div class="row">
       <div class="row-text">
-        <p class="row-title">Always running</p>
-        <p class="row-desc">You don’t have to do anything for these.</p>
+        <p class="row-title">Always on</p>
       </div>
       <div class="row-control">
         <ul class="facts" role="list">
-          <li><Icon name="clock" :size="16" /> Rate limit: {{ limits.ratePerIpPerMinute }} per minute per visitor, {{ limits.ratePerFormPerMinute }} per minute per form</li>
-          <li><Icon name="filter" :size="16" /> Heuristics: link count, disposable email domains, known spam phrases</li>
-          <li><Icon name="trash" :size="16" /> Spam is kept for {{ limits.spamRetentionDays }} days, then deleted for good</li>
+          <li>Rate limit: {{ limits.ratePerIpPerMinute }}/min per visitor, {{ limits.ratePerFormPerMinute }}/min per form</li>
+          <li>Checks for spammy links, phrases and throwaway email addresses</li>
         </ul>
       </div>
     </div>
@@ -122,16 +109,7 @@ const riskyFields = computed(() => findRisky(fieldNames.value));
 }
 .facts {
   display: grid;
-  gap: var(--s-2);
-  font-size: var(--fs-sm);
-}
-.facts li {
-  display: grid;
-  grid-template-columns: 1.4rem 1fr;
-  align-items: start;
-}
-.facts :deep(svg) {
-  margin-top: 0.2rem;
+  gap: var(--s-1);
   color: var(--fg-muted);
 }
 </style>

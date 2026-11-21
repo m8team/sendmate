@@ -11,7 +11,7 @@ const { dirty, deleted, errors, saving, save, discard } = useFormSettings();
     <div v-if="dirty && !deleted" class="savebar" role="region" aria-label="Unsaved changes">
       <p class="savebar-text">
         <span class="savebar-dot" aria-hidden="true"></span> <b>{{ errors.general ? 'Not saved' : 'Unsaved changes' }}</b
-        ><span class="savebar-sub"> · {{ errors.general ?? 'nothing’s live until you save' }}</span>
+        ><span v-if="errors.general" class="savebar-sub"> · {{ errors.general }}</span>
       </p>
       <div class="savebar-actions">
         <button type="button" class="btn btn-ghost btn-sm" :disabled="saving" @click="discard">Discard</button>
@@ -34,13 +34,11 @@ const { dirty, deleted, errors, saving, save, discard } = useFormSettings();
   gap: var(--s-3);
   flex-wrap: wrap;
   margin-top: var(--s-5);
-  /* Lines up with the panels, past the tab rail and its gap in FormSettings. */
-  margin-left: calc(13rem + clamp(1.25rem, 3vw, 2.5rem));
-  padding: 0.55rem 0.6rem 0.55rem 1rem;
-  background: var(--fg);
-  color: var(--bg);
-  border: 2px solid var(--fg);
-  box-shadow: 4px 4px 0 0 var(--signal);
+  padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4);
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.18);
 }
 .savebar-text {
   display: flex;
@@ -49,41 +47,31 @@ const { dirty, deleted, errors, saving, save, discard } = useFormSettings();
   font-size: var(--fs-sm);
 }
 .savebar-sub {
-  opacity: 0.75;
+  color: var(--fg-muted);
 }
 .savebar-dot {
-  width: 0.6rem;
-  height: 0.6rem;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--warn);
 }
 .savebar-actions {
   display: flex;
   gap: var(--s-2);
 }
-.savebar .btn-ghost {
-  --btn-fg: var(--bg);
-}
-.savebar .btn-ghost:hover {
-  --btn-border: var(--bg);
-}
-.savebar .btn-signal {
-  --btn-shadow: var(--accent);
-}
 .savebar-enter-active,
 .savebar-leave-active {
   transition:
-    transform var(--dur-3) var(--ease-thunk),
+    transform var(--dur-3) var(--ease-out),
     opacity var(--dur-2);
 }
 .savebar-enter-from,
 .savebar-leave-to {
-  transform: translateY(1.5rem);
+  transform: translateY(0.75rem);
   opacity: 0;
 }
 @media (max-width: 860px) {
   .savebar {
-    margin-left: 0;
     bottom: var(--s-3);
   }
 }

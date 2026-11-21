@@ -55,9 +55,9 @@ const { addType, addTypes, addErr, addBusy, addLabel, addLabelDefault, cancelAdd
 .addpanel {
   display: grid;
   gap: var(--s-4);
-  margin: 0 var(--s-5) var(--s-5);
-  padding: var(--s-5);
-  border: 2px dashed var(--line-strong);
+  padding: var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
   background: var(--bg);
 }
 .addtype {
@@ -76,20 +76,20 @@ const { addType, addTypes, addErr, addBusy, addLabel, addLabelDefault, cancelAdd
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  padding: 0.5rem 0.8rem;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-1);
-  font-weight: 600;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  font-weight: 500;
   font-size: var(--fs-sm);
   cursor: pointer;
 }
 .addtype-opt:hover {
-  border-color: var(--line-strong);
+  background: var(--bg-sunk);
 }
 .addtype-opt.on {
-  background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
+  background: var(--bg-deep);
+  border-color: color-mix(in srgb, var(--fg) 35%, transparent);
+  font-weight: 600;
 }
 .addtype-opt:has(input:focus-visible) {
   outline: 2px solid var(--focus-ring);
@@ -104,8 +104,7 @@ const { addType, addTypes, addErr, addBusy, addLabel, addLabelDefault, cancelAdd
 }
 @media (max-width: 560px) {
   .addpanel {
-    margin: 0 var(--s-3) var(--s-4);
-    padding: var(--s-4);
+    padding: var(--s-3);
   }
 }
 </style>

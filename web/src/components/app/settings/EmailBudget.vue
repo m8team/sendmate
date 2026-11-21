@@ -14,13 +14,12 @@ const { used, emailLimit, byok, simulating, pct, overCap, digestAt, toggleCapPre
       <span class="skel" style="height: 18px"></span>
     </template>
     <template v-else-if="byok">
-      <p class="budget-big"><span>∞</span> Unlimited <span class="muted">(your Resend quota)</span></p>
-      <p class="field-hint">You’re sending with your own Resend key, so there’s no cap from us.</p>
+      <p>No limit: you’re sending with your own Resend key.</p>
     </template>
     <template v-else>
-      <div class="budget-row mono">
-        <span><b>{{ used }}</b> of {{ emailLimit }} used today</span>
-        <span :class="overCap ? 'tag tag-warn' : 'tag tag-ok'">{{ overCap ? 'At the cap' : `${emailLimit - used} left` }}</span>
+      <div class="budget-row">
+        <span class="tabular">{{ used }} of {{ emailLimit }} used today</span>
+        <span v-if="overCap" class="tag tag-warn">Limit reached</span>
       </div>
       <div
         class="meter"
@@ -35,24 +34,21 @@ const { used, emailLimit, byok, simulating, pct, overCap, digestAt, toggleCapPre
       ></div>
       <div v-if="overCap" class="notice notice-warn budget-notice" role="status">
         <span class="notice-icon"><Icon name="clock" :size="18" /></span>
-        <p class="notice-title">Switched to digest for today</p>
+        <p class="notice-title">Sending the digest for the rest of today</p>
         <div class="notice-body">
-          <p>
-            {{ used }} of {{ emailLimit }} instant emails used today, the rest arrive in the digest at {{ digestAt }}.
-            <a class="link-signal" href="/app/account/email">Add your Resend key to go unlimited</a>.
-          </p>
+          <p>New emails arrive in the {{ digestAt }} digest.</p>
         </div>
       </div>
       <div class="budget-foot">
-        <a class="link-signal" href="/app/account/email">Go unlimited with your own Resend key</a>
+        <a href="/app/account/email">Remove the limit with your own Resend key</a>
         <button type="button" class="btn btn-ghost btn-xs" :aria-pressed="simulating" @click="toggleCapPreview">
-          {{ simulating ? 'Back to real usage' : 'Preview what happens at the cap' }}
+          {{ simulating ? 'Show real usage' : 'Preview the limit' }}
         </button>
       </div>
     </template>
     <p v-if="emailSettings?.byok.configured && !emailSettings.byok.healthy" class="notice notice-signal">
       <span class="notice-icon"><Icon name="alert" :size="18" /></span>
-      <span class="notice-body">Resend rejected your key, so emails are waiting for the digest. <a class="link-signal" href="/app/account/email">Fix it</a>.</span>
+      <span class="notice-body">Resend rejected your key, so emails wait for the digest. <a href="/app/account/email">Fix it</a></span>
     </p>
   </div>
 </template>
@@ -65,9 +61,6 @@ const { used, emailLimit, byok, simulating, pct, overCap, digestAt, toggleCapPre
   gap: var(--s-3);
   font-size: var(--fs-sm);
 }
-.budget .meter {
-  height: 18px;
-}
 .budget-notice {
   margin-top: var(--s-2);
 }
@@ -78,19 +71,5 @@ const { used, emailLimit, byok, simulating, pct, overCap, digestAt, toggleCapPre
   flex-wrap: wrap;
   gap: var(--s-2);
   font-size: var(--fs-sm);
-}
-.budget-big {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: var(--s-2);
-  font-weight: 700;
-}
-.budget-big span:first-child {
-  font-family: var(--font-display);
-  font-stretch: var(--stretch-condensed);
-  font-weight: 900;
-  font-size: 3rem;
-  line-height: 0.8;
 }
 </style>

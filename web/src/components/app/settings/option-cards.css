@@ -1,41 +1,48 @@
 /*
- * Radio option cards (notify mode, Turnstile mode, email recipient).
+ * Radio options (notify mode, Turnstile mode, email recipient): a plain stacked list, one line of help each.
  * Loaded as `<style scoped src>` by each component that renders them.
  */
 .options {
-  gap: var(--s-2);
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  overflow: hidden;
 }
 .option {
   display: flex;
   gap: var(--s-3);
   align-items: flex-start;
-  padding: var(--s-3) var(--s-4);
-  border: 1.5px solid var(--line);
+  padding: var(--s-3);
   background: var(--bg);
   cursor: pointer;
 }
+.option + .option {
+  border-top: 1px solid var(--line);
+}
 .option:hover {
-  border-color: var(--line-strong);
+  background: var(--bg-sunk);
 }
 .option.on {
-  border-color: var(--line-strong);
-  box-shadow: inset 4px 0 0 var(--signal);
+  background: var(--bg-sunk);
 }
 .option .check {
-  margin-top: 0.15rem;
+  margin-top: 0.2rem;
 }
 .option-body {
   display: grid;
-  gap: 0.2rem;
+  gap: 0.125rem;
 }
 .option-title {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--s-2);
-  font-weight: 700;
+  font-weight: 600;
+}
+.option-title :deep(svg) {
+  display: none;
 }
 .option-desc {
-  font-size: var(--fs-sm);
+  font-size: var(--fs-xs);
   color: var(--fg-muted);
 }

@@ -22,17 +22,14 @@ const { tab, current, status, zeroSignupAddress } = provideFormSettings(props, (
       <span class="notice-icon"><Icon name="clock" :size="20" /></span>
       <p class="notice-title">Waiting for confirmation</p>
       <div class="notice-body">
-        <p>
-          We sent a confirmation link to <b>{{ zeroSignupAddress ?? 'the address' }}</b>. Until it’s clicked, submissions are stored but not delivered. Check the spam folder if it’s
-          not there.
-        </p>
+        <p>We sent a link to <b>{{ zeroSignupAddress ?? 'the address' }}</b>. Until it’s clicked, submissions are saved but not delivered.</p>
       </div>
     </div>
     <div v-else-if="status === 'disabled'" class="notice notice-signal fs-banner">
       <span class="notice-icon"><Icon name="lock" :size="20" /></span>
       <p class="notice-title">This form has been switched off</p>
       <div class="notice-body">
-        <p>It isn’t taking submissions{{ current.flag ? ` (${current.flag})` : '' }}. You can still change settings, export and delete it.</p>
+        <p>It isn’t taking submissions{{ current.flag ? ` (${current.flag})` : '' }}.</p>
       </div>
     </div>
 
@@ -61,14 +58,6 @@ const { tab, current, status, zeroSignupAddress } = provideFormSettings(props, (
 }
 .fs-layout {
   display: grid;
-  grid-template-columns: 13rem minmax(0, 1fr);
-  gap: clamp(1.25rem, 3vw, 2.5rem);
-  align-items: start;
-}
-@media (max-width: 860px) {
-  .fs-layout {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--s-4);
-  }
+  gap: var(--s-5);
 }
 </style>

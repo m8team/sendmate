@@ -1,26 +1,26 @@
 /*
- * The settings tab panel: a raised card with a head and label/control rows.
+ * A settings tab panel: a short head, then label/control rows divided by hairlines.
  * Loaded as `<style scoped src>` by each panel, so these rules stay scoped to it.
+ * Left column: what it is plus one line of help. Right column: the control. Same widths on every tab.
  */
 .panel {
   min-width: 0;
-  border: var(--bw-strong) solid var(--line-strong);
-  background: var(--bg-raised);
 }
 .panel:focus-visible {
-  outline-offset: 3px;
+  outline-offset: 4px;
 }
-.panel-danger {
-  border-color: var(--signal);
-}
-.panel-head {
-  padding: var(--s-5) var(--s-5) var(--s-4);
-  border-bottom: 2px dashed var(--line);
+/* The tab already names the panel, so its heading is for screen readers only. */
+.panel-head .h3 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 .panel-head p {
-  margin-top: var(--s-2);
-  font-size: var(--fs-sm);
-  max-width: 62ch;
+  padding-bottom: var(--s-4);
+  max-width: 60ch;
 }
 .panel-danger .panel-head .h3 {
   color: var(--signal-text);
@@ -28,41 +28,35 @@
 
 .row {
   display: grid;
-  grid-template-columns: minmax(12rem, 5fr) minmax(0, 7fr);
-  gap: var(--s-3) var(--s-6);
-  padding: var(--s-5);
-  border-bottom: 1px solid var(--line);
+  grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+  gap: var(--s-2) var(--s-6);
+  padding: var(--s-5) 0;
+  border-top: 1px solid var(--line);
   margin: 0;
   min-width: 0;
-}
-.row:last-child {
-  border-bottom: 0;
 }
 .row-title {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--s-2);
-  font-family: var(--font-display);
-  font-stretch: var(--stretch-semi);
-  font-weight: 750;
-  font-size: 1.1rem;
-  line-height: 1.2;
+  font-weight: 600;
+  line-height: 1.4;
 }
 .row-desc {
-  margin-top: 0.35rem;
-  font-size: var(--fs-sm);
+  margin-top: var(--s-1);
+  font-size: var(--fs-xs);
   color: var(--fg-muted);
-  max-width: 44ch;
 }
 .row-control {
   min-width: 0;
+  max-width: 34rem;
   display: grid;
   gap: var(--s-2);
   align-content: start;
 }
 .row-control-end {
-  justify-content: end;
+  justify-content: start;
   align-content: center;
 }
 .row-control.cluster {
@@ -75,23 +69,11 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: var(--s-2);
-  font-size: var(--fs-sm);
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 960px) {
   .row {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .row-control-end {
-    justify-content: start;
-  }
-  .row-desc {
-    max-width: 60ch;
-  }
-}
-@media (max-width: 560px) {
-  .panel-head,
-  .row {
-    padding: var(--s-4);
+    gap: var(--s-3);
   }
 }

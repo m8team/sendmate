@@ -38,6 +38,6 @@ export const statusLocked = (status: FormStatus) => status === 'pending_confirma
 export function pauseDescription(status: FormStatus) {
   if (statusLocked(status)) return 'This form’s status can’t be changed from here right now.';
   return status === 'paused'
-    ? 'Right now new submissions are turned away with a “paused” error and nothing is stored. Resume to open it back up.'
-    : 'Stop accepting submissions without deleting anything. Visitors get a polite “paused” error. Undo any time.';
+    ? 'New submissions are rejected until you resume it.'
+    : 'Stop accepting submissions. Nothing is deleted.';
 }

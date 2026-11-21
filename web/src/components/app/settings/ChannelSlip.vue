@@ -39,7 +39,7 @@ const { clock, sendTest, startRename, stopRename, saveRename, toggleChannel, rem
           </button>
         </h3>
         <p class="slip-meta">
-          <span class="label">{{ channelMeta[channel.type].name }}</span>
+          <span class="slip-type">{{ channelMeta[channel.type].name }}</span>
           <span v-if="channel.type === 'email' && channel.recipientVerified === false" class="tag tag-warn">Not verified yet</span>
           <span v-else-if="channel.type === 'email'" class="tag tag-ok">Verified</span>
         </p>
@@ -51,10 +51,7 @@ const { clock, sendTest, startRename, stopRename, saveRename, toggleChannel, rem
     </div>
 
     <div v-if="channel.type === 'email' && channel.recipientVerified === false" class="secret">
-      <p class="secret-help">
-        Nothing is emailed here until the address clicks the verification link we sent. You can resend it from
-        <a class="link-signal" href="/app/account/email">Email &amp; BYOK</a>.
-      </p>
+      <p class="secret-help">Waiting for this address to click the verification link. <a href="/app/account/email">Resend it</a></p>
     </div>
 
     <WebhookSecret v-if="channel.type === 'webhook'" :channel="channel" />
@@ -83,14 +80,12 @@ const { clock, sendTest, startRename, stopRename, saveRename, toggleChannel, rem
 <style scoped>
 .slip {
   min-width: 0;
-  border: 1.5px solid var(--line-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
   background: var(--bg);
-  border-left-width: 6px;
 }
-.slip.off {
-  border-style: dashed;
-  border-left-style: solid;
-  border-left-color: var(--line);
+.slip.off .slip-label {
+  color: var(--fg-muted);
 }
 .slip-main {
   display: flex;
@@ -102,25 +97,22 @@ const { clock, sendTest, startRename, stopRename, saveRename, toggleChannel, rem
   flex: none;
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1.5px solid var(--line-strong);
-  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--r-2);
+  background: var(--bg-sunk);
 }
 .slip.off .slip-icon {
   color: var(--fg-muted);
-  border-color: var(--line);
 }
 .slip-id {
   flex: 1;
   min-width: 0;
 }
 .slip-label {
-  font-family: var(--font-display);
-  font-stretch: var(--stretch-semi);
-  font-weight: 800;
-  font-size: 1.15rem;
-  line-height: 1.15;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.4;
 }
 .slip-meta {
   display: flex;
@@ -129,11 +121,12 @@ const { clock, sendTest, startRename, stopRename, saveRename, toggleChannel, rem
   min-width: 0;
   margin-top: 0.15rem;
 }
-.slip-meta .label,
+.slip-meta .slip-type,
 .slip-meta .tag {
   flex: none;
 }
-.slip-meta .label {
+.slip-type {
+  font-size: var(--fs-xs);
   color: var(--fg-muted);
 }
 .slip-switch {
@@ -145,9 +138,8 @@ const { clock, sendTest, startRename, stopRename, saveRename, toggleChannel, rem
 }
 .slip-switch-text {
   width: 1.8rem;
-  font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  font-weight: 600;
+  color: var(--fg-muted);
 }
 .slip-foot {
   display: flex;
@@ -155,8 +147,8 @@ const { clock, sendTest, startRename, stopRename, saveRename, toggleChannel, rem
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--s-2) var(--s-4);
-  padding: var(--s-2) var(--s-4) var(--s-3);
-  border-top: 1px dashed var(--line);
+  padding: var(--s-2) var(--s-4);
+  border-top: 1px solid var(--line);
 }
 .slip-actions,
 .slip-confirm {
@@ -181,7 +173,7 @@ const { clock, sendTest, startRename, stopRename, saveRename, toggleChannel, rem
   margin: 0 var(--s-4) var(--s-3);
   padding: var(--s-3);
   background: var(--bg-sunk);
-  border: 1px solid var(--line);
+  border-radius: var(--r-2);
 }
 .secret-help {
   font-size: var(--fs-xs);
@@ -209,23 +201,19 @@ const { clock, sendTest, startRename, stopRename, saveRename, toggleChannel, rem
   gap: 0.25rem;
   margin-left: var(--s-2);
   padding: 0.1rem 0.35rem;
-  border: 1px solid transparent;
-  border-radius: var(--r-1);
+  border: 0;
+  border-radius: var(--r-2);
   background: transparent;
   color: var(--fg-muted);
-  font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   font-weight: 500;
-  font-stretch: normal;
-  letter-spacing: var(--track-label);
-  text-transform: uppercase;
   vertical-align: middle;
   cursor: pointer;
 }
 .slip-rename-btn:hover,
 .slip-rename-btn:focus-visible {
   color: var(--fg);
-  border-color: var(--line-strong);
+  background: var(--bg-sunk);
 }
 
 @media (max-width: 560px) {

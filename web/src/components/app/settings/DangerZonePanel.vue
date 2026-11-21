@@ -78,7 +78,6 @@ async function deleteForm() {
   <section id="fs-panel-danger" role="tabpanel" aria-labelledby="fs-tab-danger" tabindex="0" class="panel panel-danger">
     <header class="panel-head">
       <h2 class="h3">Danger zone</h2>
-      <p class="muted">The big buttons. Take a breath first.</p>
     </header>
 
     <div class="row">
@@ -103,9 +102,7 @@ async function deleteForm() {
     <div class="row">
       <div class="row-text">
         <p class="row-title">Export everything</p>
-        <p class="row-desc">
-          {{ totalLabel ? `All ${totalLabel}, spam and held included.` : 'Every submission, spam and held included.' }} Your data, no strings.
-        </p>
+        <p class="row-desc">{{ totalLabel ? `All ${totalLabel}, including spam and held.` : 'Every submission, including spam and held.' }}</p>
       </div>
       <div class="row-control row-control-end cluster">
         <button type="button" class="btn btn-outline" :aria-disabled="exporting ? 'true' : undefined" @click="exportAs('csv')">
@@ -121,22 +118,20 @@ async function deleteForm() {
       <div class="row-text">
         <p class="row-title">Delete this form</p>
         <p class="row-desc">
-          Deletes the form, {{ totalLabel ? `its ${totalLabel}` : 'all its submissions' }} and {{ chans.length }} {{ chans.length === 1 ? 'channel' : 'channels' }}. The endpoint stops working straight away. There’s no
-          undo, so export first if you might want it.
+          Deletes the form, {{ totalLabel ? `its ${totalLabel}` : 'all its submissions' }} and {{ chans.length }} {{ chans.length === 1 ? 'channel' : 'channels' }}. This can’t be undone.
         </p>
       </div>
       <div class="row-control">
         <div v-if="deleted" class="deleted" role="status">
-          <span class="stamp stamp-lg deleted-stamp" style="--stamp-rotate: -6deg">Return to sender</span>
           <p>Deleted. Taking you back to your forms…</p>
         </div>
         <form v-else class="field" novalidate @submit.prevent="deleteForm">
           <label class="field-label del-label" for="fs-confirm">Type <span class="del-name">{{ savedName }}</span> to confirm</label>
           <input id="fs-confirm" v-model="confirmName" class="input" autocomplete="off" spellcheck="false" aria-describedby="fs-confirm-hint" />
-          <p id="fs-confirm-hint" class="field-hint">{{ canDelete ? 'Name matches. Last chance.' : 'It has to match exactly, capitals and all.' }}</p>
+          <p id="fs-confirm-hint" class="field-hint">{{ canDelete ? 'Name matches.' : 'Must match exactly.' }}</p>
           <p v-if="deleteError" class="field-error" role="alert"><Icon name="alert" :size="14" /> {{ deleteError }}</p>
           <button type="submit" class="btn btn-danger del-btn" :disabled="!canDelete" :aria-disabled="deleting ? 'true' : undefined">
-            <Icon name="trash" /> {{ deleting ? 'Deleting…' : 'Delete form forever' }}
+            <Icon name="trash" /> {{ deleting ? 'Deleting…' : 'Delete form' }}
           </button>
         </form>
       </div>
@@ -146,47 +141,23 @@ async function deleteForm() {
 
 <style scoped src="./settings-panel.css"></style>
 <style scoped>
-.row-delete {
-  background: var(--signal-wash);
-}
 .del-label {
-  text-transform: none;
-  letter-spacing: 0;
-  font-family: var(--font-text);
-  font-size: var(--fs-sm);
+  font-weight: 500;
 }
 .del-name {
   font-family: var(--font-mono);
+  font-size: var(--fs-xs);
   padding: 0.05em 0.35em;
-  background: var(--bg);
-  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  background: var(--bg-sunk);
 }
 .del-btn {
   justify-self: start;
   margin-top: var(--s-2);
 }
 .deleted {
-  display: grid;
-  gap: var(--s-4);
-  justify-items: start;
-  padding: var(--s-3) 0;
-}
-.deleted-stamp {
-  --stamp-color: var(--signal-mark);
-  animation: fs-thunk 420ms var(--ease-thunk) both;
-}
-@keyframes fs-thunk {
-  0% {
-    transform: scale(2.3) rotate(calc(var(--stamp-rotate) - 12deg));
-    opacity: 0;
-  }
-  55% {
-    transform: scale(0.92) rotate(var(--stamp-rotate));
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) rotate(var(--stamp-rotate));
-  }
+  padding: var(--s-2) 0;
+  color: var(--fg-muted);
 }
 @media (max-width: 560px) {
   .del-btn {

@@ -29,10 +29,7 @@ function removeDomain(d: string) {
   <div class="row">
     <div class="row-text">
       <p id="fs-domains-label" class="row-title">Allowed domains</p>
-      <p class="row-desc">
-        Only forms on these sites can post here. <code>example.com</code> covers its subdomains too, <code>www</code> included. Your local dev server (<code>localhost</code>) always
-        works, so you can test before deploying. Leave it empty and any site can use your endpoint.
-      </p>
+      <p class="row-desc">Only these sites (and their subdomains) can post here. <code>localhost</code> always works.</p>
     </div>
     <div class="row-control">
       <ul v-if="draft.allowedOrigins.length" class="chips" role="list" aria-labelledby="fs-domains-label">
@@ -43,7 +40,7 @@ function removeDomain(d: string) {
       </ul>
       <p v-else class="notice notice-warn chips-empty">
         <span class="notice-icon"><Icon name="alert" :size="18" /></span>
-        <span class="notice-body">No domains yet, so any website can post to this form. Fine for testing, less fine for real life.</span>
+        <span class="notice-body">Any website can post to this form until you add a domain.</span>
       </p>
       <form class="addrow" novalidate @submit.prevent="addDomain">
         <label class="sr-only" for="fs-domain">Add a domain</label>
@@ -57,7 +54,7 @@ function removeDomain(d: string) {
           :aria-invalid="errors.domain ? 'true' : undefined"
           :aria-describedby="errors.domain ? 'fs-domain-err' : undefined"
         />
-        <button type="submit" class="btn btn-outline"><Icon name="plus" /> Add</button>
+        <button type="submit" class="btn btn-outline">Add</button>
       </form>
       <p v-if="errors.domain" id="fs-domain-err" class="field-error"><Icon name="alert" :size="14" /> {{ errors.domain }}</p>
     </div>
@@ -75,25 +72,25 @@ function removeDomain(d: string) {
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  padding: 0.2rem 0.2rem 0.2rem 0.6rem;
-  border: 1.5px solid var(--line-strong);
-  border-radius: var(--r-1);
-  background: var(--bg);
-  font-size: var(--fs-sm);
+  padding: 0.125rem 0.125rem 0.125rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  background: var(--bg-sunk);
+  font-size: var(--fs-xs);
 }
 .chip-x {
   display: grid;
   place-items: center;
-  width: 1.7rem;
-  height: 1.7rem;
+  width: 1.5rem;
+  height: 1.5rem;
   border: 0;
-  border-radius: var(--r-1);
+  border-radius: var(--r-2);
   background: transparent;
   color: var(--fg-muted);
 }
 .chip-x:hover {
-  background: var(--signal);
-  color: var(--on-signal);
+  background: var(--signal-wash);
+  color: var(--signal-text);
 }
 .chips-empty {
   grid-template-columns: auto 1fr;

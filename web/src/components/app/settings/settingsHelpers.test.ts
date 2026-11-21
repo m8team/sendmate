@@ -83,8 +83,8 @@ describe('form status', () => {
   });
 
   it('describes what pausing does', () => {
-    expect(pauseDescription('active')).toMatch(/^Stop accepting submissions/);
-    expect(pauseDescription('paused')).toMatch(/^Right now new submissions are turned away/);
+    expect(pauseDescription('active')).toBe('Stop accepting submissions. Nothing is deleted.');
+    expect(pauseDescription('paused')).toBe('New submissions are rejected until you resume it.');
     expect(pauseDescription('disabled')).toMatch(/can’t be changed from here/);
   });
 });
