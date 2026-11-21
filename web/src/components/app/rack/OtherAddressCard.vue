@@ -46,18 +46,14 @@ async function add() {
 
 <template>
   <section class="oa" aria-labelledby="oa-title">
-    <p class="label oa-kicker">Expecting a form here?</p>
-    <h2 id="oa-title" class="oa-title">It might be sending to a different address.</h2>
-
-    <p v-if="sentTo" class="oa-sent" role="status">
-      <Icon name="mail" :size="18" /> We’ve emailed <strong class="mono">{{ sentTo }}</strong> a link. Click it, and any forms that send to that address
-      move into this dashboard, along with their submissions.
+    <h2 id="oa-title" class="oa-title">Expecting a form here?</h2>
+    <p v-if="sentTo" class="oa-body" role="status">
+      We emailed <strong>{{ sentTo }}</strong> a link. Click it and any forms sending to that address move here.
     </p>
-
     <template v-else>
       <p class="oa-body">
-        A form made by putting an address in its URL, like <code>/f/hello@yourbusiness.com</code>, belongs to that address. You’re signed in as
-        <strong>{{ signedInAs }}</strong>. If your form uses another address, add it here and click the link we send it.
+        Forms made with an address in the URL (like <code>/f/hello@yourbusiness.com</code>) belong to that address. You’re signed in as <strong>{{ signedInAs }}</strong>. Add
+        the other address to bring its forms here.
       </p>
       <form class="oa-form" novalidate @submit.prevent="add">
         <label class="sr-only" for="oa-email">The address your form sends to</label>
@@ -71,9 +67,7 @@ async function add() {
           :aria-invalid="error ? 'true' : undefined"
           :aria-describedby="error ? 'oa-err' : undefined"
         />
-        <button type="submit" class="btn btn-signal" :aria-disabled="busy ? 'true' : undefined">
-          <Icon :name="busy ? 'clock' : 'mail'" :size="16" /> {{ busy ? 'Sending…' : 'Send the link' }}
-        </button>
+        <button type="submit" class="btn btn-outline btn-sm" :aria-disabled="busy ? 'true' : undefined">{{ busy ? 'Sending…' : 'Send link' }}</button>
       </form>
       <p v-if="error" id="oa-err" class="field-error" role="alert"><Icon name="alert" :size="14" /> {{ error }}</p>
     </template>
@@ -83,47 +77,28 @@ async function add() {
 <style scoped>
 .oa {
   display: grid;
-  gap: var(--s-3);
-  margin-bottom: var(--s-6);
-  padding: var(--s-4) var(--s-5);
-  border: var(--bw-strong) solid var(--line-strong);
-  border-left: 6px solid var(--accent);
-  background: var(--bg-raised);
-}
-.oa-kicker {
-  color: var(--fg-muted);
+  gap: var(--s-2);
+  max-width: 40rem;
+  margin-top: var(--s-6);
 }
 .oa-title {
-  font-family: var(--font-display);
-  font-stretch: var(--stretch-semi);
-  font-weight: 800;
-  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
-  line-height: 1.15;
+  font-size: var(--fs-sm);
+  font-weight: 600;
 }
-.oa-body,
-.oa-sent {
-  max-width: 62ch;
+.oa-body {
   color: var(--fg-muted);
-  line-height: 1.55;
 }
-.oa-body code {
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-.oa-sent {
-  display: flex;
-  gap: var(--s-2);
-  align-items: start;
+.oa-body strong {
   color: var(--fg);
+  font-weight: 600;
 }
 .oa-form {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-3);
-  max-width: 36rem;
+  gap: var(--s-2);
+  margin-top: var(--s-1);
 }
 .oa-form .input {
-  flex: 1 1 16rem;
+  flex: 1;
   min-width: 0;
 }
 </style>
