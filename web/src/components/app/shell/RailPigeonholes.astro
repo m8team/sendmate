@@ -33,13 +33,21 @@
       <span class="hole-sub mono" hidden></span>
       <span class="hole-count" hidden></span>
     </a>
+    <ul role="list" class="hole-pages" hidden>
+      <li><a class="hole-page" href="/app" data-hole-inbox>Inbox</a></li>
+      <li><a class="hole-page" href="/app" data-hole-settings>Settings</a></li>
+    </ul>
   </li>
 </template>
 
 <style>
+  /* Nested under "Forms", with a guide line, so the list reads as its children. */
   .holes {
     display: grid;
     gap: 1px;
+    margin: 1px 0 0 1.05rem;
+    padding-left: 0.4rem;
+    border-left: 1px solid var(--line);
   }
   .hole {
     display: flex;
@@ -57,7 +65,35 @@
     background: var(--bg);
     color: var(--fg);
   }
+  .hole[aria-current='page'],
+  .hole.is-open {
+    color: var(--fg);
+    font-weight: 600;
+  }
   .hole[aria-current='page'] {
+    background: var(--bg);
+  }
+  .hole-pages {
+    display: grid;
+    gap: 1px;
+    margin: 1px 0 var(--s-1) 0.6rem;
+  }
+  .hole-pages[hidden] {
+    display: none;
+  }
+  .hole-page {
+    display: block;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--r-2);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+    text-decoration: none;
+  }
+  .hole-page:hover {
+    background: var(--bg);
+    color: var(--fg);
+  }
+  .hole-page[aria-current='page'] {
     background: var(--bg);
     color: var(--fg);
     font-weight: 600;

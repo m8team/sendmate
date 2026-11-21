@@ -85,7 +85,7 @@ export const nav = {
   ],
   app: [
     { href: '/app', label: 'Forms', key: 'forms' },
-    { href: '/app/account/email', label: 'Email sending', key: 'email' },
+    { href: '/app/account/email', label: 'Settings', key: 'email' },
   ],
 } as const;
 

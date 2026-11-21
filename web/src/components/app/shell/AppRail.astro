@@ -1,6 +1,7 @@
 ---
 /**
- * The dashboard rail: sections, one link per form, and the account at the bottom.
+ * The dashboard rail: Forms with each form nested under it (the open form shows its Inbox and
+ * Settings), account Settings, Admin, and the account at the bottom.
  * A sticky sidebar on wide screens, a drawer opened from the topbar's menu button below 960px.
  * Everything user-specific is filled in by the scripts below; the static build ships skeletons.
  */
@@ -10,7 +11,7 @@ import ThemeToggle from '../../ui/ThemeToggle.astro';
 import RailPigeonholes from './RailPigeonholes.astro';
 
 interface Props {
-  /** 'forms' | 'email' | 'admin' | 'form' (the form is read from the URL) */
+  /** 'forms' | 'new' | 'email' | 'admin' | 'form' (the form is read from the URL) */
   active: string;
 }
 const { active } = Astro.props;
@@ -25,21 +26,20 @@ const { active } = Astro.props;
   </div>
 
   <nav class="rail-nav" aria-label="Dashboard sections">
-    <a class="rail-link" href="/app" aria-current={active === 'forms' ? 'page' : undefined}>
-      <Icon name="grid" size={16} /> Forms
-    </a>
-    <a class="rail-link" href="/app/account/email" aria-current={active === 'email' ? 'page' : undefined}>
-      <Icon name="mail" size={16} /> Email sending
+    <div class="rail-group">
+      <a class="rail-link" href="/app" aria-current={active === 'forms' ? 'page' : undefined}>
+        <Icon name="grid" size={16} /> Forms
+      </a>
+      <a class="rail-add" href="/app/onboarding" aria-label="New form" title="New form" aria-current={active === 'new' ? 'page' : undefined}><Icon name="plus" size={14} /></a>
+    </div>
+    <RailPigeonholes />
+
+    <a class="rail-link rail-gap" href="/app/account/email" aria-current={active === 'email' ? 'page' : undefined}>
+      <Icon name="settings" size={16} /> Settings
     </a>
     <a class="rail-link" href="/app/admin" aria-current={active === 'admin' ? 'page' : undefined} data-admin-link hidden>
       <Icon name="shield" size={16} /> Admin
     </a>
-
-    <div class="rail-heading">
-      <p class="label">Your forms</p>
-      <a class="rail-add" href="/app/onboarding" aria-label="New form" title="New form"><Icon name="plus" size={14} /></a>
-    </div>
-    <RailPigeonholes />
   </nav>
 
   <div class="rail-bottom">
@@ -108,14 +108,18 @@ const { active } = Astro.props;
     color: var(--fg);
     font-weight: 600;
   }
-  .rail-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: var(--s-5) 0.6rem var(--s-1);
-    color: var(--fg-muted);
+  /* Forms and its + share a row; the + sits over the right end of the link. */
+  .rail-group {
+    position: relative;
+  }
+  .rail-group .rail-link {
+    padding-right: 2.25rem;
   }
   .rail-add {
+    position: absolute;
+    top: 50%;
+    right: 0.25rem;
+    transform: translateY(-50%);
     display: inline-grid;
     place-items: center;
     width: 1.5rem;
@@ -123,9 +127,13 @@ const { active } = Astro.props;
     border-radius: var(--r-2);
     color: var(--fg-muted);
   }
-  .rail-add:hover {
-    background: var(--bg);
+  .rail-add:hover,
+  .rail-add[aria-current='page'] {
+    background: var(--bg-sunk);
     color: var(--fg);
+  }
+  .rail-gap {
+    margin-top: var(--s-2);
   }
   .rail-signout {
     width: 100%;

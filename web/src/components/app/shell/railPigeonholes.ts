@@ -23,6 +23,18 @@ export function mountPigeonholes() {
     el.setAttribute('aria-label', badge.label);
   }
 
+  /** The form you're in shows its Inbox and Settings underneath, with the current one marked. */
+  function openForm(li: HTMLLIElement, a: HTMLAnchorElement, id: string) {
+    a.classList.add('is-open');
+    const pages = li.querySelector<HTMLElement>('.hole-pages')!;
+    const inbox = pages.querySelector<HTMLAnchorElement>('[data-hole-inbox]')!;
+    const settings = pages.querySelector<HTMLAnchorElement>('[data-hole-settings]')!;
+    inbox.href = `/app/forms/${id}`;
+    settings.href = `/app/forms/${id}/settings`;
+    (location.pathname.replace(/\/$/, '').endsWith('/settings') ? settings : inbox).setAttribute('aria-current', 'page');
+    pages.hidden = false;
+  }
+
   function render(forms: FormDto[]) {
     holes.querySelectorAll('[data-hole-skel], [data-hole]').forEach((el) => el.remove());
     holes.querySelector<HTMLElement>('[data-holes-error]')!.hidden = true;
@@ -37,7 +49,7 @@ export function mountPigeonholes() {
       li.dataset.hole = f.id;
       const a = li.querySelector<HTMLAnchorElement>('a')!;
       a.href = `/app/forms/${f.id}`;
-      if (f.id === activeForm) a.setAttribute('aria-current', 'page');
+      if (f.id === activeForm) openForm(li, a, f.id);
       li.querySelector('.hole-dot')!.classList.add(`s-${f.status}`);
       li.querySelector('.hole-name')!.textContent = f.name;
       if ((seen.get(f.name) ?? 0) > 1) {
