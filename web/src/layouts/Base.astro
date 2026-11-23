@@ -52,6 +52,7 @@ const entityLd = {
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
+    {site.bingSiteVerification && <meta name="msvalidate.01" content={site.bingSiteVerification} />}
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />

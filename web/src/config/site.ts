@@ -25,6 +25,11 @@ export const site = {
    * Empty turns analytics off, which is the right default for self-hosted copies.
    */
   cfAnalyticsToken: '',
+  /**
+   * Bing Webmaster Tools ownership check for sendm8.com (public: it ships in every page's <head>).
+   * Bing re-checks it, so removing it unverifies the site. Empty it in a self-hosted copy.
+   */
+  bingSiteVerification: '2136517A12147D80BD40B1B46A038677',
 } as const;
 
 const MB = 1024 * 1024;
