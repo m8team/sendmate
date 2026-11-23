@@ -1,0 +1,408 @@
+---
+/**
+ * /guides/best-formspree-alternatives: a plain comparison of free form backends, sendm8 included and
+ * labelled as ours. Facts live in config/alternatives.ts with a source for each service.
+ */
+import Marketing from '../../layouts/Marketing.astro';
+import { site } from '../../config/site';
+import {
+  alternativesCheckedOnLabel,
+  hostedAlternatives,
+  selfHosted,
+  sendm8Alternative,
+  type Alternative,
+} from '../../config/alternatives';
+
+const all: Alternative[] = [...hostedAlternatives.slice(0, 2), sendm8Alternative, ...hostedAlternatives.slice(2)];
+const url = `${site.url}/guides/best-formspree-alternatives/`;
+const anchor = (name: string) => name.toLowerCase().replace(/\(.*?\)/g, '').trim().replace(/[^a-z0-9]+/g, '-');
+
+const picks = [
+  { need: 'A form working in a minute, no account', pick: 'FormSubmit or sendm8', href: '#formsubmit' },
+  { need: 'A well-known name and 250 a month by email', pick: 'Web3Forms', href: '#web3forms' },
+  { need: 'Your site is on Netlify', pick: 'Netlify Forms', href: '#netlify-forms' },
+  { need: 'File uploads without paying', pick: 'sendm8, Forminit, Basin or FormSubmit', href: '#sendm8' },
+  { need: 'Webhooks without paying', pick: 'sendm8, FormSubmit or Formspark', href: '#formspark' },
+  { need: 'Open source you can self-host', pick: 'sendm8, OSForms or Formgrid', href: '#self-host' },
+  { need: 'A form builder instead of HTML', pick: 'Tally', href: '#tally' },
+];
+
+const faq = [
+  {
+    q: 'What is the best free alternative to Formspree?',
+    a: 'It depends on what you need. Web3Forms is the usual pick for email-only contact forms, with 250 submissions a month. FormSubmit and sendm8 need no account at all. Netlify Forms is the obvious choice for a site already on Netlify, and sendm8, OSForms and Formgrid are open source if you want to host it yourself.',
+  },
+  {
+    q: 'How many submissions does Formspree give you for free?',
+    a: 'Formspree’s free plan allows 50 submissions a month with no file uploads, and webhooks start on its Professional plan. Its cheapest paid plan, Personal, is $15 a month for 200 submissions.',
+  },
+  {
+    q: 'Which form backends work without an account?',
+    a: 'FormSubmit and sendm8 both let you put your email address in the form action and confirm it once by email. Web3Forms needs no signup either: you enter your email and it sends you an access key to put in the form.',
+  },
+  {
+    q: 'Is there an open-source Formspree alternative?',
+    a: 'Yes. sendm8 is open source under AGPL-3.0 and runs on Cloudflare or in Docker. OSForms and Formgrid are MIT-licensed projects you can run with Docker; FormTo is MIT too but hasn’t been updated since May 2026.',
+  },
+  {
+    q: 'Do I need to change my HTML to switch from Formspree?',
+    a: 'Usually only the form’s action URL. Services that copy Formspree’s field names, such as _replyto, _subject, _next and _gotcha, need no other change, and sendm8 is one of them. Others use their own names for the same features, so check their docs.',
+  },
+];
+
+const faqLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+};
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'sendm8', item: site.url },
+    { '@type': 'ListItem', position: 2, name: 'Guides', item: `${site.url}/guides/` },
+    { '@type': 'ListItem', position: 3, name: 'The best Formspree alternatives', item: url },
+  ],
+};
+---
+
+<Marketing
+  title="The best Formspree alternatives in 2026, compared"
+  description="Free Formspree alternatives compared from their own pricing pages: Web3Forms, FormSubmit, Netlify Forms, Basin, Forminit, Tally, sendm8 and open-source options."
+>
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} />
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(faqLd)} />
+
+  <article class="wrap ba">
+    <header>
+      <p class="crumb label muted">
+        <a href="/guides/">Guides</a> <span aria-hidden="true">/</span> Formspree alternatives
+      </p>
+      <h1 class="ba-h1">The best Formspree alternatives in 2026.</h1>
+      <p class="lede">
+        Formspree’s free plan gives you 50 submissions a month, no file uploads and no webhooks. If that’s not enough, here’s what the
+        other free form backends actually include, taken from each one’s own pricing page. sendm8 is in the list too, because we make
+        it, and it’s labelled as ours.
+      </p>
+      <p class="label muted ba-checked">Checked {alternativesCheckedOnLabel}. Every service links to its sources.</p>
+    </header>
+
+    <section aria-labelledby="ba-picks">
+      <h2 id="ba-picks" class="ba-h2">Quick picks</h2>
+      <ul class="ba-picks" role="list">
+        {
+          picks.map((p) => (
+            <li>
+              <span class="ba-need">{p.need}</span>
+              <a class="link-signal" href={p.href}>
+                {p.pick}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section aria-labelledby="ba-table">
+      <h2 id="ba-table" class="ba-h2">Free plans side by side</h2>
+      <div class="table-wrap ba-table-wrap" tabindex="0" role="region" aria-labelledby="ba-table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Service</th>
+              <th scope="col">Free submissions</th>
+              <th scope="col">Account needed</th>
+              <th scope="col">File uploads</th>
+              <th scope="col">Webhooks</th>
+              <th scope="col">Cheapest paid plan</th>
+              <th scope="col">Open source</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="ba-formspree">
+              <th scope="row">Formspree</th>
+              <td>50 a month</td>
+              <td>Yes</td>
+              <td>No (paid)</td>
+              <td>No (Professional, $30/mo)</td>
+              <td>Personal $15/mo</td>
+              <td>No</td>
+            </tr>
+            {
+              all.map((a) => (
+                <tr class:list={[{ 'ba-ours': a.ours }]}>
+                  <th scope="row">
+                    <a href={`#${anchor(a.name)}`}>{a.name}</a>
+                    {a.ours && <span class="label ba-tag">Ours</span>}
+                  </th>
+                  <td>{a.freeSubmissions}</td>
+                  <td>{a.account}</td>
+                  <td>{a.uploads}</td>
+                  <td>{a.webhooks}</td>
+                  <td>{a.paid}</td>
+                  <td>{a.openSource}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="label muted ba-note">
+        Formspree: <a href="https://formspree.io/plans" rel="noopener">its plans page</a>, {alternativesCheckedOnLabel}.
+      </p>
+    </section>
+
+    <section aria-labelledby="ba-each">
+      <h2 id="ba-each" class="ba-h2">Each one in a paragraph</h2>
+      <div class="ba-list">
+        {
+          all.map((a) => (
+            <section id={anchor(a.name)} class:list={['ba-item', { 'ba-item-ours': a.ours }]} aria-labelledby={`h-${anchor(a.name)}`}>
+              <h3 id={`h-${anchor(a.name)}`} class="ba-h3">
+                {a.name}
+                {a.ours && <span class="label ba-tag">Ours</span>}
+              </h3>
+              <p>{a.summary}</p>
+              <dl class="ba-dl">
+                <div>
+                  <dt class="label">Pick it if</dt>
+                  <dd>{a.pickIf}</dd>
+                </div>
+                <div>
+                  <dt class="label">Watch out for</dt>
+                  <dd>{a.watchOut}</dd>
+                </div>
+              </dl>
+              <p class="label muted ba-sources">
+                Sources:{' '}
+                {a.sources.map((s, i) => (
+                  <>
+                    {i > 0 && ', '}
+                    <a href={s.url} rel="noopener">
+                      {s.label}
+                    </a>
+                  </>
+                ))}
+                {a.vs && (
+                  <>
+                    {' · '}
+                    <a href={`/vs/${a.vs}/`}>sendm8 vs {a.name.replace(/ \(.*\)/, '')}</a>
+                  </>
+                )}
+              </p>
+            </section>
+          ))
+        }
+      </div>
+    </section>
+
+    <section id="self-host" aria-labelledby="ba-self">
+      <h2 id="ba-self" class="ba-h2">If you want to host it yourself</h2>
+      <p class="prose ba-p">
+        <a class="link-signal" href={site.repo}>sendm8</a> is open source ({site.license}) and deploys to your own Cloudflare account on the
+        free plan, or runs anywhere with Docker. These smaller projects are worth a look too. Check how recently each was updated before you
+        rely on it.
+      </p>
+      <div class="table-wrap ba-table-wrap" tabindex="0" role="region" aria-labelledby="ba-self">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Project</th>
+              <th scope="col">Licence</th>
+              <th scope="col">Stack</th>
+              <th scope="col">Last commit</th>
+              <th scope="col">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              selfHosted.map((p) => (
+                <tr>
+                  <th scope="row">
+                    <a href={p.repo} rel="noopener">
+                      {p.name}
+                    </a>
+                  </th>
+                  <td>{p.licence}</td>
+                  <td>{p.stack}</td>
+                  <td class="ba-nowrap">{p.lastCommit}</td>
+                  <td>{p.note}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="ba-faq">
+      <h2 id="ba-faq" class="ba-h2">Questions</h2>
+      <div class="ba-faq">
+        {
+          faq.map((f) => (
+            <details>
+              <summary>{f.q}</summary>
+              <p>{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </article>
+</Marketing>
+
+<style>
+  .ba {
+    padding-block: clamp(2.5rem, 6vw, 5rem);
+  }
+  .crumb {
+    display: flex;
+    gap: var(--s-2);
+    margin-bottom: var(--s-4);
+  }
+  .crumb a {
+    color: var(--fg-muted);
+  }
+  .crumb a:hover {
+    color: var(--fg);
+  }
+  .ba-h1 {
+    max-width: 18ch;
+    font-family: var(--font-display);
+    font-stretch: 64%;
+    font-weight: 900;
+    font-size: clamp(2.6rem, 6.4vw, 5rem);
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+  }
+  .lede {
+    margin-top: var(--s-5);
+    max-width: 62ch;
+    font-size: var(--fs-lg);
+    line-height: 1.5;
+    color: var(--fg-muted);
+  }
+  .ba-checked {
+    margin-top: var(--s-4);
+  }
+  .ba-h2 {
+    margin-top: clamp(2.5rem, 6vw, 4rem);
+    margin-bottom: var(--s-4);
+    font-family: var(--font-display);
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+    line-height: 1.05;
+  }
+  .ba-picks {
+    display: grid;
+    border-top: var(--bw-strong) solid var(--line-strong);
+  }
+  .ba-picks li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-4);
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .ba-need {
+    color: var(--fg-muted);
+  }
+  .ba-table-wrap {
+    border-top: var(--bw-strong) solid var(--line-strong);
+  }
+  .ba-table-wrap .table {
+    min-width: 860px;
+  }
+  /* The shared .table styles every th as a column label; row headers here are service names. */
+  .ba-table-wrap th[scope='row'] {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 700;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--fg);
+    padding: 0.8rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    white-space: nowrap;
+  }
+  .ba-table-wrap th[scope='row'] a {
+    color: inherit;
+  }
+  .ba-formspree {
+    color: var(--fg-muted);
+  }
+  .ba-ours {
+    background: var(--signal-wash);
+  }
+  .ba-tag {
+    display: inline-block;
+    margin-left: var(--s-2);
+    padding: 0.1rem 0.4rem;
+    border: 1px solid var(--line-strong);
+    vertical-align: middle;
+  }
+  .ba-note {
+    margin-top: var(--s-3);
+  }
+  .ba-nowrap {
+    white-space: nowrap;
+  }
+  .ba-list {
+    display: grid;
+    gap: var(--s-6);
+  }
+  .ba-item {
+    max-width: 68ch;
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--line);
+  }
+  .ba-item > * + * {
+    margin-top: var(--s-3);
+  }
+  .ba-item-ours {
+    border-top: var(--bw-strong) solid var(--line-strong);
+  }
+  .ba-h3 {
+    font-size: var(--fs-lg);
+    font-weight: 700;
+  }
+  .ba-dl {
+    display: grid;
+    gap: var(--s-3);
+  }
+  .ba-dl dt {
+    color: var(--fg-muted);
+    margin-bottom: 0.15rem;
+  }
+  .ba-sources a {
+    color: inherit;
+    text-decoration: underline;
+  }
+  .ba-p {
+    margin-bottom: var(--s-5);
+  }
+  .ba-faq {
+    max-width: 68ch;
+    border-top: var(--bw-strong) solid var(--line-strong);
+  }
+  .ba-faq details {
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .ba-faq summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .ba-faq details p {
+    margin-top: var(--s-3);
+    color: var(--fg-muted);
+  }
+  @media (max-width: 640px) {
+    .ba-picks li {
+      grid-template-columns: 1fr;
+      gap: var(--s-1);
+    }
+  }
+</style>
