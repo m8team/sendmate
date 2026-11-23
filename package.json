@@ -71,5 +71,8 @@
     "@esbuild-kit/core-utils": {
       "esbuild": ">=0.25.0"
     }
+  },
+  "devDependencies": {
+    "wrangler": "^4.166.0"
   }
 }
