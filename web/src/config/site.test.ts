@@ -1,5 +1,7 @@
-import { LIMITS } from '@sendm8/shared';
+import { LIMITS as DEFAULTS, limitsWithOverrides } from '@sendm8/shared';
 import { describe, expect, it } from 'vitest';
+import { wranglerLimitsJson } from '../../limits-json.mjs';
+import { LIMITS } from './limits';
 import { limits } from './site';
 
 // The marketing site once promised 100 emails a day and 10 MB files while the Worker enforced
@@ -26,5 +28,21 @@ describe('marketing limits match the Worker', () => {
     for (const key of ['fileUploadMb', 'submissionUploadMb', 'bodyKb'] as const) {
       expect(Number.isInteger(limits[key]), key).toBe(true);
     }
+  });
+});
+
+describe('deployment overrides', () => {
+  it("reach the site, the same way the Worker applies them", () => {
+    expect(LIMITS).toEqual(limitsWithOverrides(wranglerLimitsJson()));
+  });
+
+  it('only take known keys with finite numbers', () => {
+    const merged = limitsWithOverrides('{"instantEmailsPerUserPerDay": 50, "notALimit": 1, "maxFields": "lots", "systemEmailsPerDay": null}');
+    expect(merged.instantEmailsPerUserPerDay).toBe(50);
+    expect(merged).not.toHaveProperty('notALimit');
+    expect(merged.maxFields).toBe(DEFAULTS.maxFields);
+    expect(merged.systemEmailsPerDay).toBe(DEFAULTS.systemEmailsPerDay);
+    expect(limitsWithOverrides('')).toBe(DEFAULTS);
+    expect(() => limitsWithOverrides('{nope')).toThrow();
   });
 });

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { LIMITS, type Limits } from '@sendm8/shared';
+import type { Limits } from '@sendm8/shared';
+import { LIMITS } from '../../config/limits';
 import FormLoader from './FormLoader.vue';
 import FormSettings from './FormSettings.vue';
 import { limits } from '../../config/site';

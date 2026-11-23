@@ -5,6 +5,7 @@ import { defineConfig } from 'astro/config';
 import vue from '@astrojs/vue';
 import sitemap from '@astrojs/sitemap';
 import llmsDocs from './src/integrations/llms-docs.ts';
+import { wranglerLimitsJson } from './limits-json.mjs';
 
 import { createLastmod, gitDates, isIndexable } from './src/lib/sitemap.ts';
 import { changelog } from './src/config/changelog.ts';
@@ -47,4 +48,7 @@ export default defineConfig({
   // Fetch a page's HTML while the pointer is on its link, so the click itself is instant.
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
   devToolbar: { enabled: false },
+  // The Worker applies wrangler.jsonc's LIMITS_JSON over the code defaults, so the pages are built with the
+  // same overrides (src/config/limits.ts) and quote what this deployment enforces.
+  vite: { define: { __LIMITS_JSON__: JSON.stringify(wranglerLimitsJson()) } },
 });

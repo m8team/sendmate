@@ -1,4 +1,4 @@
-import { LIMITS } from '@sendm8/shared';
+import { LIMITS } from './limits';
 import { limits, fmt, site } from './site';
 
 /**

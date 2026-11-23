@@ -1,4 +1,4 @@
-import { LIMITS } from '@sendm8/shared';
+import { LIMITS } from './limits';
 
 /**
  * Every number, limit and quota on the site lives here.

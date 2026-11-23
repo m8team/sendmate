@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitest/config';
+import { wranglerLimitsJson } from './limits-json.mjs';
 
 export default defineConfig({
+  // Same as astro.config.mjs, so tests see the limits the site is built with.
+  define: { __LIMITS_JSON__: JSON.stringify(wranglerLimitsJson()) },
   test: {
     include: ['src/**/*.test.ts'],
     environment: 'node',

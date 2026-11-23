@@ -3,7 +3,7 @@
  * The facts here must match the cells and sources in compare.ts; this file is the prose around them.
  * Never state a competitor's number here that compare.ts can't back with a source.
  */
-import { LIMITS } from '@sendm8/shared';
+import { LIMITS } from './limits';
 import { fmt, limits, site } from './site';
 
 export interface VsFaq {
