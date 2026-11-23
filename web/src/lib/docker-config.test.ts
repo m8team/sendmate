@@ -17,6 +17,10 @@ describe('docker config', () => {
     expect(config.ratelimits.length).toBeGreaterThan(0);
   });
 
+  it("drops the repo's LIMITS_JSON, which is sized for sendm8.com's paid email plan", () => {
+    expect(config.vars?.LIMITS_JSON).toBeUndefined();
+  });
+
   it('uses absolute paths, since it is written outside the app directory', () => {
     expect(isAbsolute(config.main)).toBe(true);
     expect(isAbsolute(config.assets.directory)).toBe(true);

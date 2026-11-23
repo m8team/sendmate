@@ -26,6 +26,9 @@ export function dockerConfig(appDir) {
     .join('\n');
   const config = JSON.parse(source);
 
+  // The repo's LIMITS_JSON is sized for sendm8.com (a paid Resend plan). A container starts on the free-plan
+  // defaults instead, and takes its own LIMITS_JSON from the environment (server.mjs).
+  if (config.vars) delete config.vars.LIMITS_JSON;
   delete config.ai;
   delete config.observability;
   delete config.$schema;
