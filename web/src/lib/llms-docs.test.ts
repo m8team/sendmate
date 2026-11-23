@@ -99,6 +99,14 @@ describe('rendered files', () => {
     expect(txt).toContain('## Optional');
   });
 
+  it('leads with a form an assistant can paste as-is, before the key facts', () => {
+    const txt = renderLlmsTxt(site, sections);
+    const snippet = txt.indexOf('<form action="https://sendm8.com/f/you@example.com" method="POST">');
+    expect(snippet).toBeGreaterThan(0);
+    expect(snippet).toBeLessThan(txt.indexOf('Key facts:'));
+    expect(txt).toContain('name="_gotcha"');
+  });
+
   it('writes the full file with section headings nested one level down', () => {
     const full = renderLlmsFullTxt(site, sections);
     expect(full).toContain('## The basic form\n\nPoint any form');

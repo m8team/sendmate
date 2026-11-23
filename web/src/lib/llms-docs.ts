@@ -268,6 +268,17 @@ function preamble(site: SiteInfo): string {
 
 > ${site.description}
 
+Quickstart: a working contact form, with no account and no API key. Replace \`you@example.com\` with the address that should receive submissions. The first submission emails that address a one-time confirmation link; later ones are delivered straight away.
+
+\`\`\`html
+<form action="${site.endpointBase}you@example.com" method="POST">
+  <input type="email" name="email" placeholder="Your email" required>
+  <textarea name="message" placeholder="Your message" required></textarea>
+  <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+  <button type="submit">Send</button>
+</form>
+\`\`\`
+
 Key facts:
 
 - Endpoint: \`POST ${site.endpointBase}{formId}\`, or \`POST ${site.endpointBase}{email}\` with no account (the owner confirms once by email).
