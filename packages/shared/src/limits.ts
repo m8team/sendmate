@@ -115,3 +115,18 @@ export const LIMITS: Limits = {
   /** Error groups not seen for this many days are deleted. */
   errorRetentionDays: 30,
 };
+
+/**
+ * LIMITS with a deployment's LIMITS_JSON overrides applied. Only known keys with finite numbers count, so a
+ * typo can't loosen anything by accident. Throws on invalid JSON; callers decide whether to fall back.
+ */
+export function limitsWithOverrides(raw: string | null | undefined): Limits {
+  if (!raw?.trim()) return LIMITS;
+  const overrides = JSON.parse(raw) as Partial<Record<keyof Limits, unknown>>;
+  const merged: Limits = { ...LIMITS };
+  for (const key of Object.keys(LIMITS) as (keyof Limits)[]) {
+    const value = overrides[key];
+    if (typeof value === "number" && Number.isFinite(value)) merged[key] = value;
+  }
+  return merged;
+}
