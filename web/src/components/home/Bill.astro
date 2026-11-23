@@ -2,7 +2,8 @@
 import { LIMITS } from '@sendm8/shared';
 import { fmt } from '../../config/site';
 
-// Every cap quoted here is enforced in packages/shared/src/limits.ts, sized to the providers' free tiers.
+// What your own copy costs on the default limits (packages/shared/src/limits.ts), which are sized to the
+// providers' free tiers. Deliberately the bare defaults, not this deployment's LIMITS_JSON overrides.
 const GB = 1024 * 1024 * 1024;
 const MB = 1024 * 1024;
 const lines = [
@@ -17,18 +18,18 @@ const lines = [
 <section class="rb" id="free" aria-labelledby="rb-title">
   <div class="wrap rb-grid">
     <div class="rb-copy">
-      <h2 id="rb-title" class="rb-h">The hosting bill is $0.00.</h2>
+      <h2 id="rb-title" class="rb-h">Run your own for $0.00.</h2>
       <p>
-        That’s why it’s free. sendm8 is built to fit inside free plans. Every limit on this page sits below what Cloudflare and Resend give away, so busy days turn into a digest email, not an invoice. When usage gets close to a ceiling, the Worker sheds load and alerts us before it could cost anything.
+        sendm8 is built to fit inside free plans. Out of the box, every limit sits below what Cloudflare and Resend give away, so a busy day turns into a digest email, not an invoice. When usage gets close to a ceiling, the Worker sheds load and alerts you before it could cost anything.
       </p>
-      <p>That isn’t a promotion with an end date. It’s how the thing is built, and the limits are in the code for anyone to check.</p>
+      <p>It isn’t a trial with an end date. It’s how the thing is built. The limits are in the code for anyone to check, and one setting raises them if you move to a paid plan.</p>
       <a class="rb-link" href="https://github.com/m8team/sendmate/blob/main/packages/shared/src/limits.ts" rel="noopener">See the limits in the source</a>
     </div>
 
     <div class="rb-bill" role="group" aria-labelledby="rb-bill-title">
-      <p id="rb-bill-title" class="rb-bill-h">Hosting, every month since launch</p>
+      <p id="rb-bill-title" class="rb-bill-h">Your copy, every month</p>
       <table class="rb-table">
-        <caption class="sr-only">What sendm8 runs on and what each part costs a month</caption>
+        <caption class="sr-only">What a self-hosted sendm8 runs on and what each part costs a month</caption>
         <thead>
           <tr><th scope="col">Service</th><th scope="col" class="rb-num">Cost</th></tr>
         </thead>

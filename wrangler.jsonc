@@ -64,11 +64,13 @@
   // Deployment-specific settings (APP_URL, EMAIL_FROM, ADMIN_EMAILS, TURNSTILE_SITE_KEY) are secrets,
   // not vars, so they survive redeploys and the deploy button can ask for them. See .dev.vars.example.
   "vars": {
-    // Optional JSON overrides for packages/shared/src/limits.ts, e.g. after upgrading to Resend Pro:
-    // "LIMITS_JSON": "{\"systemEmailsPerDay\": 1600}"
+    // JSON overrides for packages/shared/src/limits.ts. The Worker enforces them and the site quotes them.
+    // These are sendm8.com's: it sends through Resend Pro (50,000 emails a month), so the shared budget is
+    // 1,500 a day with 200 kept for sign-in and confirmation emails, and each account gets 50 instant emails.
+    // On Resend's free plan (100 a day) blank this, or the Worker will try to send more than Resend allows.
+    // The Docker image ignores it and reads LIMITS_JSON from its environment instead.
     // TEMPORARY (14 Nov 2026): no-account forms keep 200 submissions a month instead of 100, because a real
-    // campaign (ferragro.com's raffle) hit the cap before its owner had signed in. Remove once they have, or
-    // once owners are warned before the cap. Forks that pull this file inherit it: blank it to go back.
-    "LIMITS_JSON": "{\"submissionsPerUnclaimedFormPerMonth\": 200}"
+    // campaign (ferragro.com's raffle) hit the cap before its owner had signed in. Drop it once they have.
+    "LIMITS_JSON": "{\"systemEmailsPerDay\": 1500, \"reservedAccountEmailsPerDay\": 200, \"instantEmailsPerUserPerDay\": 50, \"submissionsPerUnclaimedFormPerMonth\": 200}"
   }
 }

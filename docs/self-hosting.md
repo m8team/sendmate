@@ -112,13 +112,16 @@ The `ai` binding is on in `wrangler.jsonc` and needs no payment method. Form own
 
 ## Tuning limits
 
-Every limit lives in `packages/shared/src/limits.ts`. The marketing site, the dashboard and the Worker all read them from there. To override them per deployment without a code change, set the `LIMITS_JSON` var in `wrangler.jsonc`:
+Every limit lives in `packages/shared/src/limits.ts`, and the defaults there fit the free plans. To override them per deployment without a code change, set the `LIMITS_JSON` var in `wrangler.jsonc`. The Worker enforces the result, and the marketing site and dashboard are built with the same values, so they quote what you enforce:
 
 ```jsonc
-"vars": { "LIMITS_JSON": "{\"systemEmailsPerDay\": 1600, \"instantEmailsPerUserPerDay\": 50}" }
+"vars": { "LIMITS_JSON": "{\"systemEmailsPerDay\": 1500, \"instantEmailsPerUserPerDay\": 50}" }
 ```
 
 Typical reasons: you upgraded Resend (raise `systemEmailsPerDay`), or you're the only user (raise the per-form quotas).
+
+> [!IMPORTANT]
+> The `LIMITS_JSON` in this repo's `wrangler.jsonc` is sendm8.com's, which sends through Resend Pro. If you deploy from it on Resend's free plan, blank it (`"LIMITS_JSON": ""`), or the Worker will try to send more emails a day than Resend allows. The Docker image ignores it and reads `LIMITS_JSON` from its environment instead.
 
 The platform ceilings live there too, set for the free plan. If you move to Workers Paid ($5/mo), raise them to match:
 
