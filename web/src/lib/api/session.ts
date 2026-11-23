@@ -4,6 +4,27 @@ import { isApiError } from './client';
 import { loadHasSession, loadMe } from './store';
 
 export const SIGN_IN_PATH = '/app/sign-in';
+
+/** Only dashboard pages are allowed as a post-sign-in destination (mirrors the Worker's safeNext). */
+export function safeNext(next: string | null | undefined): string {
+  if (!next || !next.startsWith('/app') || next.startsWith('//') || next.includes('\\')) return '/app';
+  try {
+    const url = new URL(next, 'https://x.invalid');
+    if (url.origin !== 'https://x.invalid' || url.pathname.replace(/\/+$/, '') === '/app/sign-in') return '/app';
+    return url.pathname + url.search;
+  } catch {
+    return '/app';
+  }
+}
+
+/** The `?next=` of a sign-in URL, made safe. */
+export const nextFromSearch = (search: string) => safeNext(new URLSearchParams(search).get('next'));
+
+/** Sign-in, coming back to `here` afterwards (the current page by default). */
+export function signInUrl(here: string = typeof location === 'undefined' ? '/app' : location.pathname + location.search): string {
+  const next = safeNext(here);
+  return next === '/app' ? SIGN_IN_PATH : `${SIGN_IN_PATH}?next=${encodeURIComponent(next)}`;
+}
 export const SUSPENDED_PATH = '/blocked?reason=suspended';
 
 /** Form ids: 10 chars of lowercase Crockford base32. Mirrors the Worker. */
@@ -24,13 +45,13 @@ export async function guardSession(
   try {
     // Check quietly first, so a signed-out visit doesn't leave a 401 in the console.
     if (!(await hasSession())) {
-      navigate(SIGN_IN_PATH);
+      navigate(signInUrl());
       return null;
     }
     return await load();
   } catch (err) {
     if (isApiError(err) && err.status === 401) {
-      navigate(SIGN_IN_PATH);
+      navigate(signInUrl());
       return null;
     }
     if (isApiError(err) && err.code === 'account_suspended') {

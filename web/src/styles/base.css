@@ -808,3 +808,10 @@ mark,
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Signed-in or signed-out variants of a control (e.g. the header's Sign in / Dashboard). The class on
+   <html> is set before paint from the signed-in marker cookie, so only one of each pair ever shows. */
+:root:not(.is-signed-in) .auth-in,
+:root.is-signed-in .auth-out {
+  display: none !important;
+}

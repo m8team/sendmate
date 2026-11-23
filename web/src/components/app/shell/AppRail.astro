@@ -243,7 +243,7 @@ const { active } = Astro.props;
 <script>
   import { setUnauthorizedHandler } from '../../../lib/api/client';
   import { friendlyError } from '../../../lib/api/errors';
-  import { guardSession, SIGN_IN_PATH } from '../../../lib/api/session';
+  import { guardSession, signInUrl } from '../../../lib/api/session';
   import { DATA_REFRESHED, clearCache, loadEmailSettings, loadMe } from '../../../lib/api/store';
   import { toast } from '../../../lib/toast';
   import { mountAccount } from './railAccount';
@@ -281,7 +281,7 @@ const { active } = Astro.props;
   // Any 401 from any island means the session ended: forget what we cached and go to sign-in.
   setUnauthorizedHandler(() => {
     clearCache();
-    window.location.replace(SIGN_IN_PATH);
+    window.location.replace(signInUrl());
   });
 
   const pigeonholes = mountPigeonholes();

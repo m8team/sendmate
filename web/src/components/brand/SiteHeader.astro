@@ -32,8 +32,10 @@ const isActive = (href: string) => !href.startsWith('http') && !href.includes('#
     </nav>
     <div class="sh-actions">
       <ThemeToggle />
-      <a class="btn btn-ghost btn-sm sh-signin" href="/app/sign-in">Sign in</a>
-      <a class="btn btn-signal btn-sm sh-cta" href="/app/onboarding">Get an endpoint</a>
+      <!-- Which pair shows is decided before paint from the signed-in marker cookie (Base.astro, base.css). -->
+      <a class="btn btn-ghost btn-sm sh-signin auth-out" href="/app/sign-in">Sign in</a>
+      <a class="btn btn-signal btn-sm sh-cta auth-out" href="/app/onboarding">Get an endpoint</a>
+      <a class="btn btn-signal btn-sm sh-cta auth-in" href="/app">Dashboard <Icon name="arrow-right" size={16} /></a>
       <button type="button" class="icon-btn sh-menu-btn" aria-haspopup="dialog" aria-controls="mobile-menu" data-menu-open>
         <Icon name="menu" size={20} />
         <span class="sr-only">Open menu</span>
@@ -66,8 +68,10 @@ const isActive = (href: string) => !href.startsWith('http') && !href.includes('#
     </ol>
   </nav>
   <div class="mm-foot">
-    <a class="btn btn-signal btn-lg" href="/app/onboarding">Get an endpoint <Icon name="arrow-right" /></a>
-    <a class="btn btn-outline btn-lg" href="/app/sign-in">Sign in</a>
+    <a class="btn btn-signal btn-lg auth-out" href="/app/onboarding">Get an endpoint <Icon name="arrow-right" /></a>
+    <a class="btn btn-outline btn-lg auth-out" href="/app/sign-in">Sign in</a>
+    <a class="btn btn-signal btn-lg auth-in" href="/app">Go to dashboard <Icon name="arrow-right" /></a>
+    <a class="btn btn-outline btn-lg auth-in" href="/app/onboarding">New form</a>
     <ThemeToggle withLabel />
   </div>
   <div class="airmail" aria-hidden="true"></div>

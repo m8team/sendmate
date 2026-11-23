@@ -97,6 +97,9 @@ const entityLd = {
           if (meta) meta.setAttribute('content', root.dataset.theme === 'dark' ? '#16140f' : '#f2ede2');
         }
         apply();
+        // Signed in? The Worker keeps a readable marker cookie next to the (HttpOnly) session, so the
+        // header can show "Dashboard" instead of "Sign in" before it paints, without a request.
+        if (/(?:^|;\s*)sendm8_signed_in=1(?:;|$)/.test(document.cookie)) root.classList.add('is-signed-in');
         mq.addEventListener('change', function () {
           if (!stored()) apply();
         });

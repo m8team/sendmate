@@ -47,6 +47,10 @@ import TearOffStub from '../../components/auth/TearOffStub.astro';
 <script>
   import { api } from '../../lib/api/endpoints';
   import { friendlyError } from '../../lib/api/errors';
+  import { nextFromSearch } from '../../lib/api/session';
+
+  // Where to land after signing in: the page that sent you here, if it's a dashboard page.
+  const next = nextFromSearch(location.search);
 
   const errorEl = document.querySelector<HTMLElement>('[data-signin-error]')!;
   const showError = (message: string) => {
@@ -54,10 +58,11 @@ import TearOffStub from '../../components/auth/TearOffStub.astro';
     errorEl.hidden = false;
   };
 
-  // Already signed in? Straight to the dashboard.
+  // Already signed in? The Worker normally redirects before this page loads (routes/sign-in.ts);
+  // this catches setups where the page is served straight from static files.
   api
     .hasSession()
-    .then((signedIn) => signedIn && window.location.replace('/app'))
+    .then((signedIn) => signedIn && window.location.replace(next))
     .catch(() => {
       /* not signed in: stay here */
     });
@@ -71,7 +76,7 @@ import TearOffStub from '../../components/auth/TearOffStub.astro';
       btn.setAttribute('aria-disabled', 'true');
       label.textContent = `Off to ${provider === 'github' ? 'GitHub' : 'Google'}…`;
       try {
-        const { url } = await api.signInSocial(provider, '/app');
+        const { url } = await api.signInSocial(provider, next);
         if (!url) throw new Error('no url');
         window.location.href = url;
       } catch (err) {
@@ -93,7 +98,7 @@ import TearOffStub from '../../components/auth/TearOffStub.astro';
       label.textContent = 'Signing in…';
       try {
         await api.devLogin('dev@sendm8.local');
-        window.location.href = '/app';
+        window.location.href = next;
       } catch (err) {
         btn.removeAttribute('aria-disabled');
         label.textContent = 'Dev sign-in as dev@sendm8.local';

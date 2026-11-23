@@ -3,7 +3,7 @@ import { LIMITS } from '@sendm8/shared';
 import { ApiRequestError } from '../client';
 import { MAX_READ_IDS, countUnread, forgetForm, getUnreadCache, isRead, markRead, readIds, setUnreadCache } from '../readState';
 import { FORMS_CHANGED, UNREAD_CHANGED, announceFormsChanged, announceUnread, cached, invalidate, loadEmailSettings, loadForms, loadMe, loadStats, unreadFor } from '../store';
-import { SIGN_IN_PATH, SUSPENDED_PATH, formIdFromPath, guardSession, initials } from '../session';
+import { SIGN_IN_PATH, SUSPENDED_PATH, formIdFromPath, guardSession, initials, nextFromSearch, safeNext, signInUrl } from '../session';
 import { json, mockFetch, stubStorage, stubWindow } from './helpers';
 
 beforeEach(() => {
@@ -197,5 +197,26 @@ describe('session', () => {
     expect(initials('Cher')).toBe('CH');
     expect(initials('', 'dev@sendm8.local')).toBe('DE');
     expect(initials('')).toBe('··');
+  });
+});
+
+describe('sign-in return path', () => {
+  it('only allows dashboard pages', () => {
+    expect(safeNext(null)).toBe('/app');
+    expect(safeNext('/app/forms/abc1234567?folder=spam')).toBe('/app/forms/abc1234567?folder=spam');
+    expect(safeNext('https://evil.example/app')).toBe('/app');
+    expect(safeNext('//evil.example/app')).toBe('/app');
+    expect(safeNext('/app\\evil')).toBe('/app');
+    expect(safeNext('/pricing')).toBe('/app');
+    expect(safeNext('/app/sign-in/')).toBe('/app');
+  });
+
+  it('reads ?next and builds a sign-in link that comes back', () => {
+    expect(nextFromSearch('?next=%2Fapp%2Fonboarding')).toBe('/app/onboarding');
+    expect(nextFromSearch('?next=https%3A%2F%2Fevil.example')).toBe('/app');
+    expect(nextFromSearch('')).toBe('/app');
+    expect(signInUrl('/app/forms/abc1234567/settings')).toBe(`${SIGN_IN_PATH}?next=%2Fapp%2Fforms%2Fabc1234567%2Fsettings`);
+    expect(signInUrl('/app')).toBe(SIGN_IN_PATH);
+    expect(signInUrl('/app/')).toBe(SIGN_IN_PATH + '?next=%2Fapp%2F');
   });
 });
