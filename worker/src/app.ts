@@ -18,6 +18,8 @@ export type AppEnv = {
   Bindings: Env;
   Variables: {
     user: SessionUser;
+    /** When the signed-in session expires; the signed-in marker cookie follows it (lib/signed-in-hint). */
+    sessionExpiresAt: Date;
   };
 };
 
@@ -35,6 +37,7 @@ export const requireUser = createMiddleware<AppEnv>(async (c, next) => {
   if (suspended) throw new ApiError(403, "account_suspended", "This account has been suspended. Contact abuse@sendm8.com if you think that's a mistake.");
 
   c.set("user", session.user);
+  c.set("sessionExpiresAt", new Date(session.session.expiresAt));
   await next();
 });
 

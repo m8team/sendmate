@@ -17,10 +17,27 @@ import { pageRoutes } from "./routes/pages";
 import { reportRoutes } from "./routes/report";
 import { submitRoutes } from "./routes/submit";
 import { webhookRoutes } from "./routes/webhooks";
+import { signInPage } from "./routes/sign-in";
+import { hintChange } from "./lib/signed-in-hint";
 
 const app = createRouter();
 
 app.use("*", securityHeaders);
+// Keeps the readable "signed in" marker in step with the session (sign-in, sign-out, expiry).
+app.use("/api/*", async (c, next) => {
+  await next();
+  const change = hintChange(c.req.raw, c.res, c.req.path === "/api/me" ? c.get("sessionExpiresAt") : undefined);
+  if (!change) return;
+  // Append in place: assigning a new c.res makes Hono copy the old response's cookies over the new one.
+  try {
+    c.res.headers.append("set-cookie", change);
+  } catch {
+    const res = new Response(c.res.body, c.res);
+    res.headers.append("set-cookie", change);
+    c.res = undefined;
+    c.res = res;
+  }
+});
 app.on(["GET", "POST"], "/api/auth/*", (c) => getAuth(c.env).handler(c.req.raw));
 app.route("/api/dev", devRoutes);
 // Public, so it's mounted before /api, whose middleware requires a signed-in user.
@@ -34,6 +51,8 @@ app.route("/confirm", confirmRoutes);
 app.route("/files", fileRoutes);
 app.route("/report", reportRoutes);
 app.route("/app/forms", appShellRoutes);
+app.get("/app/sign-in", signInPage);
+app.get("/app/sign-in/", signInPage);
 app.route("/", pageRoutes);
 
 app.notFound((c) => {

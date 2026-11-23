@@ -29,7 +29,10 @@
       "/report",
       "/health",
       // Dashboard pages with a form id in the path share one static shell.
-      "/app/forms/*"
+      "/app/forms/*",
+      // Signed-in visitors are redirected to the dashboard before the page loads (routes/sign-in.ts).
+      "/app/sign-in",
+      "/app/sign-in/"
     ]
   },
 
