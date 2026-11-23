@@ -9,6 +9,13 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 5
+    ignore:
+      # Types for the Node version we run (22, in .node-version), not the newest Node.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # TypeScript 7 is the native compiler without the JS API that astro check and the Vue tooling use.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     groups:
       cloudflare:
         patterns: ["wrangler", "@cloudflare/*"]
@@ -24,6 +31,13 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 5
+    ignore:
+      # Types for the Node version we run (22, in .node-version), not the newest Node.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # TypeScript 7 is the native compiler without the JS API that astro check and the Vue tooling use.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     groups:
       astro:
         patterns: ["astro", "@astrojs/*"]
