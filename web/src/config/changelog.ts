@@ -24,6 +24,119 @@ export interface ChangelogEntry {
 // Newest first. Entries sharing a date are ordered newest-first within that day too.
 export const changelog: ChangelogEntry[] = [
   {
+    slug: 'fifty-instant-emails',
+    date: '2026-11-23',
+    title: '50 instant emails a day, up from 10',
+    tags: ['Feature'],
+    summary: 'Each account now gets 50 instant notification emails a day before the rest go into the daily digest, and the site header knows when you’re signed in.',
+    body: [
+      'sendm8.com now sends through a bigger Resend plan, so the instant email limit went from 10 a day per account to 50. Anything over that still arrives in your daily digest, and Discord, Slack, Telegram and webhooks were never limited. Every page that quotes the limit is built from the same numbers the server enforces, so they can’t disagree.',
+      'If you’re signed in, the header now says Dashboard instead of Sign in, and opening the sign-in page takes you straight to the dashboard. Signing in from a page now brings you back to it afterwards.',
+      'Self-hosting is unchanged: the defaults still fit inside Cloudflare’s and Resend’s free plans, and the Docker image starts on them too.',
+    ],
+  },
+  {
+    slug: 'formspree-alternatives-guide',
+    date: '2026-11-23',
+    title: 'A plain guide to Formspree alternatives',
+    tags: ['Docs'],
+    summary: 'Free form backends compared from their own pricing pages, sendm8 included and labelled as ours, and an llms.txt that opens with a form you can paste in.',
+    body: [
+      '<a href="/guides/best-formspree-alternatives/">The best Formspree alternatives</a> compares the free plans of Web3Forms, FormSubmit, Netlify Forms, Basin, Forminit, Formspark, Tally and others, with a source link for every figure, quick picks by what you need, and the open-source projects you can host yourself.',
+      '<a href="/llms.txt">llms.txt</a> now starts with a working contact form that needs no account, so an AI assistant can paste it in as-is.',
+    ],
+  },
+  {
+    slug: 'quieter-faster-dashboard',
+    date: '2026-11-21',
+    title: 'A quieter, faster dashboard',
+    tags: ['Feature', 'Perf'],
+    summary: 'The dashboard is plainer and quicker: pages switch without reloading, data you’ve seen shows instantly, and the inbox, forms and settings were simplified.',
+    body: [
+      'Moving around the dashboard no longer reloads the page, and anything you’ve already loaded appears straight away while it refreshes in the background.',
+      'The inbox list has more room and no unread dots, and a submission opens as one column that leads with who sent it and what they said. Forms are a plain table, nested under Forms in the side rail, and creating one is a three-step page. Form settings and the Email sending page were trimmed down, with who gets emails first.',
+      'There’s also a one-question “How did you hear about sendm8?” box in the dashboard. You can skip it.',
+    ],
+  },
+  {
+    slug: 'new-spam-model-and-phishing-rule',
+    date: '2026-11-20',
+    title: 'A new spam model, and a rule for marketplace phishing',
+    tags: ['Fix', 'Security'],
+    summary: 'Cloudflare retired the AI model behind the spam check, so it moved to Llama 3.3 70B. A new rule now catches “your item sold, verify to get paid” phishing even without the AI.',
+    body: [
+      'Cloudflare retired the Llama 3.1 8B model on 20 November, and the AI spam check stopped scoring for most of that day. The rules and honeypots kept running. It now uses Llama 3.3 70B, picked after testing the candidates against real past submissions: it caught the same bot spam and stopped flagging ordinary Persian and Chinese enquiries.',
+      'A new rule bins the marketplace phishing lure (“your Vinted item sold, verify your profile to release the funds”) whenever it comes with a link, whether or not the AI check is available.',
+      'If a form is disabled for abuse, anything still waiting for its daily digest is no longer sent.',
+    ],
+  },
+  {
+    slug: 'bounce-handling',
+    date: '2026-11-17',
+    title: 'No more emailing addresses that bounce',
+    tags: ['Feature'],
+    summary: 'When an email hard-bounces or is marked as spam, sendm8 stops sending to that address and tags it as Bounced in your settings.',
+    body: [
+      'If a notification to one of your addresses hard-bounces, or the recipient marks it as spam, sendm8 now stops emailing that address instead of trying again and again, which protects delivery for everyone. The address is tagged Bounced in <strong>Email &amp; BYOK</strong>, so you can see why emails stopped. Your other delivery channels carry on as normal.',
+      'Self-hosters can turn this on with a Resend webhook; the <a href="https://github.com/m8team/sendmate/blob/main/docs/self-hosting.md">self-hosting guide</a> explains how.',
+    ],
+  },
+  {
+    slug: 'limit-warnings-and-fairer-ai-check',
+    date: '2026-11-14',
+    title: 'Warnings before the monthly cap, and a fairer spam check',
+    tags: ['Feature', 'Fix'],
+    summary: 'No-account forms now warn their owner before they hit the monthly cap, and the AI spam check can no longer bin non-English messages or short sign-ups on its own.',
+    body: [
+      'A form with no account emails its owner when it passes 80% of the monthly submission cap, and again if it reaches it, so a busy campaign doesn’t start turning people away unnoticed. Signing in with the same address lifts the cap.',
+      'The AI check misjudged a few kinds of genuine submission, so it can now flag them but not bin them by itself: messages mostly in a non-Latin script, and sign-ups made of short structured answers (a name, a phone number, a ticket count). Bot spam that pairs a Latin name with Russian text is still caught.',
+      'Throwaway inbox domains are now refused more reliably, including new domains from the big providers.',
+    ],
+  },
+  {
+    slug: 'confirmation-reminders',
+    date: '2026-11-10',
+    title: 'Clearer confirmation for no-account forms',
+    tags: ['Feature'],
+    summary: 'A form waiting for its owner to confirm now says so, and the owner gets one reminder if messages are waiting.',
+    body: [
+      'When someone submits a <code>/f/you@example.com</code> form whose owner hasn’t clicked the confirmation link yet, the response now says the message is stored and waiting, and the thank-you page and the <a href="/docs/ajax-helper/">helper script</a> explain it in plain words. The JSON response includes <code>"pending": "confirmation"</code>.',
+      'If messages are waiting and the link still hasn’t been clicked after three days, the owner gets one reminder. Reminders only go to endpoints a real website posted to.',
+      'Email endpoints now refuse posts that claim to come from sendm8.com itself (<code>400 invalid_origin</code>).',
+    ],
+  },
+  {
+    slug: 'new-homepage',
+    date: '2026-11-02',
+    title: 'A new homepage',
+    tags: ['Feature'],
+    summary: 'The homepage now leads with the whole idea: one line of HTML in, mail out. The logo’s 8 is the new favicon.',
+    body: [
+      'The <a href="/">homepage</a> was rebuilt around the one line of HTML that sets up a form. The 8 from the logo is now the favicon.',
+    ],
+  },
+  {
+    slug: 'verify-an-address-to-claim-its-forms',
+    date: '2026-10-29',
+    title: 'Verify an address to claim its forms',
+    tags: ['Feature'],
+    summary: 'Verifying another email address in your account now brings any no-signup forms sent to it into your dashboard.',
+    body: [
+      'If you’ve been using <code>/f/</code> endpoints with a work address but signed in with a personal one, add the work address under <strong>Email &amp; BYOK</strong> and verify it. Its forms and their submissions move into your account. An empty dashboard now asks whether your form sends to a different address, and links straight there.',
+    ],
+  },
+  {
+    slug: 'docker-self-hosting',
+    date: '2026-10-28',
+    title: 'Run sendm8 in Docker, no Cloudflare account needed',
+    tags: ['Feature'],
+    summary: 'sendm8 now runs in a single Docker container, on the same runtime Cloudflare uses, with its database and files on a local volume.',
+    body: [
+      'There’s now a <a href="https://github.com/m8team/sendmate/blob/main/docs/self-hosting.md#docker">Docker image</a> for running your own copy anywhere. It uses the same runtime as Cloudflare, keeps the database and uploaded files on a volume, and runs the scheduled jobs itself. The one thing it leaves out is the AI spam check, which only runs on Cloudflare; the honeypot, rules and Turnstile all work.',
+      'It suits personal and small-team use. For a busy public instance, deploying to Cloudflare is still the better home.',
+    ],
+  },
+  {
     slug: 'guides-and-comparisons',
     date: '2026-10-28',
     title: 'Guides for static sites, and honest comparisons',
