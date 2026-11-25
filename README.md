@@ -28,6 +28,10 @@
 </p>
 
 <p align="center">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/m8team/sendmate"><img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare"></a>
+</p>
+
+<p align="center">
   <img src=".github/assets/sorting.gif" alt="Meanwhile, at sendm8: a friendly message is received, spam-checked, stored and delivered to email and Discord. Then a spam bot's message is stopped at the spam check and returned to sender." width="880">
 </p>
 
