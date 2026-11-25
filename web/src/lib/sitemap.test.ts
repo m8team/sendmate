@@ -161,5 +161,6 @@ describe('gitDates', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
-  });
+    // Real git: init, two commits, a clone and an unshallow fetch. Slow when the suite runs in parallel.
+  }, 30_000);
 });
