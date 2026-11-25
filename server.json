@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.sendm8/sendm8",
+  "title": "sendm8",
+  "description": "Contact form code for any site or AI-built app, posting to sendm8's free, no-signup form backend.",
+  "version": "1.0.0",
+  "websiteUrl": "https://sendm8.com",
+  "repository": {
+    "url": "https://github.com/m8team/sendmate",
+    "source": "github"
+  },
+  "icons": [
+    { "src": "https://sendm8.com/icon-512.png", "mimeType": "image/png", "sizes": ["512x512"] },
+    { "src": "https://sendm8.com/favicon.svg", "mimeType": "image/svg+xml", "sizes": ["any"] }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://sendm8.com/mcp"
+    }
+  ]
+}

@@ -13,11 +13,13 @@ import { clientErrorRoutes } from "./routes/client-errors";
 import { confirmRoutes } from "./routes/confirm";
 import { devRoutes } from "./routes/dev";
 import { fileRoutes } from "./routes/files";
+import { mcpRoutes } from "./routes/mcp";
 import { pageRoutes } from "./routes/pages";
 import { reportRoutes } from "./routes/report";
 import { submitRoutes } from "./routes/submit";
 import { webhookRoutes } from "./routes/webhooks";
 import { signInPage } from "./routes/sign-in";
+import { markdownOrPage } from "./routes/markdown";
 import { hintChange } from "./lib/signed-in-hint";
 
 const app = createRouter();
@@ -45,6 +47,8 @@ app.route("/api/errors", clientErrorRoutes);
 // Signed by the sender, not a signed-in user, so also before /api.
 app.route("/api/webhooks", webhookRoutes);
 app.route("/api", apiRoutes);
+// Public MCP server for coding agents: no auth, no cookies, open CORS (routes/mcp.ts).
+app.route("/mcp", mcpRoutes);
 app.route("/f", submitRoutes);
 app.route("/c", challengeRoutes);
 app.route("/confirm", confirmRoutes);
@@ -53,6 +57,8 @@ app.route("/report", reportRoutes);
 app.route("/app/forms", appShellRoutes);
 app.get("/app/sign-in", signInPage);
 app.get("/app/sign-in/", signInPage);
+// Home and docs answer Accept: text/markdown with the Markdown docs (routes/markdown.ts).
+for (const path of ["/", "/docs", "/docs/", "/docs/:section", "/docs/:section/"]) app.get(path, markdownOrPage);
 app.route("/", pageRoutes);
 
 app.notFound((c) => {

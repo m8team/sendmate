@@ -27,12 +27,18 @@
       "/verify/*",
       "/files/*",
       "/report",
+      // Public MCP server (routes/mcp.ts).
+      "/mcp",
       "/health",
       // Dashboard pages with a form id in the path share one static shell.
       "/app/forms/*",
       // Signed-in visitors are redirected to the dashboard before the page loads (routes/sign-in.ts).
       "/app/sign-in",
-      "/app/sign-in/"
+      "/app/sign-in/",
+      // Home and docs answer Accept: text/markdown with Markdown for coding agents (routes/markdown.ts).
+      "/",
+      "/docs",
+      "/docs/*"
     ]
   },
 
