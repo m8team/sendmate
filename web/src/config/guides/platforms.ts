@@ -27,6 +27,88 @@ const limitsPara = `A no-account endpoint keeps up to ${unclaimed} submissions a
 
 const uploadsPara = `To accept files, add <code>enctype="multipart/form-data"</code> to the form and use a normal <code>&lt;input type="file"&gt;</code>. Each file can be up to ${limits.fileUploadMb} MB, with ${limits.submissionUploadMb} MB and ${LIMITS.maxFilesPerSubmission} files per submission. Files are stored with the submission, and your notification links to them rather than attaching them, so nobody’s inbox fills up.`;
 
+/**
+ * AI website builders (Lovable, Bolt, v0) all write a React form that posts nowhere. These guides
+ * share one prompt to give the builder's AI and one component to check its work against.
+ */
+const builderPrompt = (noBackend: string) =>
+  `
+Make the contact form send messages to my inbox using sendm8, a free form backend.
+Docs: ${site.url}/llms.txt
+
+- Endpoint: ${EMAIL}
+  It needs no API key and no account. It isn't a secret, so don't store it as one.
+- On submit, call preventDefault, then POST new FormData(form) to the endpoint with
+  fetch and the header "Accept: application/json". Don't set Content-Type.
+- Every input needs a name attribute: name, email, message. Keep the visitor's
+  email field named "email" so my replies go to them.
+- Add a hidden honeypot field to the form:
+  <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+- The response is JSON. If ok is true, replace the form with "Thanks! Your message
+  is on its way." Otherwise show error.message from the response above the button.
+  If fetch itself throws, show a short "Couldn't send, please try again" message.
+- Disable the button while sending.
+- ${noBackend}
+- Keep the existing design, fields and copy.`;
+
+const builderForm = (useClient: boolean) =>
+  `${useClient ? '\n"use client";\n' : ''}
+import { useState, type FormEvent } from "react";
+
+const ENDPOINT = "${EMAIL}";
+
+export function ContactForm() {
+  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+  const [error, setError] = useState("");
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setStatus("sending");
+    setError("");
+    try {
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        body: new FormData(event.currentTarget),
+        headers: { Accept: "application/json" },
+      });
+      const result = await res.json();
+      if (result.ok) {
+        setStatus("sent");
+        return;
+      }
+      setError(result.error.message);
+    } catch {
+      setError("Couldn't send, please try again.");
+    }
+    setStatus("idle");
+  }
+
+  if (status === "sent") return <p>Thanks! Your message is on its way.</p>;
+
+  return (
+    <form onSubmit={onSubmit}>
+      <label>Name <input name="name" required /></label>
+      <label>Email <input name="email" type="email" required /></label>
+      <label>Message <textarea name="message" required /></label>
+      <input type="text" name="_gotcha" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
+      {error && <p role="alert">{error}</p>}
+      <button disabled={status === "sending"}>{status === "sending" ? "Sending…" : "Send"}</button>
+    </form>
+  );
+}`;
+
+/** Line numbers in builderForm to highlight: the endpoint and the Accept header. */
+const builderHighlight = (useClient: boolean) => (useClient ? [5, 19] : [3, 17]);
+
+const builderCheck = `Check three things: the URL in <code>fetch</code> is your endpoint, the <code>Accept: application/json</code> header is there, and every field has a <code>name</code>. Browsers only send named fields, so a missing <code>name</code> is the usual reason a field never arrives. If the AI kept a form library such as react-hook-form, that’s fine too: it can send the values as JSON with <code>Content-Type: application/json</code>, which sendm8 also accepts.`;
+
+const previewFrame = `A plain HTML post would also work on the published site, but the editor shows your app inside a frame, and sendm8’s thank-you page won’t load inside one. That’s why the prompt asks for <code>fetch</code>: the visitor stays on your page in the preview and on the live site alike.`;
+
+const allowedDomainsPara = (hosts: string) =>
+  `An email endpoint accepts posts from any site, so the preview and the published app both work as they are. If you later switch to a dashboard form and set allowed domains, add every address the app runs on: ${hosts}. Anything else gets a <code>403</code> with the message “This form doesn’t accept submissions from this website.”`;
+
+const cspPara = `If your app sets a Content-Security-Policy, allow <code>https://sendm8.com</code> in <code>connect-src</code>, or the browser blocks the request before it leaves the page.`;
+
 export const platformGuides: Guide[] = [
   {
     slug: 'html-contact-form',
@@ -383,5 +465,120 @@ export function ContactForm() {
       { q: 'Is there a React hook?', a: 'Yes, @sendm8/react has useForm and ValidationError with the same API as @formspree/react, so existing Formspree React code mostly needs only the form id changed.' },
     ],
     related: { docs: ['basic-form', 'ajax', 'spam', 'formspree'], vs: ['formspree', 'web3forms'] },
+  },
+  {
+    slug: 'lovable-contact-form',
+    kind: 'platform',
+    name: 'Lovable',
+    h1: 'Add a working contact form to a Lovable app',
+    title: 'Lovable contact form that actually sends',
+    description: 'One prompt makes a Lovable contact form post to sendm8 and email you. No table, edge function, sender domain or API key, and it works outside Lovable too.',
+    intro: 'Ask Lovable for a contact form today and it saves each message to a database table, with email only once you’ve verified a sender domain on a paid plan. If you’d rather have messages emailed to you straight away, with nothing to set up, one prompt points the form at sendm8 instead.',
+    blocks: [
+      { h2: 'What Lovable builds' },
+      { p: 'New Lovable apps (since 13 May 2026) use TanStack Start, which renders pages on the server. Older apps use React and Vite. Both are TypeScript and React, and the form code below works the same in either.' },
+      { p: 'Since 3 November 2026, Lovable saves form submissions to a table in your app’s backend, read under More → Database. Its docs say you can name another destination instead, which is what the prompt below does.' },
+      { h2: 'When sendm8 is the better fit' },
+      { p: 'Lovable’s table is fine if you’re happy reading messages in Lovable and pay for a plan with email. sendm8 fits better if you want email with no sender domain or paid plan, want messages in Discord, Slack, Telegram or a webhook, might host the code elsewhere later, or would rather not look after a table.' },
+      { h2: 'The prompt' },
+      { p: 'Change <code>you@example.com</code> to your own address, then paste this into the Lovable chat. If you already have a form in the dashboard, use its URL instead, such as <code>https://sendm8.com/f/k3x9q2m7ab</code>.' },
+      { code: builderPrompt('Don’t save submissions to a table, and don’t add a server function, Edge Function, Resend or any secret for this. The form posts straight from the browser.'), lang: 'text', filename: 'prompt.txt', highlight: [4] },
+      { p: 'The last but one line stops Lovable creating its default table. sendm8 needs no key, and a service without credentials needs no connector or setup.' },
+      { h2: 'What the code should look like' },
+      { p: 'Lovable usually puts the form in <code>src/components</code> and styles it with its own UI components. Under the styling, it should come down to this:' },
+      { code: builderForm(false), lang: 'tsx', filename: 'src/components/ContactForm.tsx', highlight: builderHighlight(false) },
+      { p: builderCheck },
+      { h2: 'Confirm your address, then publish' },
+      { steps: [`Send a test message from the preview. ${confirmStep}`, 'Publish. The form works unchanged on your <code>lovable.app</code> address or a custom domain.', 'Reply to any notification and you’re answering the visitor, because their <code>email</code> field becomes the Reply-To.'] },
+      { h2: 'Preview, published site and allowed domains' },
+      { p: previewFrame },
+      { p: allowedDomainsPara('the preview, the <code>lovable.app</code> address and any custom domain') },
+      { p: cspPara },
+      { note: 'The endpoint can only deliver to the address that confirmed it, so it doesn’t belong in Secrets. To keep your address out of the source, sign in and use a dashboard form id.', title: 'Not a secret', kind: 'info' },
+      { h2: 'Spam and limits' },
+      { p: `The <code>_gotcha</code> honeypot, rate limits, spam scoring and an AI check run on every submission. ${limitsPara}` },
+    ],
+    faq: [
+      { q: 'Do I need Lovable’s backend, Supabase or Resend for a contact form?', a: 'No. The form posts straight from the visitor’s browser to sendm8, which stores the message and emails you. Lovable’s own table works too, but its email notifications need a verified sender domain on a paid plan.' },
+      { q: 'Why does the form work on my published site but not in the preview?', a: 'Usually because it does a plain HTML post, and sendm8’s thank-you page can’t load inside the editor’s preview frame. Sending with fetch and Accept: application/json, as the prompt asks, works in both.' },
+      { q: 'Can I use @sendm8/react instead?', a: 'Yes. Ask Lovable to install @sendm8/react and use its useForm hook with your address or form id. It has the same API as @formspree/react.' },
+    ],
+    related: { docs: ['ajax', 'zero-signup', 'spam', 'fields'], vs: ['formspree', 'web3forms'] },
+  },
+  {
+    slug: 'bolt-contact-form',
+    kind: 'platform',
+    name: 'Bolt',
+    h1: 'Make a Bolt contact form actually send',
+    title: 'Bolt.new contact form that sends, no backend',
+    description: 'Bolt’s contact forms often just show a success message. One prompt makes yours post to sendm8 and email you, with no server function, database or secret.',
+    intro: 'Bolt is quick to build a good-looking contact form, but the submit handler is often a placeholder: it shows a success message and sends nothing. Give Bolt the prompt below and the form posts to sendm8 instead, so every message reaches your inbox.',
+    blocks: [
+      { h2: 'What Bolt builds' },
+      { p: 'Unless you ask for something else, Bolt builds websites with React, Vite and Tailwind CSS. The preview runs in your browser on StackBlitz WebContainers, and publishing puts the site on a free <code>.bolt.host</code> address, or on Netlify if you connect it. The fix below is the same wherever it’s hosted.' },
+      { h2: 'The prompt' },
+      { p: 'Change <code>you@example.com</code> to your own address and paste this into the Bolt chat. With a form from the dashboard, use its URL instead.' },
+      { code: builderPrompt('Don’t add a database table, server function, Resend or any secret for this. The form posts straight from the browser.'), lang: 'text', filename: 'prompt.txt', highlight: [4] },
+      { p: 'Look for a fake handler before and after: a <code>setTimeout</code> that pretends to send, or a <code>console.log</code> of the values. The prompt asks Bolt to replace it, but it’s worth checking it’s gone.' },
+      { h2: 'What the code should look like' },
+      { p: 'Bolt keeps components in <code>src/components</code>. Without the Tailwind classes, the form should look like this:' },
+      { code: builderForm(false), lang: 'tsx', filename: 'src/components/ContactForm.tsx', highlight: builderHighlight(false) },
+      { p: builderCheck },
+      { h2: 'Confirm your address, then publish' },
+      { steps: [`Send yourself a test from the preview. ${confirmStep}`, 'Publish. The form works on the <code>.bolt.host</code> address, on Netlify and on a custom domain without any change.', 'Notifications come from <code>notify@sendm8.com</code>. Hit reply and you’re writing to the visitor.'] },
+      { h2: 'Preview, published site and allowed domains' },
+      { p: previewFrame },
+      { p: allowedDomainsPara('the preview, the <code>.bolt.host</code> address, Netlify and any custom domain') },
+      { p: cspPara },
+      { h2: 'Should the endpoint go in .env?' },
+      { p: 'It can, but it doesn’t have to. Bolt’s docs point out that anything your browser code reads from <code>.env</code> ends up in the published site, which is fine here because the endpoint isn’t a secret. If you’d like it in one place, ask for <code>VITE_CONTACT_ENDPOINT</code> in <code>.env</code> and <code>import.meta.env.VITE_CONTACT_ENDPOINT</code> in the component. Don’t put it in Bolt’s Secrets: those only reach server functions, and this form has none.' },
+      { h2: 'Spam and limits' },
+      { p: `The honeypot, rate limits (${limits.ratePerIpPerMinute} a minute per visitor), spam scoring and an AI check run on every submission. Flagged messages go to a spam folder instead of your inbox.` },
+      { p: limitsPara },
+    ],
+    faq: [
+      { q: 'Why does my Bolt contact form say “sent” when nothing arrives?', a: 'The generated submit handler is often a placeholder that shows a success state without sending anything. Replace it with a fetch to a form backend such as sendm8, using the prompt on this page.' },
+      { q: 'Do I need Bolt Cloud or Supabase for a contact form?', a: 'No. Those are for your app’s own data. The form posts from the visitor’s browser to sendm8, which stores the message and emails you.' },
+      { q: 'Does it work if I publish to Netlify instead of Bolt hosting?', a: 'Yes. Nothing runs on the host, so the same form works on .bolt.host, Netlify or anywhere else you deploy the build.' },
+    ],
+    related: { docs: ['ajax', 'zero-signup', 'spam', 'fields'], vs: ['formspree', 'web3forms'] },
+  },
+  {
+    slug: 'v0-contact-form',
+    kind: 'platform',
+    name: 'v0',
+    h1: 'Add a working contact form to a v0 app',
+    title: 'v0 contact form without Server Actions',
+    description: 'v0 tends to wire contact forms to a Server Action and Resend. One prompt makes yours post to sendm8 from a client component instead: no API key, no env vars.',
+    intro: 'v0 builds a tidy contact form, then either leaves it wired to nothing or reaches for a Server Action, Resend and an API key. For a contact form you can skip all three. Give v0 the prompt below and the form posts straight to sendm8, which emails each message to you.',
+    blocks: [
+      { h2: 'What v0 builds' },
+      { p: 'v0 writes Next.js apps in React and TypeScript, styled with Tailwind CSS and shadcn/ui. The preview runs on a Vercel Sandbox, and publishing deploys to Vercel with a <code>vercel.app</code> address or your own domain. A client component that calls <code>fetch</code> works the same in all of them.' },
+      { h2: 'The prompt' },
+      { p: 'Change <code>you@example.com</code> to your own address and paste this into the v0 chat. If you’ve made a form in the dashboard, use its URL instead.' },
+      { code: builderPrompt('Make it a client component ("use client"). Don’t add a Server Action, API route, Resend or environment variable for this.'), lang: 'text', filename: 'prompt.txt', highlight: [4] },
+      { h2: 'What the code should look like' },
+      { p: 'v0 usually builds the form from shadcn/ui’s <code>Input</code>, <code>Textarea</code> and <code>Button</code>. Under those, it should come down to this:' },
+      { code: builderForm(true), lang: 'tsx', filename: 'components/contact-form.tsx', highlight: builderHighlight(true) },
+      { p: builderCheck },
+      { p: 'Rather keep it a Server Component with no JavaScript? A plain <code>&lt;form action="…" method="POST"&gt;</code> works on the published site, as in the <a href="/guides/nextjs-static-export-contact-form/">Next.js guide</a>. It won’t show sendm8’s thank-you page inside the v0 preview, though (see below).' },
+      { h2: 'Confirm your address, then publish' },
+      { steps: [`Send a test message from the preview. ${confirmStep}`, 'Publish. The form works on the <code>vercel.app</code> address and any custom domain with no change.', 'Each message arrives with the visitor’s address as Reply-To, so replying goes straight to them.'] },
+      { h2: 'Preview, published site and allowed domains' },
+      { p: previewFrame },
+      { p: allowedDomainsPara('the preview, the <code>vercel.app</code> address and any custom domain') },
+      { p: cspPara },
+      { h2: 'Environment variables' },
+      { p: 'None are needed: the endpoint isn’t a secret. If you’d like it in config anyway, it has to be <code>NEXT_PUBLIC_CONTACT_ENDPOINT</code>, because only <code>NEXT_PUBLIC_</code> variables reach client components. v0 scopes variables to Development, Preview and Production, and its preview only sees Development ones, so add it to all three or the preview form posts to <code>undefined</code>.' },
+      { h2: 'Spam and limits' },
+      { p: 'The honeypot catches simple bots. Every submission is also rate-limited, scored for spam and checked by a small AI model, and anything flagged waits in a spam folder rather than your inbox.' },
+      { p: limitsPara },
+    ],
+    faq: [
+      { q: 'Do I need a Server Action and Resend for a v0 contact form?', a: 'No. They’re one way to send email from Next.js, but they need an API key, a verified domain and code to maintain. Posting the form to sendm8 from the browser replaces all of it.' },
+      { q: 'My v0 form uses react-hook-form and zod. Do I have to remove them?', a: 'No. Keep the validation and, in the submit handler, POST the values to sendm8 as JSON with Content-Type and Accept set to application/json. Include an empty _gotcha field.' },
+      { q: 'Will this still work if I export the code or sync it to GitHub?', a: 'Yes. It’s ordinary Next.js code with no v0-specific parts, so it works wherever the app is deployed.' },
+    ],
+    related: { docs: ['ajax', 'zero-signup', 'spam', 'formspree'], vs: ['formspree', 'web3forms'] },
   },
 ];
