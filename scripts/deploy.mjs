@@ -9,6 +9,7 @@
  *   node scripts/deploy.mjs [--domain example.com] [--dry-run]
  */
 import { execSync } from "node:child_process";
+import { submitRecent } from "./indexnow.mjs";
 
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
@@ -43,3 +44,6 @@ if (exists) run("npx wrangler d1 migrations apply DB --remote");
 run(`npx wrangler deploy${domain ? ` --domain ${domain}` : ""}`);
 // A no-op when the step above already ran; on a fresh install this is where the tables are created.
 run("npx wrangler d1 migrations apply DB --remote");
+
+// Tell search engines which pages changed (scripts/indexnow.mjs). Never fails the deploy.
+if (!dryRun) await submitRecent();
