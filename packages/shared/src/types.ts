@@ -298,6 +298,30 @@ export interface AdminGrowthDto {
   topSites: { host: string; forms: number; submissions: number }[];
 }
 
+/** Where forms are hosted, judged by the referrer's hostname. Fixed order: builders, then hosts, then the rest. */
+export const HOST_GROUPS = [
+  "Lovable",
+  "Bolt",
+  "v0/Vercel",
+  "Netlify",
+  "Cloudflare Pages",
+  "GitHub Pages",
+  "Replit",
+  "Framer",
+  "Webflow",
+  "Custom domain",
+  "Local dev",
+  "Unknown",
+] as const;
+export type HostGroup = (typeof HOST_GROUPS)[number];
+
+/** Non-spam submissions and distinct forms per host group. A form posted to from several hosts counts in each. */
+export interface AdminHostsDto {
+  groups: { group: HostGroup; submissions30d: number; forms30d: number; submissions: number; forms: number }[];
+  /** Across every group; forms are distinct overall, so this isn't the sum of the rows. */
+  total: { submissions30d: number; forms30d: number; submissions: number; forms: number };
+}
+
 export type ErrorSource = "worker" | "browser";
 
 /** One grouped error, like an issue in Sentry: every occurrence with the same fingerprint counts here. */

@@ -2,7 +2,7 @@ import { SELF } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { AdminGrowthDto, FormDto, MeDto } from "@sendm8/shared";
+import type { AdminGrowthDto, AdminHostsDto, FormDto, MeDto } from "@sendm8/shared";
 import { submissions, user, userSettings } from "../src/db/schema";
 import worker from "../src/index";
 import { newId } from "../src/lib/ids";
@@ -114,6 +114,102 @@ describe("admin growth", () => {
 
   it("is hidden from non-admins", async () => {
     expect((await api("/admin/growth", { headers: (await signIn()).headers })).status).toBe(404);
+  });
+});
+
+describe("admin hosts", () => {
+  type Hosts = AdminHostsDto;
+  const get = async (headers: Record<string, string>) => {
+    const res = await api<{ data: Hosts }>("/admin/hosts", { headers });
+    expect(res.status).toBe(200);
+    return res.body.data;
+  };
+  const row = (data: Hosts, group: string) => data.groups.find((g) => g.group === group)!;
+
+  it("groups non-spam submissions and forms by where the form is hosted", async () => {
+    const headers = await adminHeaders();
+    const before = await get(headers);
+    expect(before.groups.map((g) => g.group)).toEqual([
+      "Lovable",
+      "Bolt",
+      "v0/Vercel",
+      "Netlify",
+      "Cloudflare Pages",
+      "GitHub Pages",
+      "Replit",
+      "Framer",
+      "Webflow",
+      "Custom domain",
+      "Local dev",
+      "Unknown",
+    ]);
+
+    const lovable = await createForm({ name: "Lovable site" });
+    const bolt = await createForm({ name: "Bolt site" });
+    const mixed = await createForm({ name: "Moved hosts" });
+    const now = Date.now();
+    const recent = now - 3_600_000;
+    const old = now - 90 * 86_400_000;
+    const sub = (formId: string, referrer: string | null, createdAt = recent, status: "ok" | "spam" | "held" | "pending_challenge" = "ok") => ({
+      id: newId(),
+      formId,
+      data: { email: "someone@example.com" },
+      meta: { ...meta, referrer },
+      status,
+      createdAt,
+    });
+    const rows = [
+      sub(lovable.id, "https://my-app.lovable.app/contact?x=1"),
+      sub(lovable.id, "https://Preview-123.LovableProject.com/"),
+      sub(lovable.id, "https://my-app.lovable.app/", old),
+      sub(lovable.id, "https://my-app.lovable.app/", recent, "spam"),
+      sub(lovable.id, "https://my-app.lovable.app/", recent, "pending_challenge"),
+      sub(bolt.id, "https://thing.bolt.host#top", recent, "held"),
+      sub(bolt.id, "https://abc.webcontainer.io:3000/"),
+      sub(mixed.id, "https://site.vercel.app/"),
+      sub(mixed.id, "https://v0.dev/chat"),
+      sub(mixed.id, "https://foo.netlify.app"),
+      sub(mixed.id, "https://foo.pages.dev/"),
+      sub(mixed.id, "https://me.github.io/site/"),
+      sub(mixed.id, "https://x.replit.app/"),
+      sub(mixed.id, "https://x.framer.website/"),
+      sub(mixed.id, "https://x.webflow.io/"),
+      sub(mixed.id, "http://localhost:5173/"),
+      sub(mixed.id, "http://127.0.0.1:8080/form"),
+      sub(mixed.id, "http://[::1]:3000/"),
+      sub(mixed.id, "https://www.example.com/contact"),
+      // Lookalikes stay custom domains: the suffix has to match on a dot boundary.
+      sub(mixed.id, "https://notlovable.app/"),
+      sub(mixed.id, null),
+      sub(mixed.id, "not a url"),
+    ];
+    // D1 caps bound variables per statement, so insert a few rows at a time.
+    for (let i = 0; i < rows.length; i += 5) await db().insert(submissions).values(rows.slice(i, i + 5));
+
+    const after = await get(headers);
+    const delta = (group: string) => {
+      const a = row(after, group);
+      const b = row(before, group);
+      return { submissions30d: a.submissions30d - b.submissions30d, forms30d: a.forms30d - b.forms30d, submissions: a.submissions - b.submissions, forms: a.forms - b.forms };
+    };
+    expect(delta("Lovable")).toEqual({ submissions30d: 2, forms30d: 1, submissions: 3, forms: 1 });
+    expect(delta("Bolt")).toEqual({ submissions30d: 2, forms30d: 1, submissions: 2, forms: 1 });
+    expect(delta("v0/Vercel")).toEqual({ submissions30d: 2, forms30d: 1, submissions: 2, forms: 1 });
+    for (const group of ["Netlify", "Cloudflare Pages", "GitHub Pages", "Replit", "Framer", "Webflow"]) {
+      expect(delta(group), group).toEqual({ submissions30d: 1, forms30d: 1, submissions: 1, forms: 1 });
+    }
+    expect(delta("Local dev")).toEqual({ submissions30d: 3, forms30d: 1, submissions: 3, forms: 1 });
+    expect(delta("Custom domain")).toEqual({ submissions30d: 2, forms30d: 1, submissions: 2, forms: 1 });
+    expect(delta("Unknown")).toEqual({ submissions30d: 2, forms30d: 1, submissions: 2, forms: 1 });
+    // Three new forms overall, though "mixed" shows up in nine groups.
+    expect(after.total.forms - before.total.forms).toBe(3);
+    expect(after.total.submissions - before.total.submissions).toBe(22 - 2);
+    expect(after.total.submissions30d - before.total.submissions30d).toBe(22 - 3);
+  });
+
+  it("is hidden from non-admins and signed-out visitors", async () => {
+    expect((await api("/admin/hosts", { headers: (await signIn()).headers })).status).toBe(404);
+    expect([401, 404]).toContain((await api("/admin/hosts")).status);
   });
 });
 

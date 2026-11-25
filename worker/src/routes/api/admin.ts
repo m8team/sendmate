@@ -1,4 +1,4 @@
-import type { AdminGrowthDto, AdminReportDto, AdminUsageDto, BlocklistEntryDto, ErrorGroupDto } from "@sendm8/shared";
+import { HOST_GROUPS, type AdminGrowthDto, type AdminHostsDto, type AdminReportDto, type AdminUsageDto, type BlocklistEntryDto, type ErrorGroupDto } from "@sendm8/shared";
 import { and, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { createRouter, requireAdmin } from "../../app";
@@ -69,6 +69,73 @@ adminRoutes.get("/growth", async (c) => {
       .map(([host, s]) => ({ host, forms: s.forms.size, submissions: s.submissions }))
       .sort((a, b) => b.submissions - a.submissions)
       .slice(0, 10),
+  };
+  return c.json({ data });
+});
+
+// ── Hosts ──────────────────────────────────────────────────────────────────
+
+/** Hostname suffixes per group. Each matches the domain itself and any subdomain of it. */
+const HOST_SUFFIXES: [group: string, suffixes: string[]][] = [
+  ["Lovable", ["lovable.app", "lovableproject.com", "lovable.dev"]],
+  ["Bolt", ["bolt.host", "bolt.new", "webcontainer.io", "stackblitz.io"]],
+  ["v0/Vercel", ["vercel.app", "v0.app", "v0.dev"]],
+  ["Netlify", ["netlify.app"]],
+  ["Cloudflare Pages", ["pages.dev", "workers.dev"]],
+  ["GitHub Pages", ["github.io"]],
+  ["Replit", ["replit.app", "repl.co"]],
+  ["Framer", ["framer.website", "framer.app"]],
+  ["Webflow", ["webflow.io"]],
+];
+
+const hostCase = HOST_SUFFIXES.map(
+  ([group, suffixes]) => `WHEN ${suffixes.map((d) => `host = '${d}' OR host LIKE '%.${d}'`).join(" OR ")} THEN '${group}'`,
+).join("\n      ");
+
+/**
+ * One statement, aggregated in D1. The hostname is what sits between "://" and the first "/", "?",
+ * "#" or ":" (port); turning each of those into "/" and appending one makes it a single cut. `h` is
+ * materialized so SQLite works the hostname out once per row: inlined, every reference in the CASE
+ * below would repeat the whole expression and the query runs out of memory.
+ * Held submissions count; spam and unsolved challenges don't.
+ */
+const HOSTS_SQL = `
+WITH h AS MATERIALIZED (
+  SELECT form_id, created_at, ref,
+         CASE WHEN instr(ref, '://') > 0 THEN substr(x, 1, instr(x, '/') - 1) END AS host
+  FROM (
+    SELECT form_id, created_at, ref,
+           replace(replace(replace(substr(ref, instr(ref, '://') + 3), '?', '/'), '#', '/'), ':', '/') || '/' AS x
+    FROM (SELECT form_id, created_at, lower(trim(json_extract(meta, '$.referrer'))) AS ref FROM submissions WHERE status IN ('ok', 'held'))
+  )
+), g AS (
+  SELECT form_id, created_at, CASE
+      WHEN ref LIKE '%://[::1]%' THEN 'Local dev'
+      WHEN host IS NULL OR host = '' THEN 'Unknown'
+      WHEN host = 'localhost' OR host LIKE '%.localhost' OR host LIKE '127.%' THEN 'Local dev'
+      ${hostCase}
+      ELSE 'Custom domain' END AS grp
+  FROM h
+)
+SELECT grp, count(*) AS submissions, count(DISTINCT form_id) AS forms,
+       coalesce(sum(created_at >= ?1), 0) AS submissions30d, count(DISTINCT CASE WHEN created_at >= ?1 THEN form_id END) AS forms30d
+FROM g GROUP BY grp
+UNION ALL
+SELECT '*', count(*), count(DISTINCT form_id), coalesce(sum(created_at >= ?1), 0), count(DISTINCT CASE WHEN created_at >= ?1 THEN form_id END)
+FROM h`;
+
+/** Submissions and forms by where the form is hosted (AI builders, static hosts, custom domains). */
+adminRoutes.get("/hosts", async (c) => {
+  type Counts = AdminHostsDto["total"];
+  const { results } = await c.env.DB.prepare(HOSTS_SQL)
+    .bind(Date.now() - 30 * DAY)
+    .all<Counts & { grp: string }>();
+  const pick = ({ submissions30d, forms30d, submissions, forms }: Counts): Counts => ({ submissions30d, forms30d, submissions, forms });
+  const zero: Counts = { submissions30d: 0, forms30d: 0, submissions: 0, forms: 0 };
+  const byGroup = new Map(results.map((row) => [row.grp, pick(row)]));
+  const data: AdminHostsDto = {
+    groups: HOST_GROUPS.map((group) => ({ group, ...(byGroup.get(group) ?? zero) })),
+    total: byGroup.get("*") ?? zero,
   };
   return c.json({ data });
 });

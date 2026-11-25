@@ -10,6 +10,7 @@ import { friendlyError } from '../../lib/api/errors';
 import { guardSession } from '../../lib/api/session';
 import AdminUsage from './admin/AdminUsage.vue';
 import AdminGrowth from './admin/AdminGrowth.vue';
+import AdminHosts from './admin/AdminHosts.vue';
 import AdminReports from './admin/AdminReports.vue';
 import AdminErrors from './admin/AdminErrors.vue';
 import AdminBlocklist from './admin/AdminBlocklist.vue';
@@ -66,6 +67,7 @@ onMounted(async () => {
     <template v-else>
       <AdminUsage />
       <AdminGrowth />
+      <AdminHosts />
       <AdminReports />
       <AdminErrors />
 
