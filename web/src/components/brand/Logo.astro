@@ -19,13 +19,13 @@ const EIGHT =
 ---
 
 <Tag class:list={['logo', `logo-${size}`, !wordmark && 'logo-mark-only', className]} href={href ?? undefined}>
-  {wordmark && <span class="logo-word">sendm</span>}
+  {/* The hidden 8 sits inside the word, with no whitespace, so text extraction reads "sendm8", not "sendm 8". */}
+  {wordmark && <span class="logo-word">sendm<span class="sr-only">8{href && ', home'}</span></span>}
   <svg class="logo-tile" viewBox="0 0 40 40" aria-hidden="true">
     <rect width="40" height="40" rx="7" fill="#e23b1e"></rect>
     <g transform="translate(20 20) scale(2.5) translate(-31.2 -23.4)"><path fill="#fff8ee" d={EIGHT}></path></g>
   </svg>
-  {wordmark ? <span class="sr-only">8</span> : <span class="sr-only">sendm8</span>}
-  {href && <span class="sr-only">, home</span>}
+  {!wordmark && <span class="sr-only">sendm8{href && ', home'}</span>}
 </Tag>
 
 <style>
