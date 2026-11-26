@@ -1,0 +1,16 @@
+{
+  "name": "sendm8",
+  "owner": { "name": "Jacob Alcock", "email": "hello@sendm8.com" },
+  "metadata": { "description": "Working contact forms for any site, set up by your coding agent." },
+  "plugins": [
+    {
+      "name": "sendm8",
+      "source": "./plugins/sendm8",
+      "description": "Add a working contact form to any site with sendm8: no backend, no account, no API key.",
+      "homepage": "https://sendm8.com",
+      "repository": "https://github.com/m8team/sendmate",
+      "license": "AGPL-3.0-only",
+      "keywords": ["contact-form", "forms", "static-site", "email"]
+    }
+  ]
+}

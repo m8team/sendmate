@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "sendm8": { "type": "http", "url": "https://sendm8.com/mcp" }
+  }
+}

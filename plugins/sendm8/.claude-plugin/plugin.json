@@ -1,0 +1,9 @@
+{
+  "name": "sendm8",
+  "version": "1.0.0",
+  "description": "Add a working contact form to any site with sendm8: no backend, no account, no API key.",
+  "author": { "name": "Jacob Alcock", "url": "https://sendm8.com" },
+  "homepage": "https://sendm8.com",
+  "repository": "https://github.com/m8team/sendmate",
+  "license": "AGPL-3.0-only"
+}
