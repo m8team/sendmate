@@ -80,8 +80,13 @@ export function notificationEmail(opts: {
   reportUrl: string;
   isTest?: boolean;
   files?: { name: string; size: number; url: string }[];
+  /** The owner's address when the form isn't in an account yet: adds one line on what signing in gets them. */
+  unclaimedEmail?: string;
 }): RenderedEmail {
   const subject = oneLine(opts.subject || `New submission: ${opts.formName}`);
+  const claim = opts.unclaimedEmail
+    ? `This form isn't in an account yet. Sign in with ${opts.unclaimedEmail} and it moves into one, with every message kept, a spam folder, and alerts in Discord or Slack if you want them. It's free.`
+    : "";
   const when = new Date(opts.submittedAt).toUTCString();
   const from = opts.referrer ? ` from ${opts.referrer}` : "";
   const files = opts.files ?? [];
@@ -101,10 +106,11 @@ export function notificationEmail(opts: {
       body: `<p style="margin:0 0 20px;color:${MUTED};font-size:13px;">${escapeHtml(when)}${escapeHtml(from)}</p>
 ${fieldsTable(opts.data)}
 ${filesHtml}
-<p style="margin:24px 0 0;">${button(opts.submissionUrl, "Open in sendm8")}</p>`,
+${claim ? `<p style="margin:24px 0 0;color:${MUTED};font-size:14px;">${escapeHtml(claim)}</p>` : ""}
+<p style="margin:${claim ? 12 : 24}px 0 0;">${button(opts.submissionUrl, claim ? "Sign in to see it" : "Open in sendm8")}</p>`,
       footer: `${link(opts.settingsUrl, "Notification settings")} · ${link(opts.reportUrl, "Report abuse")}`,
     }),
-    text: `${opts.formName} has mail.\n${when}${from}\n\n${fieldsText(opts.data)}${filesText}\n\nOpen in sendm8: ${opts.submissionUrl}\nNotification settings: ${opts.settingsUrl}\nReport abuse: ${opts.reportUrl}\n`,
+    text: `${opts.formName} has mail.\n${when}${from}\n\n${fieldsText(opts.data)}${filesText}\n\n${claim ? `${claim}\n` : ""}Open in sendm8: ${opts.submissionUrl}\nNotification settings: ${opts.settingsUrl}\nReport abuse: ${opts.reportUrl}\n`,
   };
 }
 

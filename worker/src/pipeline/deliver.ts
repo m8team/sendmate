@@ -65,6 +65,7 @@ export function buildNotification(
     reportUrl: urls.report(env.APP_URL, form.id),
     isTest,
     files,
+    unclaimedEmail: form.userId ? undefined : (form.ownerEmail ?? undefined),
   });
   return { to: [], ...rendered, ...(isEmail(replyTo) && { replyTo }) };
 }

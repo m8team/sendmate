@@ -60,6 +60,7 @@ confirmRoutes.post("/:token", async (c) => {
     title: "Confirmed",
     heading: "Sorted. Mail's on its way.",
     body: `${stamp("Delivered")}<p>Submissions will now arrive at <strong>${escapeHtml(confirmed.email)}</strong>, starting with any that were waiting.</p>
-<p>Want an inbox, spam filtering, Discord or Slack alerts? <a href="${escapeHtml(urls.signIn(c.env.APP_URL))}">Sign in with this email</a> and the form is yours. It's free.</p>`,
+<p>Sign in with this email and the form moves into an account: every message kept in one place, a spam folder you can check, and alerts in Discord, Slack or Telegram if you want them. It's free, and it's one click with Google or GitHub.</p>
+<p><a href="${escapeHtml(urls.signIn(c.env.APP_URL))}" style="display:inline-block;font:700 16px/1 system-ui,sans-serif;padding:14px 22px;background:#141414;color:#f4efe6;text-decoration:none;">Sign in to see your messages</a></p>`,
   });
 });

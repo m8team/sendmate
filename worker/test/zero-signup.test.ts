@@ -302,7 +302,11 @@ describe("confirming", () => {
 
     const confirmed = await postConfirm(token, "confirm");
     expect(confirmed.status).toBe(200);
-    expect(await confirmed.text()).toContain("Mail&#39;s on its way");
+    const confirmedHtml = await confirmed.text();
+    expect(confirmedHtml).toContain("Mail&#39;s on its way");
+    // The page asks them to sign in, with what that gets them.
+    expect(confirmedHtml).toContain("Sign in to see your messages");
+    expect(confirmedHtml).toContain("/app/sign-in");
 
     const form = (await formFor(email))!;
     expect(form.status).toBe("active");
@@ -310,6 +314,10 @@ describe("confirming", () => {
     expect(formChannels).toMatchObject([{ type: "email", label: email }]);
 
     await waitFor(async () => http.emails().filter((e) => e.to[0] === email && e.subject.startsWith("New submission")).length === 2);
+    // Until the form is in an account, each notification says what signing in gets them.
+    const notice = http.emails().find((e) => e.to[0] === email && e.subject.startsWith("New submission"))!;
+    expect(notice.text).toContain(`This form isn't in an account yet. Sign in with ${email}`);
+    expect(notice.html).toContain("Sign in to see it");
 
     const res = await postJson(email, { message: "fresh" });
     const { id } = await res.json<{ id: string }>();
