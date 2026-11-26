@@ -55,6 +55,9 @@ const SPAM_PHRASES = [
 
 const URL_PATTERN = /\bhttps?:\/\/|\bwww\./gi;
 
+/** +7 999 000-00-00, the "fill every field" placeholder a probing bot uses, in any common formatting. */
+const PLACEHOLDER_PHONE = /^\+?\s*7[\s.-]*\(?\s*999\s*\)?[\s.-]*000[\s.-]*00[\s.-]*00$/;
+
 /**
  * The "your item sold, verify to get paid" scam that marketplace sellers get. A group tested it through
  * sendm8 into their own inbox (20 Nov 2026), and the AI check was down, so nothing caught it. It needs all
@@ -240,6 +243,19 @@ export function assessSpam(parsed: ParsedSubmission, settings: FormSettings, opt
   if (urlCount > 0 && (lures >= 2 || (lures === 1 && posingAs.some((part) => MARKETPLACE.test(part))))) {
     score += 0.8;
     reasons.push("marketplace_phish");
+  }
+
+  // Two bots that kept reaching a real contact form until its owner reported them (Nov 2026): lead-gen
+  // agencies writing from "*leadgen*" sending domains, and a probe that fills the Russian placeholder
+  // number +7 999 000-00-00. Neither matched a genuine submission in the history when this was added.
+  const senderDomain = submitterEmail(parsed)?.split("@")[1] ?? "";
+  if (senderDomain.includes("leadgen")) {
+    score += 0.8;
+    reasons.push("leadgen_sender");
+  }
+  if (values.some((v) => PLACEHOLDER_PHONE.test(v.trim()))) {
+    score += 0.8;
+    reasons.push("placeholder_phone");
   }
 
   const longest = values.reduce((a, b) => (b.length > a.length ? b : a), "");

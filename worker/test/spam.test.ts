@@ -131,3 +131,23 @@ describe("marketplace phishing", () => {
     expect(assessSpam(parsed({ ...real, message: "Vinted says my funds are pending, is that normal for your shop?" }), {}, browser).reasons).toEqual([]);
   });
 });
+
+describe("bots an owner reported", () => {
+  const structured = { name: "Test", company: "Test Company", phone: "+79990000000", email: "someone@gmail.com", industry: "Other" };
+
+  it("bins the placeholder-phone probe however the number is written", () => {
+    for (const phone of ["+79990000000", "+7 999 000-00-00", "7 (999) 000 00 00"]) {
+      expect(assessSpam(parsed({ ...structured, phone }), {}, browser)).toMatchObject({ status: "spam", reasons: ["placeholder_phone"] });
+    }
+    // A real Russian mobile is fine.
+    expect(assessSpam(parsed({ ...structured, phone: "+7 999 123-45-67" }), {}, browser).reasons).toEqual([]);
+  });
+
+  it("bins pitches from lead-gen sending domains, and nothing else about lead generation", () => {
+    const pitch = { name: "Aida Fuller", company: "NA", email: "hello@boostleadgen.com", message: "We can grow your pipeline." };
+    expect(assessSpam(parsed(pitch), {}, browser)).toMatchObject({ status: "spam", reasons: ["leadgen_sender"] });
+    expect(assessSpam(parsed({ ...pitch, email: "x@ultraleadgeneration.com" }), {}, browser).status).toBe("spam");
+    // A genuine enquiry that talks about lead generation is untouched.
+    expect(assessSpam(parsed({ ...real, message: "Can your form send leads to our CRM for lead generation?" }), {}, browser).reasons).toEqual([]);
+  });
+});
