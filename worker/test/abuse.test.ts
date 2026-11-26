@@ -465,6 +465,18 @@ describe("admin API", () => {
     expect((await postJson(form.id, { email: "someone@spammy.test" })).status).toBe(200);
   });
 
+  it("won't open a no-signup endpoint for a blocked domain, under any address or +tag", async () => {
+    const headers = await admin();
+    await api("/admin/blocklist", { method: "POST", body: { type: "email_domain", value: "walletpair-scam.dev" }, headers });
+    for (const owner of ["pairs+x-1@walletpair-scam.dev", "support@walletpair-scam.dev"]) {
+      const res = await postJson(owner, { email: "noreply@visitor.dev", message: "probe" });
+      expect(res.status).toBe(403);
+      expect(await db().select().from(forms).where(eq(forms.ownerEmail, owner)).get()).toBeUndefined();
+    }
+    // Other domains are unaffected.
+    expect((await postJson("owner@fine-domain.dev", { message: "hello" })).status).toBe(200);
+  });
+
   it("reports free-tier usage", async () => {
     const headers = await admin();
     const form = await createForm();

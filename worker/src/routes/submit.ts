@@ -163,6 +163,10 @@ submitRoutes.post("/:formId", async (c) => {
             and(eq(blocklist.type, "ip_hash"), eq(blocklist.value, ipHash ?? "")),
             and(eq(blocklist.type, "email"), eq(blocklist.value, email ?? "")),
             and(eq(blocklist.type, "email_domain"), eq(blocklist.value, email?.split("@")[1] ?? "")),
+            // The endpoint's own address too, so a blocked domain can't open a new /f/ endpoint under any
+            // other address or +tag (a phishing kit tried four on one domain in three minutes, Nov 2026).
+            and(eq(blocklist.type, "email"), eq(blocklist.value, zeroSignupEmail ?? "")),
+            and(eq(blocklist.type, "email_domain"), eq(blocklist.value, zeroSignupEmail?.split("@")[1] ?? "")),
           ),
         )
         .limit(1),
