@@ -67,6 +67,15 @@
 >
 > **Want JSON back instead of a redirect?** Send `Accept: application/json`. See the [AJAX guide](https://sendm8.com/docs#ajax).
 
+## Let your AI set it up
+
+There’s no account or API key to get, so a coding agent or site builder can add a working form on its own.
+
+- **Claude Code:** `/plugin install sendm8 --marketplace m8team/sendmate` adds a contact-form skill and the MCP server.
+- **Any MCP client:** `https://sendm8.com/mcp` (no sign-in). It returns form code for your framework, the docs and the limits.
+- **Lovable, Bolt and v0:** each [guide](https://sendm8.com/guides/) has a prompt to paste into the builder’s chat.
+- **Everything else:** point it at [sendm8.com/llms.txt](https://sendm8.com/llms.txt).
+
 ## What’s in the box
 
 <picture>
