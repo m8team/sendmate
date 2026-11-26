@@ -1,0 +1,134 @@
+---
+/**
+ * The pitch for AI-built sites: coding agents and site builders can't sign up for accounts or
+ * paste API keys, and sendm8 needs neither. Guides for the builders, one-line installs for the agents.
+ */
+import CodeBlock from '../ui/CodeBlock.astro';
+import { site } from '../../config/site';
+
+const MCP_URL = `${site.url}/mcp`;
+const cursorInstall = `cursor://anysphere.cursor-deeplink/mcp/install?name=sendm8&config=${btoa(JSON.stringify({ url: MCP_URL }))}`;
+
+const builders = [
+  { name: 'Lovable', href: '/guides/lovable-contact-form/' },
+  { name: 'Bolt', href: '/guides/bolt-contact-form/' },
+  { name: 'v0', href: '/guides/v0-contact-form/' },
+];
+
+const agentInstall = `
+# Claude Code: the plugin adds a contact-form skill and the MCP server
+/plugin install sendm8 --marketplace m8team/sendmate
+
+# Or just the MCP server
+claude mcp add --transport http sendm8 ${MCP_URL}
+
+# VS Code
+code --add-mcp '{"name":"sendm8","type":"http","url":"${MCP_URL}"}'`;
+---
+
+<section class="ra" id="ai" aria-labelledby="ra-title">
+  <div class="wrap ra-grid">
+    <div class="ra-copy">
+      <h2 id="ra-title" class="ra-h">Built it with AI? Ask it for a contact form.</h2>
+      <p class="ra-lede">
+        A coding agent can't sign up for an account or paste an API key, so most form services stop it halfway. sendm8 needs neither. The agent writes one line, you
+        click one confirmation email, and the form works.
+      </p>
+
+      <h3 class="ra-sub">Site builders</h3>
+      <p class="ra-p">Each guide has a prompt to paste into the builder's chat and the code to check it against.</p>
+      <ul class="ra-builders" role="list">
+        {
+          builders.map((b) => (
+            <li>
+              <a href={b.href}>{b.name}</a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <h3 class="ra-sub">Coding agents</h3>
+      <p class="ra-p">
+        Give your agent the sendm8 MCP server and it gets working form code for your framework, the docs and the limits, with no sign-in. Or point it at <a
+          href="/llms.txt">llms.txt</a
+        >.
+      </p>
+      <a class="btn btn-outline ra-cursor" href={cursorInstall}>Add to Cursor</a>
+    </div>
+
+    <div class="ra-code">
+      <CodeBlock code={agentInstall} lang="bash" filename="terminal" />
+      <p class="ra-note mono">MCP server: {MCP_URL}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .ra {
+    padding-block: clamp(3.5rem, 7vw, 6rem);
+    border-bottom: var(--bw-strong) solid var(--line-strong);
+  }
+  .ra-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: start;
+  }
+  .ra-h {
+    font-family: var(--font-display);
+    font-weight: 850;
+    font-stretch: 72%;
+    font-size: var(--fs-h2);
+    line-height: 0.98;
+    max-width: 16ch;
+  }
+  .ra-lede {
+    margin-top: var(--s-5);
+    max-width: 46ch;
+    font-size: var(--fs-lg);
+    line-height: 1.5;
+  }
+  .ra-sub {
+    margin-top: var(--s-6);
+    font: 750 var(--fs-h4) / 1.2 var(--font-display);
+    font-stretch: var(--stretch-semi);
+  }
+  .ra-p {
+    margin-top: var(--s-2);
+    max-width: 46ch;
+    color: var(--fg-muted);
+  }
+  .ra-p a {
+    color: var(--fg);
+  }
+  .ra-builders {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    margin-top: var(--s-3);
+  }
+  .ra-builders a {
+    display: inline-block;
+    padding: 0.45rem 0.9rem;
+    border: var(--bw-strong) solid var(--line-strong);
+    font-weight: 700;
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .ra-builders a:hover {
+    background: var(--signal-wash);
+  }
+  .ra-cursor {
+    margin-top: var(--s-4);
+  }
+  .ra-note {
+    margin-top: var(--s-3);
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+  }
+  @media (max-width: 960px) {
+    .ra-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
